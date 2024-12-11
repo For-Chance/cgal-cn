@@ -1,48 +1,41 @@
 ![CGAL](Installation/doc_html/images/cgal_2013_grey.png)
 
-The Computational Geometry Algorithms Library (CGAL) is a C++ library that
-aims to provide easy access to efficient and reliable algorithms in
-computational geometry.
+> 当前版本：v6.0.1
 
-CGAL Releases
+CGAL（计算几何算法库）是一个 C++ 开源库，提供了高效可靠的计算几何算法实现。
+
+版本发布
 =============
-The primary vector of distribution of CGAL are source tarballs, released
-twice a year, announced on [the web site of CGAL](https://www.cgal.org/).
+CGAL 主要通过源码包形式发布，每年发布两个版本，发布信息会在 [CGAL 官方网站](https://www.cgal.org/) 公告。
 
-Getting Started with CGAL
+快速上手
 =========================
 
-**Since version 5.0, CGAL is a header-only library, meaning that
-it is no longer needed to build CGAL libraries before it can be used.**
+**重要提示：从 5.0 版本起，CGAL 已改为纯头文件库，使用时无需再编译构建 CGAL 库文件。**
 
-Head over to the [CGAL manual](https://doc.cgal.org/latest/Manual/general_intro.html)
-for usage guides and tutorials that will get you started smoothly.
+访问 [CGAL 开发文档](https://doc.cgal.org/latest/Manual/general_intro.html) 查看使用说明和入门教程。
 
-License
+开源协议
 =======
-See the file [LICENSE.md](LICENSE.md).
+详见 [LICENSE.md](LICENSE.md) 文件。
 
-CGAL Git Repository Layout
+代码仓库结构
 ==========================
 
-The Git repository of CGAL has a different layout from release tarballs. It
-contains a `CMakeLists.txt` file that serves as anchor for configuring and building programs,
-and a set of subfolders, so called *packages*. Most packages
-implement a data structure or an algorithm for CGAL (e.g., `Convex_hull_2`,
-or `Triangulation_3`); however some packages serve special needs:
+CGAL 的 Git 仓库结构与发布版本的源码包不同。仓库根目录包含一个用于项目配置和程序构建的 `CMakeLists.txt` 文件，以及多个功能包（packages）。大部分功能包实现了特定的数据结构或算法（如 `Convex_hull_2`凸包算法、`Triangulation_3`三角剖分等），此外还有一些特殊用途的功能包：
 
-* `Installation` - meta-files and CMake-support
-* `Maintenance` - infrastructural support
-* `Core`, `CGALimageIO`, `Qt_widget`, `GraphicsView` - component libraries
-* `Scripts` - scripts to simplify developer's and user's work
-* `Testsuite` - infrastructure for testsuite
-* `Documentation` - infrastructure for CGAL's manual
-* `STL_Extension` - extensions to the standard template library
+* `Installation` - 配置文件和 CMake 支持
+* `Maintenance` - 项目维护工具
+* `Core`、`CGALimageIO`、`Qt_widget`、`GraphicsView` - 核心组件库
+* `Scripts` - 开发辅助脚本
+* `Testsuite` - 测试框架
+* `Documentation` - 文档系统
+* `STL_Extension` - STL 扩展功能
 
-More Information
+相关链接
 ================
-* [The CGAL web site](https://www.cgal.org/)
-* [Latest CGAL release documentation pages](https://doc.cgal.org/)
-* [Latest CGAL master documentation pages, updated once a week](https://cgal.geometryfactory.com/CGAL/doc/master/)
-* [CGAL daily testsuite results](https://cgal.geometryfactory.com/CGAL/testsuite/)
-* [Guidelines for CGAL developers](https://github.com/CGAL/cgal/wiki/Guidelines) and [Information for new developers](https://github.com/CGAL/cgal/wiki/Information-for-New-Developers)
+* [官方网站](https://www.cgal.org/)
+* [最新版本文档](https://doc.cgal.org/)
+* [主分支文档（每周更新）](https://cgal.geometryfactory.com/CGAL/doc/master/)
+* [每日构建测试结果](https://cgal.geometryfactory.com/CGAL/testsuite/)
+* [开发规范](https://github.com/CGAL/cgal/wiki/Guidelines) 和 [新手开发指南](https://github.com/CGAL/cgal/wiki/Information-for-New-Developers)
