@@ -36,12 +36,16 @@ jobs:
           cd build_doc
           make -j$(nproc) doc
           make -j$(nproc) doc_with_postprocessing
+          # 检查构建是否成功
+          if [ ! -f "doc_output/index.html" ]; then
+            echo "Error: Documentation build failed - index.html not found"
+            exit 1
+          fi
 
       - name: Create .nojekyll file
         run: |
           mkdir -p build_doc/doc_output
           touch build_doc/doc_output/.nojekyll
-          echo "<html><body><h1>Documentation</h1></body></html>" > build_doc/doc_output/index.html
 
       - name: Debug Info
         run: |
@@ -50,6 +54,13 @@ jobs:
           echo "Current branch: $(git branch --show-current)"
           echo "Checking .nojekyll file:"
           ls -la build_doc/doc_output/.nojekyll
+
+      - name: Check documentation output
+        run: |
+          echo "Checking documentation output directory:"
+          ls -la build_doc/doc_output/
+          echo "Checking for index.html:"
+          find build_doc/doc_output/ -name "index.html"
 
       - name: Deploy documentation
         if: github.event_name == 'push' && github.ref == 'refs/heads/v6.0.1-cn'
