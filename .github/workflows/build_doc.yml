@@ -30,20 +30,35 @@ jobs:
           git checkout v2.3.4
           cd ../..
 
+      - name: Check and setup theme
+        id: check_theme
+        run: |
+          if [ -d "Documentation/doxygen-awesome-css" ]; then
+            echo "Using Doxygen Awesome theme"
+            echo "has_theme=true" >> $GITHUB_OUTPUT
+          else
+            echo "Using default theme"
+            echo "has_theme=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: CMake configuration
         run: |
           mkdir -p build_doc
           cd build_doc
-          cmake ../Documentation/doc \
-            -DBUILD_DOC=ON \
-            -DCGAL_GENERATE_XML=ON \
-            -DCGAL_DOC_CREATE_LOGS=ON \
-            -DDOXYGEN_AWESOME_DIR=../Documentation/doxygen-awesome-css \
-            -DHTML_EXTRA_STYLESHEET="../Documentation/doxygen-awesome-css/doxygen-awesome.css;../Documentation/doxygen-awesome-css/doxygen-awesome-sidebar-only.css" \
-            -DHTML_EXTRA_FILES="../Documentation/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js;../Documentation/doxygen-awesome-css/doxygen-awesome-paragraph-link.js;../Documentation/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js;../Documentation/doxygen-awesome-css/doxygen-awesome-interactive-toc.js" \
-            -DHTML_HEADER="../Documentation/doxygen-awesome-css/header.html" \
-            -DHTML_COLORSTYLE=LIGHT \
-            -DOUTPUT_LANGUAGE=Chinese
+          if [ "${{ steps.check_theme.outputs.has_theme }}" = "true" ]; then
+            cmake ../Documentation/doc \
+              -DBUILD_DOC=ON \
+              -DCGAL_GENERATE_XML=ON \
+              -DCGAL_DOC_CREATE_LOGS=ON \
+              -DCGAL_PACKAGE_DOC_DIR=../Documentation/doc \
+              -DOUTPUT_LANGUAGE=Chinese
+          else
+            cmake ../Documentation/doc \
+              -DBUILD_DOC=ON \
+              -DCGAL_GENERATE_XML=ON \
+              -DCGAL_DOC_CREATE_LOGS=ON \
+              -DOUTPUT_LANGUAGE=Chinese
+          fi
 
       - name: Build documentation
         run: |
