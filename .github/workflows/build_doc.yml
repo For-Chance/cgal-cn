@@ -24,6 +24,13 @@ jobs:
           wget --no-verbose -O doxygen_exe https://cgal.geometryfactory.com/~cgaltest/doxygen_1_9_6_patched/doxygen
           sudo mv doxygen_exe /usr/bin/doxygen
           sudo chmod +x /usr/bin/doxygen
+          # 安装 doxygen-awesome-css
+          git clone https://github.com/jothepro/doxygen-awesome-css.git
+          cd doxygen-awesome-css
+          # 更新到 v2.3.4 版本
+          git checkout v2.3.4
+          sudo mkdir -p /usr/local/share/doxygen/
+          sudo cp -r doxygen-awesome-css/* /usr/local/share/doxygen/
 
       - name: CMake configuration
         run: |
@@ -33,8 +40,14 @@ jobs:
             -DBUILD_DOC=ON \
             -DCGAL_GENERATE_XML=ON \
             -DCGAL_DOC_CREATE_LOGS=ON \
-            -DDOXYGEN_HTML_STYLE=modern \
-            -DCGAL_DOC_THEME=doxygen-awesome
+            -DDOXYGEN_GENERATE_TREEVIEW=YES \
+            -DDOXYGEN_HTML_EXTRA_STYLESHEET="/usr/local/share/doxygen/doxygen-awesome.css;/usr/local/share/doxygen/doxygen-awesome-sidebar-only.css;/usr/local/share/doxygen/doxygen-awesome-sidebar.css" \
+            -DDOXYGEN_HTML_COLORSTYLE=LIGHT \
+            -DDOXYGEN_HTML_HEADER="/usr/local/share/doxygen/header.html" \
+            -DDOXYGEN_GENERATE_TREEVIEW=YES \
+            -DDOXYGEN_DISABLE_INDEX=NO \
+            -DDOXYGEN_FULL_SIDEBAR=YES \
+            -DDOXYGEN_HTML_EXTRA_FILES="/usr/local/share/doxygen/doxygen-awesome-fragment-copy-button.js;/usr/local/share/doxygen/doxygen-awesome-paragraph-link.js;/usr/local/share/doxygen/doxygen-awesome-darkmode-toggle.js;/usr/local/share/doxygen/doxygen-awesome-interactive-toc.js"
 
       - name: Build documentation
         run: |
