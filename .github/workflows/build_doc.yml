@@ -25,9 +25,113 @@ jobs:
           sudo mv doxygen_exe /usr/bin/doxygen
           sudo chmod +x /usr/bin/doxygen
           # 使用 Git submodule 安装 doxygen-awesome-css
-          git submodule add https://github.com/jothepro/doxygen-awesome-css.git
+          git clone https://github.com/jothepro/doxygen-awesome-css.git
           cd doxygen-awesome-css
           git checkout v2.3.4
+          cd ..
+
+      - name: Configure Doxyfile
+        run: |
+          # 创建 Doxyfile
+          cat > Documentation/doc/Doxyfile << 'EOF'
+          # 项目设置
+          PROJECT_NAME           = "CGAL中文文档"
+          PROJECT_NUMBER        = "6.0.1"
+          PROJECT_BRIEF        = "计算几何算法库"
+          OUTPUT_DIRECTORY     = build_doc/doc_output
+
+          # 输入设置
+          INPUT                = Documentation/doc
+          FILE_PATTERNS       = *.cpp *.h *.hpp *.dox *.md *.txt
+          RECURSIVE           = YES
+          EXCLUDE_PATTERNS    = */test/* */examples/* */demo/*
+
+          # 输出设置
+          GENERATE_HTML        = YES
+          HTML_OUTPUT         = .
+          HTML_FILE_EXTENSION = .html
+
+          # Doxygen Awesome 主题设置
+          GENERATE_TREEVIEW    = YES
+          DISABLE_INDEX       = NO
+          FULL_SIDEBAR        = NO
+          HTML_EXTRA_STYLESHEET = doxygen-awesome-css/doxygen-awesome.css \
+                                doxygen-awesome-css/doxygen-awesome-sidebar-only.css
+          HTML_EXTRA_FILES    = doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js \
+                               doxygen-awesome-css/doxygen-awesome-paragraph-link.js \
+                               doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js \
+                               doxygen-awesome-css/doxygen-awesome-interactive-toc.js
+          HTML_HEADER         = doxygen-awesome-css/header.html
+          HTML_COLORSTYLE     = LIGHT
+
+          # 文档设置
+          EXTRACT_ALL         = YES
+          EXTRACT_PRIVATE     = NO
+          EXTRACT_PACKAGE     = YES
+          EXTRACT_STATIC      = YES
+          CASE_SENSE_NAMES    = YES
+          HIDE_UNDOC_MEMBERS  = NO
+          HIDE_UNDOC_CLASSES  = NO
+          HIDE_SCOPE_NAMES    = NO
+          SHOW_INCLUDE_FILES  = YES
+          INLINE_INFO         = YES
+
+          # 语言设置
+          OUTPUT_LANGUAGE     = Chinese
+          MARKDOWN_SUPPORT    = YES
+          USE_MDFILE_AS_MAINPAGE = Documentation/doc/index.md
+
+          # 图形设置
+          HAVE_DOT            = YES
+          DOT_IMAGE_FORMAT    = svg
+          INTERACTIVE_SVG     = YES
+          CLASS_GRAPH         = YES
+          COLLABORATION_GRAPH = YES
+          TEMPLATE_RELATIONS  = YES
+          INCLUDE_GRAPH      = YES
+          INCLUDED_BY_GRAPH  = YES
+
+          # 搜索设置
+          SEARCHENGINE        = YES
+          SERVER_BASED_SEARCH = NO
+
+          # 源代码设置
+          SOURCE_BROWSER      = YES
+          INLINE_SOURCES     = NO
+          STRIP_CODE_COMMENTS = YES
+          REFERENCED_BY_RELATION = YES
+          REFERENCES_RELATION    = YES
+          REFERENCES_LINK_SOURCE = YES
+
+          # LaTeX 设置
+          GENERATE_LATEX      = NO
+
+          # 扩展设置
+          ALIASES            += "rst=\verbatim embed:rst"
+          ALIASES            += "endrst=\endverbatim"
+          ALIASES            += "cgalNamedParamsBegin=\n\\par 命名参数:\n\\htmlonly\n<div class=\"params\">\n\\endhtmlonly\n"
+          ALIASES            += "cgalNamedParamsEnd=\\htmlonly\n</div>\n\\endhtmlonly"
+          ALIASES            += "cgalParamBegin{1}=\\htmlonly\n<div class=\"param\">\\endhtmlonly\\par `#1` : "
+          ALIASES            += "cgalParamEnd=\\htmlonly\n</div>\n\\endhtmlonly"
+
+          # 预处理设置
+          ENABLE_PREPROCESSING = YES
+          MACRO_EXPANSION     = YES
+          EXPAND_ONLY_PREDEF  = NO
+          SEARCH_INCLUDES     = YES
+          INCLUDE_PATH        =
+          INCLUDE_FILE_PATTERNS =
+          PREDEFINED         = DOXYGEN_RUNNING
+          EXPAND_AS_DEFINED  =
+          SKIP_FUNCTION_MACROS = YES
+
+          # 外部引用
+          TAGFILES           =
+          GENERATE_TAGFILE   = cgal.tag
+          ALLEXTERNALS       = NO
+          EXTERNAL_GROUPS    = YES
+          EXTERNAL_PAGES     = YES
+          EOF
 
       - name: CMake configuration
         run: |
@@ -36,13 +140,7 @@ jobs:
           cmake ../Documentation/doc \
             -DBUILD_DOC=ON \
             -DCGAL_GENERATE_XML=ON \
-            -DCGAL_DOC_CREATE_LOGS=ON \
-            -DDOXYGEN_GENERATE_TREEVIEW=YES \
-            -DDOXYGEN_DISABLE_INDEX=NO \
-            -DDOXYGEN_FULL_SIDEBAR=NO \
-            -DHTML_COLORSTYLE=LIGHT \
-            -DHTML_EXTRA_STYLESHEET="../doxygen-awesome-css/doxygen-awesome.css;../doxygen-awesome-css/doxygen-awesome-sidebar-only.css" \
-            -DHTML_EXTRA_FILES="../doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js;../doxygen-awesome-css/doxygen-awesome-paragraph-link.js;../doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js;../doxygen-awesome-css/doxygen-awesome-interactive-toc.js"
+            -DCGAL_DOC_CREATE_LOGS=ON
 
       - name: Build documentation
         run: |
