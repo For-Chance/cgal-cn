@@ -46,6 +46,7 @@ CGAL 的 Git 仓库结构与发布版本的源码包不同。仓库根目录包�
 ================
 
 ### 第一阶段：基础设施
+- [ ] Documentation/doc (手册)
 - [ ] Installation (安装配置)
 - [ ] CMake 系统
 - [ ] Stream_support (流支持)
