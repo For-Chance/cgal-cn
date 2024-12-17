@@ -20,12 +20,29 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y cmake graphviz bibtex2html
-          sudo pip install lxml pyquery
+          pip install --user lxml pyquery
           wget --no-verbose -O doxygen_exe https://cgal.geometryfactory.com/~cgaltest/doxygen_1_9_6_patched/doxygen
           sudo mv doxygen_exe /usr/bin/doxygen
           sudo chmod +x /usr/bin/doxygen
-          # 克隆特定版本的 doxygen-awesome-css
-          git clone --depth 1 --branch v2.3.4 https://github.com/jothepro/doxygen-awesome-css.git Documentation/doc/doxygen-awesome-css
+
+      - name: Setup doxygen-awesome-css
+        run: |
+          mkdir -p Documentation/doc/doxygen-awesome-css
+          git clone --depth 1 --no-checkout https://github.com/jothepro/doxygen-awesome-css.git temp_repo
+          cd temp_repo
+          git sparse-checkout set --no-cone \
+            doxygen-awesome.css \
+            doxygen-awesome-sidebar-only.css \
+            header.html \
+            doxygen-awesome-fragment-copy-button.js \
+            doxygen-awesome-paragraph-link.js \
+            doxygen-awesome-darkmode-toggle.js \
+            doxygen-awesome-interactive-toc.js
+          git checkout v2.3.4
+          mv doxygen-awesome*.* ../Documentation/doc/doxygen-awesome-css/
+          mv header.html ../Documentation/doc/doxygen-awesome-css/
+          cd ..
+          rm -rf temp_repo
 
       - name: Check and setup theme
         id: check_theme
