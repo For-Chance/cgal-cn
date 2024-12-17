@@ -16,6 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: true
 
       - name: Install dependencies
         run: |
@@ -25,67 +26,10 @@ jobs:
           sudo mv doxygen_exe /usr/bin/doxygen
           sudo chmod +x /usr/bin/doxygen
 
-      - name: Setup doxygen-awesome-css
-        run: |
-          mkdir -p Documentation/doc/doxygen-awesome-css
-          # 克隆仓库并获取标签信息
-          git clone --depth 1 --branch v2.3.4 https://github.com/jothepro/doxygen-awesome-css.git temp_repo
-
-          # 复制主题文件
-          cp temp_repo/doxygen-awesome.css Documentation/doc/doxygen-awesome-css/
-          cp temp_repo/doxygen-awesome-sidebar-only.css Documentation/doc/doxygen-awesome-css/
-          cp temp_repo/doxygen-awesome-darkmode-toggle.js Documentation/doc/doxygen-awesome-css/
-          cp temp_repo/doxygen-awesome-fragment-copy-button.js Documentation/doc/doxygen-awesome-css/
-          cp temp_repo/doxygen-awesome-paragraph-link.js Documentation/doc/doxygen-awesome-css/
-          cp temp_repo/doxygen-awesome-interactive-toc.js Documentation/doc/doxygen-awesome-css/
-
-          # 创建自定义 header.html
-          cat > Documentation/doc/doxygen-awesome-css/header.html << 'EOF'
-          <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-          <html xmlns="http://www.w3.org/1999/xhtml" lang="$langISO">
-          <head>
-            <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-            <meta http-equiv="X-UA-Compatible" content="IE=11"/>
-            <meta name="generator" content="Doxygen $doxygenversion"/>
-            <meta name="viewport" content="width=device-width, initial-scale=1"/>
-            <!--BEGIN PROJECT_NAME--><title>$projectname: $title</title><!--END PROJECT_NAME-->
-            <!--BEGIN !PROJECT_NAME--><title>$title</title><!--END !PROJECT_NAME-->
-            <link href="$relpath^tabs.css" rel="stylesheet" type="text/css"/>
-            <!--BEGIN DISABLE_INDEX-->
-              <!--BEGIN FULL_SIDEBAR-->
-              <script type="text/javascript">var page_layout=1;</script>
-              <!--END FULL_SIDEBAR-->
-            <!--END DISABLE_INDEX-->
-            <script type="text/javascript" src="$relpath^jquery.js"></script>
-            <script type="text/javascript" src="$relpath^dynsections.js"></script>
-            $treeview
-            $search
-            $mathjax
-            $darkmode
-            $doxygen_awesome_css
-            $doxygen_awesome_sidebar_only_css
-            $extrastylesheet
-            <script type="text/javascript" src="$relpath^doxygen-awesome-darkmode-toggle.js"></script>
-            <script type="text/javascript" src="$relpath^doxygen-awesome-fragment-copy-button.js"></script>
-            <script type="text/javascript" src="$relpath^doxygen-awesome-paragraph-link.js"></script>
-            <script type="text/javascript" src="$relpath^doxygen-awesome-interactive-toc.js"></script>
-            <script type="text/javascript">
-                DoxygenAwesomeDarkModeToggle.init()
-                DoxygenAwesomeFragmentCopyButton.init()
-                DoxygenAwesomeParagraphLink.init()
-                DoxygenAwesomeInteractiveToc.init()
-            </script>
-          </head>
-          <body>
-            <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
-          EOF
-
-          rm -rf temp_repo
-
       - name: Check and setup theme
         id: check_theme
         run: |
-          if [ -d "Documentation/doc/doxygen-awesome-css" ]; then
+          if [ -d "doxygen-awesome-css" ]; then
             echo "Using Doxygen Awesome theme"
             echo "has_theme=true" >> $GITHUB_OUTPUT
           else
@@ -153,12 +97,7 @@ jobs:
       - name: Verify theme files
         run: |
           echo "Checking theme files:"
-          ls -la Documentation/doc/doxygen-awesome-css/
+          ls -la doxygen-awesome-css/
           echo "Checking if theme files exist:"
-          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome.css || echo "Missing main CSS"
-          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome-sidebar-only.css || echo "Missing sidebar CSS"
-          test -f Documentation/doc/doxygen-awesome-css/header.html || echo "Missing header"
-          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js || echo "Missing darkmode JS"
-          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js || echo "Missing copy button JS"
-          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome-paragraph-link.js || echo "Missing paragraph link JS"
-          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome-interactive-toc.js || echo "Missing interactive TOC JS"
+          test -f doxygen-awesome-css/doxygen-awesome.css || echo "Missing main CSS"
+          test -f doxygen-awesome-css/doxygen-awesome-sidebar-only.css || echo "Missing sidebar CSS"

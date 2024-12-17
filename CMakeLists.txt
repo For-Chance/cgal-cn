@@ -7,6 +7,19 @@ message("== CMake setup ==")
 project(CGAL CXX C)
 export(PACKAGE CGAL)
 
+# 初始化 Git submodules
+find_package(Git QUIET)
+if(GIT_FOUND)
+  message("== Updating git submodules ==")
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE GIT_SUBMOD_RESULT)
+  if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+    message(WARNING "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}")
+  endif()
+endif()
+
 set(CGAL_BRANCH_BUILD
     ON
     CACHE INTERNAL "Create CGAL from a Git branch" FORCE)
