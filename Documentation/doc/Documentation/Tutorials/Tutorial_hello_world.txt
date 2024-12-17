@@ -13,48 +13,27 @@ namespace CGAL {
 
 \page tutorial_hello_world Hello World
 \cgalAutoToc
-\author %CGAL Editorial Board
+\author CGAL编辑委员会
 
-This tutorial is for the \cgal newbie, who knows \CC and has
-a basic knowledge of geometric algorithms. The first section
-shows how to define a point and segment class, and how to
-apply geometric predicates on them. The section further raises
-the awareness that that there are serious issues when using
-floating point numbers for coordinates. In the second section,
-you will meet a typical \cgal function, which computes a 2D convex hull.
-The third section shows what we mean with a \em Traits class,
-and the fourth section explains the notion of \em concept and \em model.
+本教程面向了解C++并具备基本几何算法知识的CGAL新手。第一部分展示如何定义点和线段类，以及如何对它们应用几何谓词。该部分还会提醒读者在使用浮点数作为坐标时存在的严重问题。第二部分将介绍一个典型的CGAL函数，用于计算二维凸包。第三部分解释我们所说的特征类（Traits class）的含义，第四部分则阐述概念（concept）和模型（model）的概念。
 
-\section intro_Three Three Points and One Segment
+\section intro_Three 三个点和一条线段
 
-In this first example, we demonstrate how to construct some points
-and a segment, and perform some basic operations on them.
+在这个第一个示例中，我们将演示如何构造一些点和线段，并对它们执行一些基本操作。
 
-All \cgal header files are in the subdirectory `include/CGAL`. All \cgal
-classes and functions are in the namespace `CGAL`.
-Classes start with a capital letter, global
-function with a lowercase letter, and constants are all uppercase.
-The dimension of an object is expressed with a suffix.
+所有CGAL头文件都位于`include/CGAL`子目录中。所有CGAL类和函数都在`CGAL`命名空间中。类名以大写字母开头，全局函数以小写字母开头，常量则全部大写。对象的维度通过后缀表示。
 
-The geometric primitives, like the point type, are defined in a \em kernel.
-The kernel we have chosen for this first example uses `double`
-precision floating point numbers for the %Cartesian coordinates of the point.
+几何基元（如点类型）在核（kernel）中定义。在这个第一个示例中，我们选择的核使用双精度浮点数来表示点的笛卡尔坐标。
 
-Besides the types we see \em predicates like the orientation test for
-three points, and \em constructions like the distance and midpoint
-computation. A predicate has a discrete set of possible results,
-whereas a construction produces either a number, or another
-geometric entity.
+除了类型之外，我们还会看到谓词（predicates），如三点方向测试，以及构造（constructions），如距离和中点计算。谓词具有有限的可能结果集，而构造则产生数值或其他几何实体。
 
 \cgalExample{Kernel_23/points_and_segment.cpp}
 
-To do geometry with floating point numbers can be surprising
-as the next example shows.
+使用浮点数进行几何计算可能会带来意外结果，如下例所示。
 
 \cgalExample{Kernel_23/surprising.cpp}
 
-Reading the code, we could assume that it would print three times "collinear".
-However the actual output is the following:
+阅读代码时，我们可能会认为它会打印三次"collinear"（共线）。然而，实际输出如下：
 
 \verbatim
 not collinear
@@ -62,22 +41,15 @@ not collinear
 collinear
 \endverbatim
 
-This is because these fractions are not representable as double-precision numbers,
-and the collinearity test will internally compute a determinant of a 3x3 matrix
-which is close but not equal to zero, and hence the non collinearity for the
-first two tests.
+这是因为这些分数无法用双精度数精确表示，共线性测试在内部会计算一个3x3矩阵的行列式，其结果接近但不等于零，因此前两次测试显示非共线。
 
-Something similar can happen with points that perform a left turn,
-but due to rounding errors during the determinant computation, it
-seems that the points are collinear, or perform a right turn.
+类似的情况也可能发生在执行左转的点上，由于行列式计算过程中的舍入误差，这些点可能看起来是共线的，或者执行右转。
 
-If you must ensure that your numbers get interpreted at their full precision
-you can use a \cgal kernel that performs exact predicates and
-exact constructions.
+如果你需要确保数字以其完整精度进行解释，可以使用执行精确谓词和精确构造的CGAL核。
 
 \cgalExample{Kernel_23/exact.cpp}
 
-Here comes the output and you may still be surprised.
+以下是输出结果，可能仍会让你感到惊讶：
 
 \verbatim
 not collinear
@@ -85,113 +57,51 @@ collinear
 collinear
 \endverbatim
 
-In the first block the points are still not collinear,
-for the simple reason that the coordinates you see as text
-get turned into floating point numbers. When they are then
-turned into arbitrary precision rationals, they exactly
-represent the floating point number, but not the text!
+在第一个代码块中，点仍然不共线，原因很简单：你看到的文本坐标首先被转换为浮点数。当它们随后被转换为任意精度有理数时，它们精确表示了浮点数，而不是原始文本！
 
-This is different in the second block, which corresponds
-to reading numbers from a file. The arbitrary precision
-rationals are then directly constructed from a string
-so that they represent exactly the text.
+第二个代码块则不同，它对应于从文件读取数字。任意精度有理数直接从字符串构造，因此它们精确表示了文本。
 
-In the third block you see that constructions as
-midpoint constructions are exact, just as the name
-of the kernel type suggests.
+在第三个代码块中，你可以看到构造操作（如中点构造）是精确的，正如核类型的名称所暗示的那样。
 
-In many cases, you will have floating point numbers that are "exact",
-in the sense that they were computed by some application or obtained
-from a sensor. They are not the string "0.1" or computed on the
-fly as "1.0/10.0", but a full precision floating point number.
-If they are input to an algorithm that makes no constructions,
-you can use a kernel that provides exact predicates but <em>inexact</em>
-constructions. One such example is the convex hull algorithm
-which we will see in the next section.
-The output is a subset of the input, and the algorithm
-only compares coordinates and performs orientation tests.
+在许多情况下，你会遇到"精确"的浮点数，它们是由某些应用程序计算得出或从传感器获取的。它们不是字符串"0.1"或通过"1.0/10.0"即时计算的，而是完整精度的浮点数。如果它们作为输入提供给不进行构造的算法，你可以使用提供精确谓词但不精确构造的核。凸包算法就是一个这样的例子，我们将在下一节中看到。输出是输入的子集，算法只比较坐标和执行方向测试。
 
-At a first glance the kernel doing exact predicates and constructions
-seems to be the perfect choice, but performance requirements
-or limited memory resources make that it is not. Furthermore, for many
-algorithms it is irrelevant to do exact constructions. For example
-a surface mesh simplification algorithm that iteratively contracts
-an edge by collapsing it to the midpoint of the edge.
+乍看之下，执行精确谓词和构造的核似乎是完美的选择，但性能要求或有限的内存资源使其并非如此。此外，对许多算法来说，执行精确构造并不重要。例如，通过将边折叠到边的中点来迭代收缩边的表面网格简化算法。
 
-Most \cgal packages explain which kind of kernel they should use or support.
+大多数CGAL包都会说明应该使用或支持哪种类型的核。
 
-\section intro_convex_hull The Convex Hull of a Sequence of Points
+\section intro_convex_hull 点序列的凸包
 
-All examples in this section compute the 2D convex hull of a set of points.
-We show that algorithms get their input as a begin/end iterator pair
-denoting a range of points, and that they write the result (in the
-example the points on the convex hull) into an output iterator.
+本节的所有示例都计算点集的二维凸包。我们将展示算法如何通过表示点范围的起始/结束迭代器对获取输入，并将结果（在示例中是凸包上的点）写入输出迭代器。
 
-\subsection intro_array The Convex Hull of Points in a Built-in Array
+\subsection intro_array 内置数组中点的凸包
 
-In the first example, we have as input an array of five points.
-As the convex hull of these points is a subset of the input,
-it is safe to provide an array for storing the result which
-has the same size.
+在第一个示例中，输入是一个包含五个点的数组。由于这些点的凸包是输入的子集，因此提供相同大小的数组来存储结果是安全的。
 
 \cgalExample{Convex_hull_2/array_convex_hull_2.cpp}
 
-We have seen in the previous section that \cgal comes
-with several kernels. Since the convex hull algorithm only makes
-comparisons of coordinates and orientation tests of input points,
-we can choose a kernel that provides exact predicates, but no
-exact geometric constructions.
+我们在上一节中看到CGAL提供了几种核。由于凸包算法只进行坐标比较和输入点的方向测试，我们可以选择提供精确谓词但不提供精确几何构造的核。
 
-The convex hull function takes three arguments, the start
-and past-the-end pointer for the input, and the start pointer of the
-array for the result. The function returns the pointer
-into the result array just behind the last convex hull
-point written, so the pointer difference tells us how
-many points are on the convex hull.
+凸包函数接受三个参数：输入的起始和结束指针，以及结果数组的起始指针。该函数返回结果数组中最后一个凸包点之后的指针，因此指针差可以告诉我们凸包上有多少个点。
 
-\subsection intro_vector The Convex Hull of Points in a Vector
+\subsection intro_vector Vector中点的凸包
 
-In the second example, we replace the built-in array
-by an `std::vector` of the Standard Template Library.
+在第二个示例中，我们用标准模板库的`std::vector`替换内置数组。
 
 \cgalExample{Convex_hull_2/vector_convex_hull_2.cpp}
 
-We put some points in the vector, calling the `push_back()`
-method of the `std::vector` class.
+我们通过调用`std::vector`类的`push_back()`方法将一些点放入向量中。
 
-We then call the convex hull function. The first two arguments,
-`points.begin()` and `points.end()` are *iterators*, which are a
-generalization of pointers: they can be dereferenced and
-incremented. The convex hull function is *generic* in the sense
-that it takes as input whatever can be dereferenced and incremented.
+然后我们调用凸包函数。前两个参数`points.begin()`和`points.end()`是迭代器，它们是指针的泛化：可以解引用和递增。凸包函数是泛型的，意味着它可以接受任何可以解引用和递增的输入。
 
-The third argument is where the result gets written to. In the
-previous example we provided a pointer to allocated memory. The
-generalization of such a pointer is the *output iterator*, which
-allows to increment and assign a value to the dereferenced iterator.
-In this example we start with an empty vector which grows as needed.
-Therefore, we cannot simply pass it `result.begin()`, but an output
-iterator generated by the helper function
-`std::back_inserter(result)`. This output iterator does nothing when
-incremented, and calls `result.push_back(..)` on the assignment.
+第三个参数是结果写入的位置。在前一个示例中，我们提供了指向已分配内存的指针。这种指针的泛化是输出迭代器，它允许递增和为解引用的迭代器赋值。在这个示例中，我们从一个空向量开始，它会根据需要增长。因此，我们不能简单地传递`result.begin()`，而是要使用辅助函数`std::back_inserter(result)`生成的输出迭代器。这个输出迭代器在递增时不执行任何操作，在赋值时调用`result.push_back(..)`。
 
-If you know the \stl, the Standard Template Library, the above makes
-perfect sense, as this is the way the \stl decouples algorithms from
-containers. If you don't know the \stl, you maybe better first
-familiarize yourself with its basic ideas.
+如果你了解STL（标准模板库），上述内容完全合理，因为这就是STL将算法与容器解耦的方式。如果你不了解STL，最好先熟悉其基本概念。
 
-\section intro_traits About Kernels and Traits Classes
+\section intro_traits 关于核和特征类
 
-In this section, we show how we express the requirements that must
-be fulfilled in order that a function like `convex_hull_2()`
-can be used with an arbitrary point type.
+在本节中，我们将说明如何表达使用任意点类型的`convex_hull_2()`函数所必须满足的要求。
 
-If you look at the manual page of the function `convex_hull_2()`
-and the other 2D convex hull algorithms, you see that they come in two
-versions. In the examples we have seen so far, the function that takes two
-iterators for the range of input points and an output iterator for
-writing the result to. The second version has an additional template
-parameter `Traits`, and an additional parameter of this type.
+如果你查看`convex_hull_2()`函数和其他二维凸包算法的手册页，你会看到它们有两个版本。在我们之前看到的示例中，函数接受输入点范围的两个迭代器和用于写入结果的输出迭代器。第二个版本有一个额外的模板参数`Traits`和该类型的额外参数。
 
 \code{.cpp}
 template<class InputIterator , class OutputIterator , class Traits >
@@ -202,33 +112,18 @@ convex_hull_2(InputIterator first,
               const Traits & ch_traits)
 \endcode
 
-What are the geometric primitives a typical convex hull algorithm
-uses? Of course, this depends on the algorithm, so let us consider
-what is probably the simplest efficient algorithm, the so-called
-"Graham/Andrew Scan". This algorithm first sorts the points from left
-to right, and then builds the convex hull incrementally by adding one
-point after another from the sorted list. To do this, it must at least
-know about some point type, it should have some idea how to sort those
-points, and it must be able to evaluate the orientation of a triple of
-points.
+典型的凸包算法使用哪些几何基元？当然，这取决于算法，让我们考虑可能是最简单的高效算法，即所谓的"Graham/Andrew扫描"。该算法首先将点从左到右排序，然后通过从排序列表中一个接一个地添加点来增量构建凸包。为此，它至少必须知道某种点类型，应该知道如何对这些点进行排序，并且必须能够评估三个点的方向。
 
-And that is where the template parameter `Traits` comes in.
-For `ch_graham_andrew()` it must provide the following nested types:
+这就是模板参数`Traits`发挥作用的地方。对于`ch_graham_andrew()`，它必须提供以下嵌套类型：
 
 - `Traits::Point_2`
 - `Traits::Less_xy_2`
 - `Traits::Left_turn_2`
 - `Traits::Equal_2`
 
+正如你所猜测的，`Left_turn_2`负责方向测试，而`Less_xy_2`用于排序点。这些类型必须满足的要求在`ConvexHullTraits_2`概念中有完整的文档说明。
 
-As you can guess, `Left_turn_2` is responsible for the orientation
-test, while `Less_xy_2` is used for sorting the points. The requirements these
-types have to satisfy are documented in full with the concept
-`ConvexHullTraits_2`.
-
-The types are regrouped for a simple reason. The alternative would
-have been a rather lengthy function template, and an even longer
-function call.
+这些类型被重新组织是有原因的。替代方案将是一个相当长的函数模板，以及更长的函数调用。
 
 \code{.cpp}
 template <class InputIterator, class OutputIterator, class Point_2, class Less_xy_2, class Left_turn_2, class Equal_2>
@@ -238,42 +133,25 @@ ch_graham_andrew( InputIterator  first,
                   OutputIterator result);
 \endcode
 
-There are two obvious questions: What can be used as argument for
-this template parameter? And why do we have template parameters at all?
+这里有两个明显的问题：什么可以用作这个模板参数的参数？为什么我们要使用模板参数？
 
-To answer the first question, any \em model of the \cgal \em concept `Kernel`
-provides what is required by the concept `ConvexHullTraits_2`.
+回答第一个问题，CGAL概念`Kernel`的任何模型都提供了`ConvexHullTraits_2`概念所要求的内容。
 
-As for the second question, think about an application where we want to
-compute the convex hull of 3D points projected into the `yz` plane. Using
-the class `Projection_traits_yz_3` this is a small modification
-of the previous example.
+至于第二个问题，想象一个需要计算三维点投影到`yz`平面的凸包的应用。使用`Projection_traits_yz_3`类，这只是前一个示例的小修改。
 
 \cgalExample{Convex_hull_2/convex_hull_yz.cpp}
 
-Another example would be about a user defined point type, or a point
-type coming from a third party library other than \cgal. Put the point
-type together with the required predicates for this point type in the
-scope of a class, and you can run `convex_hull_2()` with these
-points.
+另一个例子是关于用户定义的点类型，或来自CGAL以外的第三方库的点类型。将点类型与该点类型所需的谓词放在一个类的作用域中，你就可以用这些点运行`convex_hull_2()`。
 
-Finally, let us explain why a traits object that is passed to the
-convex hull function?  It would allow to use a more general projection
-traits object to store state, for example if the projection plane was
-given by a direction, which is hardwired in the class
-`Projection_traits_yz_3`.
+最后，让我们解释为什么要传递特征对象给凸包函数？它允许使用更通用的投影特征对象来存储状态，例如，如果投影平面由一个方向给出，这在类`Projection_traits_yz_3`中是硬编码的。
 
-\section intro_concept Concepts and Models
+\section intro_concept 概念和模型
 
-In the previous section, we wrote that: any \em model of the \cgal \em concept
-`Kernel` provides what is required by the concept `ConvexHullTraits_2`.
+在上一节中，我们写道：CGAL概念`Kernel`的任何模型都提供了概念`ConvexHullTraits_2`所要求的内容。
 
-A \em concept is a set of requirements on a type, namely that it has
-certain nested types, certain member functions, or comes with certain
-free functions that take the type as it. A \em model of a concept
-is a class that fulfills the requirements of the concept.
+概念（concept）是对类型的一组要求，即它必须具有某些嵌套类型、某些成员函数，或者带有以该类型为参数的某些自由函数。概念的模型（model）是满足概念要求的类。
 
-Let's have a look at the following function.
+让我们看看下面的函数。
 
 \code{.cpp}
 template <typename T>
@@ -284,12 +162,9 @@ duplicate(T t)
 }
 \endcode
 
-If you want to instantiate this function with a class `C`, this
-class must at least provide a copy constructor, and we
-say that class `C` must be a model of `CopyConstructible`.
-A singleton class does not fulfill this requirement.
+如果你想用类`C`实例化这个函数，这个类必须至少提供一个复制构造函数，我们说类`C`必须是`CopyConstructible`的模型。单例类就不满足这个要求。
 
-Another example is the function:
+另一个例子是函数：
 
 \code{.cpp}
 template <typename T>
@@ -299,27 +174,19 @@ T& std::min(const T& a, const T& b)
 }
 \endcode
 
-This function only compiles if the `operator<(..)` is defined for the type used as `T`,
-and we say that the type must be a model of `LessThanComparable`.
+只有当用作`T`的类型定义了`operator<(..)`时，这个函数才能编译，我们说该类型必须是`LessThanComparable`的模型。
 
-An example for a concept with required free functions is the `HalfedgeListGraph` in the
-\cgal package \ref PkgBGL. In order to be a model of `HalfedgeListGraph` a class `G`
-there must be a global function `halfedges(const G&)`, etc.
+需要自由函数的概念的一个例子是CGAL包\ref PkgBGL中的`HalfedgeListGraph`。为了成为`HalfedgeListGraph`的模型，类`G`必须有一个全局函数`halfedges(const G&)`等。
 
-An example for a concept with a required traits class is `InputIterator`.
-For a model of an `InputIterator` a specialization of the class
-<a href="https://en.cppreference.com/w/cpp/iterator/iterator_traits"> `std::iterator_traits`</a>
-must exist (or the generic template must be applicable).
+需要特征类的概念的一个例子是`InputIterator`。对于`InputIterator`的模型，必须存在类
+<a href="https://en.cppreference.com/w/cpp/iterator/iterator_traits">`std::iterator_traits`</a>
+的特化（或者通用模板必须适用）。
 
-\section intro_further Further Reading
+\section intro_further 进一步阅读
 
-We also recommend the standard text books "The C++ Standard Library, A
-Tutorial and Reference" by Nicolai M. Josuttis from Addison-Wesley, or
-"Generic Programming and the STL" by Matthew H. Austern for the \stl
-and its notion of *concepts* and *models*.
+我们还推荐Addison-Wesley出版的Nicolai M. Josuttis的"The C++ Standard Library, A Tutorial and Reference"，或Matthew H. Austern的"Generic Programming and the STL"，这些书籍介绍了STL及其概念和模型的概念。
 
-Other resources for \cgal are the rest of the \ref tutorials "tutorials"
-and the user support page at https://www.cgal.org/.
+CGAL的其他资源包括其余的\ref tutorials "教程"和https://www.cgal.org/上的用户支持页面。
 
 */
 } /* namespace CGAL */
