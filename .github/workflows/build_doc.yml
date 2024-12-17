@@ -28,19 +28,15 @@ jobs:
       - name: Setup doxygen-awesome-css
         run: |
           mkdir -p Documentation/doc/doxygen-awesome-css
-          git clone --depth 1 --no-checkout https://github.com/jothepro/doxygen-awesome-css.git temp_repo
+          # 克隆仓库并获取标签信息
+          git clone --depth 1 https://github.com/jothepro/doxygen-awesome-css.git temp_repo
           cd temp_repo
-          git sparse-checkout set --no-cone \
-            doxygen-awesome.css \
-            doxygen-awesome-sidebar-only.css \
-            header.html \
-            doxygen-awesome-fragment-copy-button.js \
-            doxygen-awesome-paragraph-link.js \
-            doxygen-awesome-darkmode-toggle.js \
-            doxygen-awesome-interactive-toc.js
+          git fetch --depth=1 origin tag v2.3.4
           git checkout v2.3.4
-          mv doxygen-awesome*.* ../Documentation/doc/doxygen-awesome-css/
-          mv header.html ../Documentation/doc/doxygen-awesome-css/
+          # 复制需要的文件
+          cp doxygen-awesome.css ../Documentation/doc/doxygen-awesome-css/
+          cp doxygen-awesome-sidebar-only.css ../Documentation/doc/doxygen-awesome-css/
+          cp header.html ../Documentation/doc/doxygen-awesome-css/
           cd ..
           rm -rf temp_repo
 
@@ -113,3 +109,12 @@ jobs:
           commit_message: "Deploy documentation"
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Verify theme files
+        run: |
+          echo "Checking theme files:"
+          ls -la Documentation/doc/doxygen-awesome-css/
+          echo "Checking if theme files exist:"
+          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome.css || echo "Missing main CSS"
+          test -f Documentation/doc/doxygen-awesome-css/doxygen-awesome-sidebar-only.css || echo "Missing sidebar CSS"
+          test -f Documentation/doc/doxygen-awesome-css/header.html || echo "Missing header"
