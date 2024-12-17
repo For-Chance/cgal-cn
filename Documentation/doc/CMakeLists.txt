@@ -217,6 +217,51 @@ function(configure_doxygen_package CGAL_PACKAGE_NAME)
   #   add_dependencies(${CGAL_PACKAGE_NAME}_doc
   #     ${depend}_doc)
   # endforeach()
+
+  if(EXISTS "${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "GENERATE_TREEVIEW = YES\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "DISABLE_INDEX = NO\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "FULL_SIDEBAR = NO\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_COLORSTYLE = LIGHT\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_COPY_CLIPBOARD = NO\n")
+
+    # 添加主题样式表
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_EXTRA_STYLESHEET = ${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css/doxygen-awesome.css\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_EXTRA_STYLESHEET += ${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css/doxygen-awesome-sidebar-only.css\n")
+
+    # 添加 JavaScript 文件
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_EXTRA_FILES = ${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_EXTRA_FILES += ${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_EXTRA_FILES += ${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css/doxygen-awesome-paragraph-link.js\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_EXTRA_FILES += ${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css/doxygen-awesome-interactive-toc.js\n")
+
+    # 使用自定义头部
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_HEADER = ${CGAL_PACKAGE_DOC_DIR}/doxygen-awesome-css/header.html\n")
+
+    # 其他必要配置
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "GENERATE_HTML = YES\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HTML_DYNAMIC_SECTIONS = NO\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "HAVE_DOT = YES\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "DOT_IMAGE_FORMAT = svg\n")
+    file(APPEND ${CGAL_DOC_PACKAGE_DEFAULTS}
+         "INTERACTIVE_SVG = YES\n")
+  endif()
 endfunction()
 
 # set up the directories and variables
