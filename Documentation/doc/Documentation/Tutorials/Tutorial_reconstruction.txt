@@ -5,302 +5,175 @@ namespace CGAL {
 
 /*!
 
-\page tuto_reconstruction Surface Reconstruction from Point Clouds
+\page tuto_reconstruction 点云的表面重建
 \cgalAutoToc
 
 \author Simon Giraudot
 
-Surface reconstruction from point clouds is a core topic in geometry
-processing \cgalCite{cgal:btsag-asosr-16}. It is an ill-posed problem:
-there is an infinite number of surfaces that approximate a single
-point cloud and a point cloud does not define a surface in
-itself. Thus additional assumptions and constraints must be defined by
-the user and reconstruction can be achieved in many different
-ways. This tutorial provides guidance on how to use the different
-algorithms of \cgal to effectively perform surface reconstruction.
+点云的表面重建是几何处理中的一个核心课题 \cgalCite{cgal:btsag-asosr-16}。这是一个病态问题：对于单个点云，存在无数个可以近似它的表面，而点云本身并不能定义一个确定的表面。因此，用户需要设定额外的假设和约束条件，重建可以通过多种不同的方式实现。本教程将指导您如何使用CGAL中的不同算法来有效地进行表面重建。
 
-\section TutorialsReconstruction_algorithms Which algorithm should I use?
+\section TutorialsReconstruction_algorithms 我应该使用哪种算法？
 
-\cgal offers three different algorithms for surface reconstruction:
+CGAL提供了三种不同的表面重建算法：
 
-- \ref Chapter_Poisson_Surface_Reconstruction "Poisson Surface Reconstruction"
-- \ref Chapter_Advancing_Front_Surface_Reconstruction "Advancing Front Surface Reconstruction"
-- \ref Chapter_Scale_space_reconstruction "Scale Space Surface Reconstruction"
+- \ref Chapter_Poisson_Surface_Reconstruction "泊松表面重建"
+- \ref Chapter_Advancing_Front_Surface_Reconstruction "推进前沿表面重建"
+- \ref Chapter_Scale_space_reconstruction "尺度空间表面重建"
 
-
-Because reconstruction is an ill-posed problem, it must be regularized
-via prior knowledge. Differences in prior lead to different
-algorithms, and choosing one or the other of these methods is
-dependent on these priors. For example, Poisson always generates
-closed shapes (bounding a volume) and requires normals but does not
-interpolate input points (the output surface does not pass exactly
-through the input points). The following table lists different
-properties of the input and output to help the user choose the method
-best suited to each problem:
+由于重建是一个病态问题，必须通过先验知识来规范化。不同的先验会导致不同的算法，选择这些方法中的哪一个取决于这些先验条件。例如，泊松重建总是生成闭合形状（体积边界），需要法向量信息，但不会精确插值输入点（输出表面不会严格通过输入点）。下表列出了输入和输出的不同特性，以帮助用户选择最适合每个问题的方法：
 
 <center>
-|                                          | Poisson | Advancing front  | Scale space      |
+|                                          | 泊松重建 | 推进前沿重建  | 尺度空间重建    |
 |------------------------------------------|:-------:|:----------------:|:----------------:|
-| Are normals required?                    | Yes     | No               | No               |
-| Is noise handled?                        | Yes     | By preprocessing | Yes              |
-| Is variable sampling handled?            | Yes     | Yes              | By preprocessing |
-| Are input points exactly on the surface? | No      | Yes              | Yes              |
-| Is the output always closed?             | Yes     | No               | No               |
-| Is the output always smooth?             | Yes     | No               | No               |
-| Is the output always manifold?           | Yes     | Yes              | Optional         |
-| Is the output always orientable?         | Yes     | Yes              | Optional         |
+| 是否需要法向量？                          | 是      | 否              | 否               |
+| 是否处理噪声？                            | 是      | 通过预处理      | 是               |
+| 是否处理变化的采样密度？                  | 是      | 是              | 通过预处理       |
+| 输入点是否严格位于表面上？                | 否      | 是              | 是               |
+| 输出是否总是闭合的？                      | 是      | 否              | 否               |
+| 输出是否总是平滑的？                      | 是      | 否              | 否               |
+| 输出是否总是流形？                        | 是      | 是              | 可选             |
+| 输出是否总是可定向的？                    | 是      | 是              | 可选             |
 </center>
 
 \cgalFigureBegin{TutorialsReconstructionFigComparisons, compare_reconstructions.png}
-Comparison of reconstruction methods applied to the same input (full shape and close-up). From left to right: original point cloud; Poisson; advancing front; scale space.
+对同一输入应用不同重建方法的比较（完整形状和局部放大）。从左到右：原始点云；泊松重建；推进前沿重建；尺度空间重建。
 \cgalFigureEnd
 
-More information on these different methods can be found on their
-respective manual pages and in Section \ref TutorialsReconstruction_reconstruction.
+关于这些不同方法的更多信息可以在它们各自的手册页面和 \ref TutorialsReconstruction_reconstruction 章节中找到。
 
-\section TutorialsReconstruction_overview Pipeline Overview
+\section TutorialsReconstruction_overview 流程概述
 
-This tutorial aims at providing a more comprehensive view of the
-possibilities offered by \cgal for dealing with point clouds, for
-surface reconstruction purposes. The following diagram shows an
-overview (not exhaustive) of common reconstruction steps using \cgal
-tools.
+本教程旨在提供CGAL在处理点云和表面重建方面的更全面视角。下图展示了使用CGAL工具进行重建的常见步骤概述（非详尽）。
 
 \cgalFigureBegin{TutorialsReconstructionFigPipeline, reconstruction.svg}
-Pipeline Overview
+流程概述
 \cgalFigureEnd
 
-We now review some of these steps in more detail.
+接下来我们将详细介绍这些步骤。
 
+\section TutorialsReconstruction_input 读取输入
 
-\section TutorialsReconstruction_input Reading Input
-
-The reconstruction algorithms in \cgal take a range of iterators on a
-container as input and use property maps to access the points (and the
-normals when they are required). Points are typically stored in plain
-text format (denoted as 'XYZ' format) where each point is separated by
-a newline character and each coordinate separated by a white
-space. Other formats available are 'OFF', 'PLY' and 'LAS'. \cgal
-provides functions to read such formats:
+CGAL中的重建算法以容器上的迭代器范围作为输入，并使用属性映射来访问点（以及在需要时访问法向量）。点通常以纯文本格式存储（称为'XYZ'格式），其中每个点由换行符分隔，每个坐标由空格分隔。其他可用格式包括'OFF'、'PLY'和'LAS'。CGAL提供了读取这些格式的函数：
 
 - `read_XYZ()`
 - `read_OFF()`
 - `read_PLY()`
-- `read_PLY_with_properties()` to read additional PLY properties
+- `read_PLY_with_properties()` 用于读取额外的PLY属性
 - `read_LAS()`
-- `read_LAS_with_properties()` to read additional LAS properties
+- `read_LAS_with_properties()` 用于读取额外的LAS属性
 
-\cgal also provides a dedicated container `CGAL::Point_set_3` to
-handle point sets with additional properties such as normal
-vectors. In this case, property maps are easily handled as shown in
-the following sections. This structure also handles the stream
-operator to read point sets in any of the formats previously
-described. Using this method yields substantially shorter code, as can
-be seen on the following example:
+CGAL还提供了专门的容器 `CGAL::Point_set_3` 来处理带有额外属性（如法向量）的点集。在这种情况下，属性映射的处理变得非常简单，如下面章节所示。该结构还支持流操作符，可以读取上述任何格式的点集。使用这种方法可以大大减少代码量，如下例所示：
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Reading input
 
-\section TutorialsReconstruction_preprocessing Preprocessing
+\section TutorialsReconstruction_preprocessing 预处理
 
-Because reconstruction algorithms have some specific requirements that
-point clouds do not always meet, some preprocessing might be necessary
-to yield the best results.
+由于重建算法有一些特定要求，而点云并不总是满足这些要求，因此可能需要进行一些预处理才能获得最佳结果。
 
-Note that this _preprocessing_ step is optional: when the input point
-cloud has no imperfections, reconstruction can be applied to it
-without any preprocessing.
-
+注意，这个预处理步骤是可选的：当输入点云没有缺陷时，可以直接对其进行重建，无需任何预处理。
 
 \cgalFigureBegin{TutorialsReconstructionFigPreprocessing, reconstruction_preproc.png}
-Comparison of advancing front reconstruction output using different
-preprocessing on the same input. The smooth point cloud was generated
-using _jet smoothing_; the simplified point cloud was generated using
-_grid simplification_.
+对同一输入使用不同预处理方法的推进前沿重建输出比较。平滑点云是使用喷射平滑（jet smoothing）生成的；简化点云是使用网格简化（grid simplification）生成的。
 \cgalFigureEnd
 
+\subsection TutorialsReconstruction_preprocessing_outliers 离群点去除
 
-\subsection TutorialsReconstruction_preprocessing_outliers Outlier removal
-
-Some acquisition techniques generate points which are far away from
-the surface. These points, commonly referred to as "outliers", have no
-relevance for reconstruction. Using the \cgal reconstruction
-algorithms on outlier-ridden point clouds produce overly distorted
-output, it is therefore strongly advised to filter these outliers
-_before_ performing reconstruction.
+某些采集技术会产生远离表面的点。这些点通常被称为"离群点"，对重建没有意义。在包含离群点的点云上使用CGAL重建算法会产生严重扭曲的输出，因此强烈建议在执行重建之前过滤这些离群点。
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Outlier removal
 
-\subsection TutorialsReconstruction_preprocessing_simplification Simplification
+\subsection TutorialsReconstruction_preprocessing_simplification 简化
 
-Some laser scanners generate points with widely variable
-sampling. Typically, lines of scan are very densely sampled but the
-gap between two lines of scan is much larger, leading to an overly
-massive point cloud with large variations of sampling density. This
-type of input point cloud might generate imperfect output using
-algorithms which, in general, only handle small variations of sampling
-density.
+某些激光扫描仪生成的点具有很大的采样密度变化。通常，扫描线上的点采样非常密集，但两条扫描线之间的间隙较大，这导致点云过于庞大且采样密度变化很大。这种类型的输入点云可能会在使用那些通常只能处理小幅采样密度变化的算法时产生不完美的输出。
 
-\cgal provides several simplification algorithms. In addition to
-reducing the size of the input point cloud and therefore decreasing
-computation time, some of them can help making the input more
-uniform. This is the case of the function `grid_simplify_point_set()`
-which defines a grid of a user-specified size and keeps one point per
-occupied cell.
+CGAL提供了几种简化算法。除了减少输入点云的大小从而减少计算时间外，其中一些还可以帮助使输入更加均匀。`grid_simplify_point_set()`函数就是这样的例子，它定义了一个用户指定大小的网格，并在每个被占用的单元格中保留一个点。
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Simplification
 
+\subsection TutorialsReconstruction_preprocessing_smoothing 平滑
 
-\subsection TutorialsReconstruction_preprocessing_smoothing Smoothing
+尽管"泊松"或"尺度空间"重建在内部处理噪声，但用户可能想要对平滑步骤有更精确的控制。例如，略带噪声的点云可以通过一些可靠的平滑算法进行处理，然后通过"推进前沿"方法重建，这种方法提供了相关的特性（带边界的定向网格）。
 
-Although reconstructions via 'Poisson' or 'Scale space' handle noise
-internally, one may want to get tighter control over the smoothing
-step. For example, a slightly noisy point cloud can benefit from some
-reliable smoothing algorithms and be reconstructed via 'Advancing
-front' which provides relevant properties (oriented mesh with
-boundaries).
-
-Two functions are provided to smooth a noisy point cloud with a good
-approximation (i.e. without degrading curvature, for example):
+CGAL提供了两个函数来对噪声点云进行良好的近似平滑（即不会降低曲率等特性）：
 
 - `jet_smooth_point_set()`
 - `bilateral_smooth_point_set()`
 
-These functions directly modify the container:
+这些函数直接修改容器：
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Smoothing
 
+\subsection TutorialsReconstruction_preprocessing_normal 法向量估计与定向
 
-\subsection TutorialsReconstruction_preprocessing_normal Normal Estimation and Orientation
-
-\ref Chapter_Poisson_Surface_Reconstruction "Poisson Surface Reconstruction"
-requires points with oriented normal vectors. To apply the algorithm
-to a raw point cloud, normals must be estimated first, for example
-with one of these two functions:
+\ref Chapter_Poisson_Surface_Reconstruction "泊松表面重建" 需要带有定向法向量的点。要将算法应用于原始点云，必须首先估计法向量，例如使用以下两个函数之一：
 
 - `pca_estimate_normals()`
 - `jet_estimate_normals()`
 
-PCA is faster but jet is more accurate in the presence of high
-curvatures. These function only estimates the _direction_ of the
-normals, not their orientation (the orientation of the vectors might
-not be locally consistent). To properly orient the normals, the
-following functions can be used:
+PCA方法更快，但在存在高曲率的情况下，喷射法（jet）更准确。这些函数只估计法向量的方向，而不是它们的定向（向量的方向可能在局部不一致）。要正确定向法向量，可以使用以下函数：
 
 - `mst_orient_normals()`
 - `scanline_orient_normals()`
 
-The first one uses a _minimum spanning tree_ to consistently propagate
-the orientation of normals in an increasingly large neighborhood. In
-the case of data with many sharp features and occlusions (which are
-common in airborne LIDAR data, for example), the second algorithm may
-produce better results: it takes advantage of point clouds which are
-ordered into scanlines to estimate the line of sight of each point and
-thus to orient normals accordingly.
+第一个函数使用最小生成树（minimum spanning tree）在逐渐扩大的邻域中一致地传播法向量的定向。对于具有许多尖锐特征和遮挡的数据（例如在机载激光雷达数据中很常见），第二种算法可能会产生更好的结果：它利用按扫描线排序的点云来估计每个点的视线方向，从而相应地定向法向量。
 
-Notice that these can also be used directly on input normals if their
-orientation is not consistent.
+注意，如果输入的法向量方向不一致，这些函数也可以直接用于输入的法向量。
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Normal estimation
 
-\section TutorialsReconstruction_reconstruction Reconstruction
+\section TutorialsReconstruction_reconstruction 重建
 
-\subsection TutorialsReconstruction_reconstruction_poisson Poisson
+\subsection TutorialsReconstruction_reconstruction_poisson 泊松重建
 
-Poisson reconstruction consists in computing an implicit function
-whose gradient matches the input normal vector field: this indicator
-function has opposite signs inside and outside of the inferred shape
-(hence the need for closed shapes). This method thus requires normals
-and produces smooth closed surfaces. It is not appropriate if the
-surface is expected to interpolate the input points. On the contrary,
-it performs well if the aim is to approximate a noisy point cloud with
-a smooth surface.
+泊松重建的原理是计算一个隐式函数，其梯度与输入的法向量场匹配：这个指示函数在推断形状的内部和外部具有相反的符号（因此需要闭合形状）。这种方法需要法向量，并产生平滑的闭合表面。如果期望表面精确插值输入点，这种方法就不合适。相反，如果目标是用平滑表面近似带噪声的点云，它的表现会很好。
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Poisson reconstruction
 
-\subsection TutorialsReconstruction_reconstruction_advancing Advancing Front
+\subsection TutorialsReconstruction_reconstruction_advancing 推进前沿重建
 
-Advancing front is a Delaunay-based approach which interpolates a
-subset of the input points. It generates triples of point indices
-which describe the triangular facets of the reconstruction: it uses a
-priority queue to sequentially pick the Delaunay facet the most likely
-to be part of the surface, based on a size criterion (to favor the
-small facets) and an angle criterion (to favor smoothness). Its main
-virtue is to generate oriented manifold surfaces with boundaries:
-contrary to Poisson, it does not require normals and is not bound to
-reconstruct closed shapes. However, it requires preprocessing if the
-point cloud is noisy.
+推进前沿是一种基于Delaunay三角剖分的方法，它对输入点的子集进行插值。它生成点索引的三元组来描述重建的三角形面片：它使用优先队列按顺序选择最可能成为表面一部分的Delaunay面片，基于大小准则（倾向于选择小面片）和角度准则（倾向于平滑性）。它的主要优点是可以生成带边界的定向流形表面：与泊松重建不同，它不需要法向量，也不局限于重建闭合形状。但是，如果点云有噪声，则需要预处理。
 
-The \ref Chapter_Advancing_Front_Surface_Reconstruction "Advancing Front"
-package provides several ways of constructing the function. Here is
-a simple example:
+\ref Chapter_Advancing_Front_Surface_Reconstruction "推进前沿" 包提供了几种构造函数的方法。这里是一个简单的例子：
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Advancing front reconstruction
 
-\subsection TutorialsReconstruction_reconstruction_scale_space Scale Space
+\subsection TutorialsReconstruction_reconstruction_scale_space 尺度空间重建
 
-Scale space reconstruction aims at producing a surface which
-interpolates the input points (interpolant) while offering some
-robustness to noise. More specifically, it first applies several times
-a smoothing filter (such as Jet Smoothing) to the input point set to
-produce a scale space; then, the smoothest scale is meshed (using for
-example the Advancing Front mesher); finally, the resulting
-connectivity between smoothed points is propagated to the original raw
-input point set. This method is the right choice if the input point
-cloud is noisy but the user still wants the surface to pass exactly
-through the points.
+尺度空间重建的目标是生成一个插值输入点的表面（插值器），同时对噪声具有一定的鲁棒性。具体来说，它首先对输入点集多次应用平滑滤波器（如喷射平滑）以产生尺度空间；然后，对最平滑的尺度进行网格化（例如使用推进前沿网格生成器）；最后，将平滑点之间的连接关系传播到原始输入点集。如果输入点云有噪声但用户仍然希望表面精确通过这些点，这种方法是正确的选择。
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Scale space reconstruction
 
-\section TutorialsReconstruction_postprocessing Output and Postprocessing
+\section TutorialsReconstruction_postprocessing 输出和后处理
 
-Each of these methods produce a triangle mesh stored in different
-ways. If this output mesh is hampered by defects such as holes or
-self-intersections, \cgal provide several algorithms to post-process
-it (hole filling, remeshing, etc.) in the package \ref PkgPolygonMeshProcessing "Polygon Mesh Processing".
+这些方法每一个都以不同的方式生成三角网格。如果输出网格存在缺陷，如孔洞或自相交，CGAL在 \ref PkgPolygonMeshProcessing "多边形网格处理" 包中提供了几种算法来进行后处理（孔洞填充、重新网格化等）。
 
-We do not discuss these functions here as there are many
-postprocessing possibilities whose relevance strongly depends on the
-user's expectations on the output mesh.
+我们在这里不详细讨论这些函数，因为有许多后处理的可能性，其相关性强烈依赖于用户对输出网格的期望。
 
-The mesh (postprocessed or not) can easily be saved in the PLY format
-(here, using the binary variant):
+网格（经过后处理或未经后处理）可以轻松保存为PLY格式（这里使用二进制变体）：
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Output poisson
 
-A polygon soup can also be saved in the OFF format by iterating on the
-points and faces:
+多边形汤（polygon soup）也可以通过遍历点和面保存为OFF格式：
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Output scale space
 
-Finally, if the polygon soup can be converted into a polygon mesh, it
-can also be saved directly in the OFF format using the stream
-operator:
+最后，如果多边形汤可以转换为多边形网格，也可以使用流操作符直接保存为OFF格式：
 
 \snippet Poisson_surface_reconstruction_3/tutorial_example.cpp Output advancing front
 
-\section TutorialsReconstruction_recap Full Code Example
+\section TutorialsReconstruction_recap 完整代码示例
 
-All the code snippets used in this tutorial can be assembled to create
-a full algorithm pipeline (provided the correct _includes_ are
-used). We give a full code example which achieves all the steps
-described in this tutorial. The reconstruction method can be selected
-by the user at runtime with the second argument.
+本教程中使用的所有代码片段可以组合成一个完整的算法流程（需要使用正确的 _includes_）。我们提供了一个完整的代码示例，实现了本教程中描述的所有步骤。用户可以在运行时通过第二个参数选择重建方法。
 
 \include Poisson_surface_reconstruction_3/tutorial_example.cpp
 
-\section TutorialsReconstruction_pipeline Full Pipeline Images
+\section TutorialsReconstruction_pipeline 完整流程图示
 
-The following figures show a full reconstruction pipeline
-applied to a bear statue (courtesy _EPFL Computer Graphics and
-Geometry Laboratory_ \cgalCite{cgal:e-esmr}). Two mesh processing
-algorithms (hole filling and isotropic remeshing) are also applied
-(refer to the chapter \ref PkgPolygonMeshProcessing "Polygon Mesh Processing"
-for more information).
+以下图示展示了应用于一个熊雕像（由 _EPFL Computer Graphics and Geometry Laboratory_ 提供 \cgalCite{cgal:e-esmr}）的完整重建流程。同时还应用了两个网格处理算法（孔洞填充和各向同性重网格化）（更多信息请参考 \ref PkgPolygonMeshProcessing "多边形网格处理" 章节）。
 
 \cgalFigureBegin{TutorialsReconstructionFigFull, reconstruction_pipeline.png}
-Full reconstruction pipeline (with close-ups).
+完整重建流程（包含局部放大视图）。
 \cgalFigureEnd
-
 
 */
 }
