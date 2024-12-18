@@ -1,0 +1,478 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Weights"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Dmitry Anisimov</para>
+</simplesect>
+</para>
+<sect1 id="index_1Weights_Intro">
+<title>Introduction</title>
+<para>Many geometric algorithms rely on the intermediate computation of scalars, so-called <emphasis>weights</emphasis>, which are then used for solving different linear systems or to favor one result over another, also known as <emphasis>weighting</emphasis>. This package provides a simple and unified interface to different types of weights.</para>
+<para>A typical example of a geometric algorithm that requires weights is the <emphasis>Laplace smoothing</emphasis> of a triangle mesh:</para>
+<para><formula id="19">$v_i \leftarrow v_i + h \lambda\Delta v_i$</formula>,</para>
+<para>where <formula id="20">$v_i$</formula> is the position of the mesh vertex <formula id="21">$i$</formula>, <formula id="22">$h$</formula> is a sufficiently small time step, <formula id="23">$\lambda$</formula> is the scalar diffusion coefficient, and <formula id="24">$\Delta v_i$</formula> is the discrete average of the <emphasis>Laplace-Beltrami operator</emphasis> at vertex <formula id="20">$v_i$</formula> computed using the <emphasis>cotangent weights</emphasis>:</para>
+<para><formula id="25">$\Delta v_i = w_i\sum_{v_j \in N_1(v_i)} w_{ij} (v_j - v_i)$</formula>,</para>
+<para>where <formula id="26">$w_i = \frac{1}{2A_i}$</formula> and <formula id="27">$w_{ij} = \cot\beta_{ij} + \cot\gamma_{ij}$</formula> and <formula id="28">$A_i$</formula> is a <emphasis>local averaging domain</emphasis>.</para>
+<para>Here, the weights <formula id="29">$w_{ij}$</formula> can be computed using the <ref refid="group__PkgWeightsRefCotangentWeights" kindref="compound">cotangent weight</ref> and the local averaging domain can be computed using the <ref refid="group__PkgWeightsRefMixedVoronoiRegionWeights" kindref="compound">mixed Voronoi region weight</ref>. The algorithm above smooths the mesh geometry, resulting in a higher quality version of the original mesh. The full example of the discretized <emphasis>Laplacian</emphasis> for all vertices of a triangle mesh can be found <ref refid="index_1Weights_Examples_WeightedLaplacian" kindref="member">here</ref>.</para>
+<para>There are many other scenarios where the weights from this package are used. In particular, the following CGAL packages make use of weights described in this package: <ref refid="packages_1PkgBarycentricCoordinates2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D Generalized Barycentric Coordinates</ref>, <ref refid="packages_1PkgPolygonMeshProcessing" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Polygon Mesh Processing</ref>, <ref refid="packages_1PkgSurfaceMeshDeformation" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Deformation</ref>, <ref refid="packages_1PkgSurfaceMeshParameterization" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Parameterization</ref>, <ref refid="packages_1PkgSurfaceMeshSkeletonization" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Skeletonization</ref>, and <ref refid="packages_1PkgHeatMethod" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">The Heat Method</ref>.</para>
+</sect1>
+<sect1 id="index_1Weights_Groups">
+<title>Weights</title>
+<para>We call <emphasis>analytic weights</emphasis> all weights which can be computed with a simple analytic expression. All weights from this package can be computed analytically. However, for better navigation through all available weights and their applications, we distinguish three typical groups of weights:</para>
+<para><itemizedlist>
+<listitem><para><ref refid="group__PkgWeightsRefAnalytic" kindref="compound">Analytic Weights</ref> include all basic weights which can be computed for a query point with respect to its local neighbors in 2D or 3D, however these neighbors are defined. Usually, the configuration is a query point and three other points. These weights return one unique value per query point.</para>
+</listitem><listitem><para><ref refid="group__PkgWeightsRefBarycentric" kindref="compound">Barycentric Weights</ref> include all weights which can be computed for a query point with respect to the vertices of a planar polygon. These weights return <formula id="30">$n$</formula> values per query point, where <formula id="30">$n$</formula> is the number of polygon vertices. Barycentric weights are also used for computing <ref refid="packages_1PkgBarycentricCoordinates2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D barycentric coordinates</ref>.</para>
+</listitem><listitem><para><ref refid="group__PkgWeightsRefRegions" kindref="compound">Weighting Regions</ref> include all weights which are used to balance other weights but are rarely used on their own. Sometimes, such weights are also referred to as <emphasis>local averaging regions</emphasis>. These weights are usually lengths, areas, and volumes of 2D and 3D objects.</para>
+</listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1Weights_Implementation">
+<title>Implementation</title>
+<para>All weight functions have a simple and unified interface. In particular, all analytic weight functions usually take a query point and three other points in 2D or 3D and return a unique scalar. They all have the same signature and are parameterized by a traits class that must be a model of <computeroutput><ref refid="classAnalyticWeightTraits__2" kindref="compound">AnalyticWeightTraits_2</ref></computeroutput> for 2D computations or <computeroutput><ref refid="classAnalyticWeightTraits__3" kindref="compound">AnalyticWeightTraits_3</ref></computeroutput> for 3D computations.</para>
+<para>The barycentric weight functions are parameterized by a traits class of the concept <computeroutput><ref refid="classAnalyticWeightTraits__2" kindref="compound">AnalyticWeightTraits_2</ref></computeroutput> and they are all models of the concept <computeroutput><ref refid="classBarycentricWeights__2" kindref="compound">BarycentricWeights_2</ref></computeroutput>. They take an input polygon and a query point and compute the weights at this point with respect to all vertices of the polygon. The computed weights are then returned in a container providing the corresponding output iterator. These weight functions also provide a <ref refid="packages_1PkgPropertyMap" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">property map</ref> mechanism for mapping a user type of the polygon vertex to <computeroutput><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Point_2</ref></computeroutput>.</para>
+<para>All weighting regions have the same signature and are parameterized by a traits class of the concept <computeroutput><ref refid="classAnalyticWeightTraits__2" kindref="compound">AnalyticWeightTraits_2</ref></computeroutput> or <computeroutput><ref refid="classAnalyticWeightTraits__3" kindref="compound">AnalyticWeightTraits_3</ref></computeroutput>. The returned weight is a unique scalar.</para>
+<para>The <computeroutput>traits</computeroutput> parameter can be omitted for all functions and classes if it can be deduced from the input point type using <computeroutput><ref refid="structCGAL_1_1Kernel__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Kernel_traits</ref></computeroutput>.</para>
+<para>Several weights in this package have different implementations. One reason to have it is explained in section about <ref refid="index_1Weights_Implementation_Coplanarity" kindref="member">Coplanarity</ref>. Another reason is that the same weights are named and computed differently in different communities. If one searches for these weights, one needs to know all their alternative names which is problematic. We provide the most common names and implementations of these weights.</para>
+<sect2 id="index_1Weights_Implementation_Coplanarity">
+<title>Coplanarity</title>
+<para>When computing weights for a query point <formula id="31">$q$</formula> with respect to its neighbors <formula id="32">$p_0$</formula>, <formula id="33">$p_1$</formula>, and <formula id="34">$p_2$</formula>, the local configuration is a quadrilateral [ <formula id="32">$p_0$</formula>, <formula id="33">$p_1$</formula>, <formula id="34">$p_2$</formula>, <formula id="31">$q$</formula>] or two connected triangles [ <formula id="31">$q$</formula>, <formula id="32">$p_0$</formula>, <formula id="33">$p_1$</formula>] and [ <formula id="31">$q$</formula>, <formula id="33">$p_1$</formula>, <formula id="34">$p_2$</formula>]. When working in 3D, these triangles are not necessarily coplanar, in other words, they do not belong to the same common plane.</para>
+<para>Certain weights in this package support only coplanar configurations, while other weights support both. The weights which support non-coplanar configurations, provide the corresponding overloads with 3D points, while other weights accept only 2D point types. For example, <ref refid="group__PkgWeightsRefCotangentWeights" kindref="compound">cotangent weights</ref> support both coplanar and non-coplanar configurations, while <ref refid="group__PkgWeightsRefDiscreteHarmonicWeights" kindref="compound">discrete harmonic weights</ref> support only coplanar configurations.</para>
+</sect2>
+<sect2 id="index_1Weights_Implementation_Edge_Cases">
+<title>Edge Cases</title>
+<para>None of the weights in this package are defined for query points which belong to</para>
+<para><itemizedlist>
+<listitem><para><emphasis>end segments</emphasis> so-called <emphasis>edges</emphasis>, for example [ <formula id="32">$p_0$</formula>, <formula id="33">$p_1$</formula>] or [ <formula id="33">$p_1$</formula>, <formula id="34">$p_2$</formula>] or any polygon edge and to</para>
+</listitem><listitem><para><emphasis>end points</emphasis> so-called <emphasis>corners</emphasis>, for example <formula id="32">$p_0$</formula>, <formula id="33">$p_1$</formula>, or <formula id="34">$p_2$</formula> or any polygon corner.</para>
+</listitem></itemizedlist>
+</para>
+<para>For example, if <formula id="31">$q$</formula> = <formula id="32">$p_0$</formula> or <formula id="35">$q \in [p_0, p_1]$</formula>, a weight may be undefined due to invalid operations such as division by zero.</para>
+<para>Several weights also require additional conditions to be satisfied. Consult the reference manual for more details.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Weights_Examples">
+<title>Examples</title>
+<para>In this section, you can find a few examples of how and when the provided weights can be used.</para>
+<sect2 id="index_1Weights_Examples_First">
+<title>The First Example</title>
+<para>This trivial example shows how to compute several analytic weights and weighting regions. Other weights have the same interface so they can be computed analogously.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Weights_2weights_8cpp-example" kindref="compound">Weights/weights.cpp</ref> <programlisting filename="Weights/weights.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Weights_8h" kindref="compound">CGAL/Weights.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>2D<sp/>configuration.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>t2(-1,<sp/><sp/>0);<sp/></highlight><highlight class="comment">//<sp/>p0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>r2(<sp/>0,<sp/>-1);<sp/></highlight><highlight class="comment">//<sp/>p1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p2(<sp/>1,<sp/><sp/>0);<sp/></highlight><highlight class="comment">//<sp/>p2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>q2(<sp/>0,<sp/><sp/>0);<sp/></highlight><highlight class="comment">//<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>3D<sp/>configuration.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>t3(-1,<sp/><sp/>0,<sp/>1);<sp/></highlight><highlight class="comment">//<sp/>p0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>r3(<sp/>0,<sp/>-1,<sp/>1);<sp/></highlight><highlight class="comment">//<sp/>p1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>p3(<sp/>1,<sp/><sp/>0,<sp/>1);<sp/></highlight><highlight class="comment">//<sp/>p2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>q3(<sp/>0,<sp/><sp/>0,<sp/>1);<sp/></highlight><highlight class="comment">//<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D/3D<sp/>tangent<sp/>weight:<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefTangentWeights_1ga993a91b3c985aa7679263cf75ddfc6df" kindref="member">CGAL::Weights::tangent_weight</ref>(t2,<sp/>r2,<sp/>p2,<sp/>q2)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefTangentWeights_1ga993a91b3c985aa7679263cf75ddfc6df" kindref="member">CGAL::Weights::tangent_weight</ref>(t3,<sp/>r3,<sp/>p3,<sp/>q3)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D/3D<sp/>Shepard<sp/>weight:<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefShepardWeights_1ga26ba6ba90c57ff35e393d4689a1945cb" kindref="member">CGAL::Weights::shepard_weight</ref>(r2,<sp/>q2,<sp/>2.0)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefShepardWeights_1ga26ba6ba90c57ff35e393d4689a1945cb" kindref="member">CGAL::Weights::shepard_weight</ref>(r3,<sp/>q3,<sp/>2.0)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D/3D<sp/>barycentric<sp/>area:<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefBarycentricRegionWeights_1ga7f06738d912a04f46a201d4f4c7057f4" kindref="member">CGAL::Weights::barycentric_area</ref>(p2,<sp/>q2,<sp/>r2)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefBarycentricRegionWeights_1ga7f06738d912a04f46a201d4f4c7057f4" kindref="member">CGAL::Weights::barycentric_area</ref>(p3,<sp/>q3,<sp/>r3)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Weights_Examples_CoordinatesOneQuery">
+<title>Computing 2D Coordinates for One Query Point</title>
+<para>This example shows how to compute barycentric weights and barycentric coordinates, which are normalized barycentric weights, for a query point with respect to a polygon in 2D. Since we have only one query point, we use a free function to show the simplified interface. For multiple query points though, calling a free function is not efficient (see the following example for more details). The used type of barycentric weights is <computeroutput><ref refid="classCGAL_1_1Weights_1_1Discrete__harmonic__weights__2" kindref="compound">Discrete_harmonic_weights_2</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Weights_2coordinates_one_query_8cpp-example" kindref="compound">Weights/coordinates_one_query.cpp</ref> <programlisting filename="Weights/coordinates_one_query.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Weights/discrete_harmonic_weights.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>a<sp/>polygon<sp/>and<sp/>a<sp/>query<sp/>point.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;Point_2&gt;<sp/>polygon<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,<sp/>0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,<sp/>0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,<sp/>1),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,<sp/>1)<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>query(0.5,<sp/>0.5);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Allocate<sp/>memory<sp/>for<sp/>weights<sp/>and<sp/>coordinates.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;FT&gt;<sp/>weights;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>weights.reserve(polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;FT&gt;<sp/>coordinates;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>coordinates.reserve(polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>barycentric<sp/>weights.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgWeightsRefBarycentricDiscreteHarmonicWeights_1ga94c52e5ce4c85c3bdaa786e2f6bb25f2" kindref="member">CGAL::Weights::discrete_harmonic_weights_2</ref>(polygon,<sp/>query,<sp/>std::back_inserter(weights));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(weights.size()<sp/>==<sp/>polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D<sp/>weights:<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>weight<sp/>:<sp/>weights)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>weight<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Normalize<sp/>weights<sp/>in<sp/>order<sp/>to<sp/>get<sp/>barycentric<sp/>coordinates.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>sum<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>weight<sp/>:<sp/>weights)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sum<sp/>+=<sp/>weight;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(sum<sp/>!=<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>weight<sp/>:<sp/>weights)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>coordinates.push_back(weight<sp/>/<sp/>sum);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(coordinates.size()<sp/>==<sp/>weights.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D<sp/>coordinates:<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>coordinate<sp/>:<sp/>coordinates)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>coordinate<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Weights_Examples_CoordinatesMultipleQueries">
+<title>Computing 2D Coordinates for Multiple Query Points</title>
+<para>This example shows how to compute barycentric weights and barycentric coordinates, which are normalized barycentric weights, for a set of query points with respect to a polygon in 2D. Since we have multiple query points, we first create a class and then use it to compute the weights. Using a class for multiple query points is preferred, because in that case, the memory required for computing weights is allocated only once, while when using a free function as in the previous example, it is allocated for each query point. The used type of barycentric weights is <computeroutput><ref refid="classCGAL_1_1Weights_1_1Wachspress__weights__2" kindref="compound">Wachspress_weights_2</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Weights_2coordinates_multiple_queries_8cpp-example" kindref="compound">Weights/coordinates_multiple_queries.cpp</ref> <programlisting filename="Weights/coordinates_multiple_queries.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Weights/wachspress_weights.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">PointRange<sp/>=<sp/>std::vector&lt;Point_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Creator<sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Creator__uniform__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Creator_uniform_2&lt;FT, Point_2&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Generator<sp/><sp/>=<sp/><ref refid="classCGAL_1_1Random__points__in__square__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Generator.tag">CGAL::Random_points_in_square_2&lt;Point_2, Creator&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Wachspress<sp/>=<sp/><ref refid="classCGAL_1_1Weights_1_1Wachspress__weights__2" kindref="compound">CGAL::Weights::Wachspress_weights_2&lt;PointRange, Kernel&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Choose<sp/>how<sp/>many<sp/>query<sp/>points<sp/>we<sp/>want<sp/>to<sp/>generate.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>num_queries<sp/>=<sp/>10;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>a<sp/>polygon.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;Point_2&gt;<sp/>polygon<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,<sp/>0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,<sp/>0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,<sp/>1),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,<sp/>1)<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Generate<sp/>a<sp/>set<sp/>of<sp/>query<sp/>points.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>queries;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>queries.reserve(num_queries);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Generator<sp/>generator(1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy_n(generator,<sp/>num_queries,<sp/>std::back_inserter(queries));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(queries.size()<sp/>==<sp/>num_queries);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Allocate<sp/>memory<sp/>for<sp/>weights<sp/>and<sp/>coordinates.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;FT&gt;<sp/>weights;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>weights.reserve(num_queries<sp/>*<sp/>polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;FT&gt;<sp/>coordinates;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>coordinates.reserve(num_queries<sp/>*<sp/>polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>barycentric<sp/>weights.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Wachspress<sp/>wachspress(polygon);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>&amp;<sp/>query<sp/>:<sp/>queries)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>wachspress(query,<sp/>std::back_inserter(weights));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(weights.size()<sp/>==<sp/>num_queries<sp/>*<sp/>polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D<sp/>weights:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>weights.size();<sp/>i<sp/>+=<sp/>polygon.size())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>j<sp/>=<sp/>0;<sp/>j<sp/>&lt;<sp/>polygon.size();<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>weights[i<sp/>+<sp/>j]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Normalize<sp/>weights<sp/>in<sp/>order<sp/>to<sp/>get<sp/>barycentric<sp/>coordinates.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>weights.size();<sp/>i<sp/>+=<sp/>polygon.size())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FT<sp/>sum<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>j<sp/>=<sp/>0;<sp/>j<sp/>&lt;<sp/>polygon.size();<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>sum<sp/>+=<sp/>weights[i<sp/>+<sp/>j];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(sum<sp/>!=<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>j<sp/>=<sp/>0;<sp/>j<sp/>&lt;<sp/>polygon.size();<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>coordinates.push_back(weights[i<sp/>+<sp/>j]<sp/>/<sp/>sum);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(coordinates.size()<sp/>==<sp/>weights.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D<sp/>coordinates:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>coordinates.size();<sp/>i<sp/>+=<sp/>polygon.size())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>j<sp/>=<sp/>0;<sp/>j<sp/>&lt;<sp/>polygon.size();<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>coordinates[i<sp/>+<sp/>j]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Weights_Examples_CustomTraits">
+<title>Weights with Custom Traits</title>
+<para>As you could see from the reference manual, it is possible to provide your own traits class with basic geometric objects, constructions, and predicates to the weight functions. All weights in this CGAL component are models of the <computeroutput><ref refid="classAnalyticWeightTraits__2" kindref="compound">AnalyticWeightTraits_2</ref></computeroutput> and <computeroutput><ref refid="classAnalyticWeightTraits__3" kindref="compound">AnalyticWeightTraits_3</ref></computeroutput> concepts. However, many weights do not require all objects from these concepts. This example shows that the inverse distance weight, for instance, requires only the squared distance object which is specified in the custom traits class.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Weights_2custom_traits_8cpp-example" kindref="compound">Weights/custom_traits.cpp</ref> <programlisting filename="Weights/custom_traits.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Weights/inverse_distance_weights.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Custom<sp/>traits<sp/>class<sp/>that<sp/>has<sp/>only<sp/>two<sp/>objects.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Custom_traits<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">decltype</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal">)<sp/>compute_squared_distance_2_object()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Kernel::Compute_squared_distance_2();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">decltype</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal">)<sp/>compute_squared_distance_3_object()<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Kernel::Compute_squared_distance_3();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>2D<sp/>configuration.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p2(0,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>q2(0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>3D<sp/>configuration.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>p3(0,<sp/>0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>q3(0,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>custom<sp/>traits.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Custom_traits<sp/>ctraits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>weights.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2D/3D<sp/>weight:<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefInverseDistanceWeights_1ga93205330d2f2420e5ef57f5ccce4a084" kindref="member">CGAL::Weights::inverse_distance_weight</ref>(p2,<sp/>q2,<sp/>ctraits)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefInverseDistanceWeights_1ga93205330d2f2420e5ef57f5ccce4a084" kindref="member">CGAL::Weights::inverse_distance_weight</ref>(p3,<sp/>q3,<sp/>ctraits)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Weights_Examples_WeightedLaplacian">
+<title>Constructing Weighted Laplacian</title>
+<para>A typical example of using weights is discretizing <emphasis>Poisson</emphasis> and <emphasis>Laplace equations</emphasis> which play an important role in various geometry processing applications such as, for example, <ref refid="packages_1PkgSurfaceMeshDeformation" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Surface Mesh Deformation</ref> and <ref refid="packages_1PkgSurfaceMeshParameterization" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Surface Mesh Parameterization</ref> (see also <ref refid="index_1Weights_Intro" kindref="member">Introduction</ref> for more details). This example shows how to write the <emphasis>discretized Laplacian</emphasis> for all vertices of the given triangle mesh in matrix notation. We use the standard cotangent discretization weighted by the areas of the mixed Voronoi cells around each mesh vertex.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Weights_2weighted_laplacian_8cpp-example" kindref="compound">Weights/weighted_laplacian.cpp</ref> <programlisting filename="Weights/weighted_laplacian.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Eigen_solver_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Eigen_matrix.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Weights_8h" kindref="compound">CGAL/Weights.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Solver_traits<sp/>=<sp/><ref refid="classCGAL_1_1Eigen__solver__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">CGAL::Eigen_solver_traits</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Eigen::SparseLU&lt;CGAL::Eigen_sparse_matrix&lt;FT&gt;::EigenType&gt;<sp/>&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Matrix<sp/>=<sp/>Solver_traits::Matrix;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh<sp/>=<sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">VD<sp/><sp/><sp/>=<sp/>boost::graph_traits&lt;Mesh&gt;::vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">HD<sp/><sp/><sp/>=<sp/>boost::graph_traits&lt;Mesh&gt;::halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">Map&gt;</highlight></codeline>
+<codeline><highlight class="normal">FT<sp/>get_w_ij(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Mesh&amp;<sp/>mesh,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>he,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>PointMap<sp/>pmap)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v0<sp/>=<sp/>target(he,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v1<sp/>=<sp/>source(he,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>q<sp/><sp/>=<sp/>get(pmap,<sp/>v0);<sp/></highlight><highlight class="comment">//<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>p1<sp/>=<sp/>get(pmap,<sp/>v1);<sp/></highlight><highlight class="comment">//<sp/>neighbor<sp/>j</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="group__PkgBGLHelperFct_1ga63695419c5ce7f68949ff2fb4f42d733" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_border_edge</ref>(he,<sp/>mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>he_cw<sp/>=<sp/><ref refid="group__kernel__enums_1gad0a8110cb95f76bac65649bfe58c650b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">opposite</ref>(next(he,<sp/>mesh),<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>VD<sp/>v2<sp/>=<sp/>source(he_cw,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="group__PkgBGLHelperFct_1ga63695419c5ce7f68949ff2fb4f42d733" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_border_edge</ref>(he_cw,<sp/>mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>he_ccw<sp/>=<sp/>prev(<ref refid="group__kernel__enums_1gad0a8110cb95f76bac65649bfe58c650b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">opposite</ref>(he,<sp/>mesh),<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>v2<sp/>=<sp/>source(he_ccw,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>p2<sp/>=<sp/>get(pmap,<sp/>v2);<sp/></highlight><highlight class="comment">//<sp/>neighbor<sp/>jp</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>CGAL::Weights::cotangent(p1,<sp/>p2,<sp/>q);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>p0<sp/>=<sp/>get(pmap,<sp/>v2);<sp/></highlight><highlight class="comment">//<sp/>neighbor<sp/>jm</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>CGAL::Weights::cotangent(q,<sp/>p0,<sp/>p1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>he_cw<sp/>=<sp/><ref refid="group__kernel__enums_1gad0a8110cb95f76bac65649bfe58c650b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">opposite</ref>(next(he,<sp/>mesh),<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v2<sp/>=<sp/>source(he_cw,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>he_ccw<sp/>=<sp/>prev(<ref refid="group__kernel__enums_1gad0a8110cb95f76bac65649bfe58c650b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">opposite</ref>(he,<sp/>mesh),<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v3<sp/>=<sp/>source(he_ccw,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>p0<sp/>=<sp/>get(pmap,<sp/>v2);<sp/></highlight><highlight class="comment">//<sp/>neighbor<sp/>jm</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>p2<sp/>=<sp/>get(pmap,<sp/>v3);<sp/></highlight><highlight class="comment">//<sp/>neighbor<sp/>jp</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__PkgWeightsRefCotangentWeights_1ga3066242d371af7324f0288778bff54a9" kindref="member">CGAL::Weights::cotangent_weight</ref>(p0,<sp/>p1,<sp/>p2,<sp/>q)<sp/>/<sp/>2.0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">Map&gt;</highlight></codeline>
+<codeline><highlight class="normal">FT<sp/>get_w_i(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Mesh&amp;<sp/>mesh,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v_i,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>PointMap<sp/>pmap)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>A_i<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v0<sp/>=<sp/>v_i;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>init<sp/>=<sp/>halfedge(v_i,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>he<sp/>:<sp/><ref refid="group__PkgBGLIterators_1ga295060a50555471eab7f24addbb9bb49" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">halfedges_around_target</ref>(init,<sp/>mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(v0<sp/>==<sp/>target(he,<sp/>mesh));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="group__PkgBGLHelperFct_1gad93e429ad24efeaddeb836c437e719ab" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_border</ref>(he,<sp/>mesh))<sp/>{<sp/></highlight><highlight class="keywordflow">continue</highlight><highlight class="normal">;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v1<sp/>=<sp/>source(he,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v2<sp/>=<sp/>target(next(he,<sp/>mesh),<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>p<sp/>=<sp/>get(pmap,<sp/>v0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>q<sp/>=<sp/>get(pmap,<sp/>v1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>r<sp/>=<sp/>get(pmap,<sp/>v2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>A_i<sp/>+=<sp/><ref refid="group__PkgWeightsRefMixedVoronoiRegionWeights_1ga2c72cfdf25b34a465f816e13ba6d879c" kindref="member">CGAL::Weights::mixed_voronoi_area</ref>(p,<sp/>q,<sp/>r);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(A_i<sp/>!=<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1.0<sp/>/<sp/>(2.0<sp/>*<sp/>A_i);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>set_laplacian_matrix(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Mesh&amp;<sp/>mesh,<sp/>Matrix&amp;<sp/>L)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>pmap<sp/>=<sp/>get(CGAL::vertex_point,<sp/>mesh);<sp/></highlight><highlight class="comment">//<sp/>vertex<sp/>to<sp/>point<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>imap<sp/>=<sp/>get(CGAL::vertex_index,<sp/>mesh);<sp/></highlight><highlight class="comment">//<sp/>vertex<sp/>to<sp/>index<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Precompute<sp/>Voronoi<sp/>areas.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;std::size_t,<sp/>FT&gt;<sp/>w_i;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v_i<sp/>:<sp/>vertices(mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>w_i[get(imap,<sp/>v_i)]<sp/>=<sp/>get_w_i(mesh,<sp/>v_i,<sp/>pmap);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Fill<sp/>the<sp/>matrix.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>HD<sp/>he<sp/>:<sp/>halfedges(mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>vi<sp/>=<sp/>source(he,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>vj<sp/>=<sp/>target(he,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>i<sp/>=<sp/>get(imap,<sp/>vi);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>j<sp/>=<sp/>get(imap,<sp/>vj);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(i<sp/>&gt;<sp/>j)<sp/>{<sp/></highlight><highlight class="keywordflow">continue</highlight><highlight class="normal">;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>w_ij<sp/>=<sp/>w_i[j]<sp/>*<sp/>get_w_ij(mesh,<sp/>he,<sp/>pmap);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>L.set_coef(i,<sp/>j,<sp/><sp/>w_ij,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>L.set_coef(j,<sp/>i,<sp/><sp/>w_ij,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>L.add_coef(i,<sp/>i,<sp/>-w_ij);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>L.add_coef(j,<sp/>j,<sp/>-w_ij);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>mesh.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v0<sp/>=<sp/>mesh.add_vertex(<ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0,<sp/>2,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v1<sp/>=<sp/>mesh.add_vertex(<ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(2,<sp/>2,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v2<sp/>=<sp/>mesh.add_vertex(<ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0,<sp/>0,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v3<sp/>=<sp/>mesh.add_vertex(<ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(2,<sp/>0,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>VD<sp/>v4<sp/>=<sp/>mesh.add_vertex(<ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(1,<sp/>1,<sp/>1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesh.add_face(v0,<sp/>v2,<sp/>v4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesh.add_face(v2,<sp/>v3,<sp/>v4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesh.add_face(v3,<sp/>v1,<sp/>v4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesh.add_face(v1,<sp/>v0,<sp/>v4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesh.add_face(v2,<sp/>v3,<sp/>v1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesh.add_face(v1,<sp/>v0,<sp/>v2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Set<sp/>discretized<sp/>Laplacian.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>n<sp/>=<sp/>5;<sp/></highlight><highlight class="comment">//<sp/>we<sp/>have<sp/>5<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Matrix<sp/>L(n,<sp/>n);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>set_laplacian_matrix(mesh,<sp/>L);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::fixed;<sp/>std::cout<sp/>&lt;&lt;<sp/>std::showpos;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>n;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>j<sp/>=<sp/>0;<sp/>j<sp/>&lt;<sp/>n;<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>L.get_coef(i,<sp/>j)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Weights_Examples_Convergence">
+<title>Convergence</title>
+<para>This little example shows how to use the family of weights which includes multiple types of weights in one function. In particular, we show how, by changing an input parameter, we converge from the <computeroutput><ref refid="classCGAL_1_1Weights_1_1Wachspress__weights__2" kindref="compound">Wachspress_weights_2</ref></computeroutput> to the <computeroutput><ref refid="classCGAL_1_1Weights_1_1Mean__value__weights__2" kindref="compound">Mean_value_weights_2</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Weights_2convergence_8cpp-example" kindref="compound">Weights/convergence.cpp</ref> <programlisting filename="Weights/convergence.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Weights/three_point_family_weights.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::fixed;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>3D<sp/>configuration.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p0(0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p1(2,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p2(7,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>q0(3,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Choose<sp/>a<sp/>type<sp/>of<sp/>the<sp/>weight:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>e.g.<sp/>0<sp/>-<sp/>Wachspress<sp/>(WP)<sp/>weight;<sp/>1<sp/>-<sp/>mean<sp/>value<sp/>(MV);</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>wp<sp/>=<sp/>0.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>mv<sp/>=<sp/>1.0;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>WP<sp/>and<sp/>MV<sp/>weights.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;3D<sp/>Wachspress<sp/>(WP,<sp/>q0):<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefThreePointFamilyWeights_1ga92a8e30bdece87c1f9b615e01250ee57" kindref="member">CGAL::Weights::three_point_family_weight</ref>(p0,<sp/>p1,<sp/>p2,<sp/>q0,<sp/>wp)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;3D<sp/>mean<sp/>value<sp/>(MV,<sp/>q0):<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefThreePointFamilyWeights_1ga92a8e30bdece87c1f9b615e01250ee57" kindref="member">CGAL::Weights::three_point_family_weight</ref>(p0,<sp/>p1,<sp/>p2,<sp/>q0,<sp/>mv)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Converge<sp/>WP<sp/>towards<sp/>MV.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Converge<sp/>WP<sp/>to<sp/>MV<sp/>on<sp/>q0:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>step<sp/>=<sp/>0.1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(FT<sp/>x<sp/>=<sp/>0.0;<sp/>x<sp/>&lt;=<sp/>1.0;<sp/>x<sp/>+=<sp/>step)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;3D<sp/>x:<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgWeightsRefThreePointFamilyWeights_1ga92a8e30bdece87c1f9b615e01250ee57" kindref="member">CGAL::Weights::three_point_family_weight</ref>(p0,<sp/>p1,<sp/>p2,<sp/>q0,<sp/>x)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Weights_History">
+<title>History</title>
+<para>This package is a part of the weights unification effort inside CGAL that has been carried out by Dmitry Anisimov in 2020.</para>
+</sect1>
+<sect1 id="index_1Weights_Acknowledgements">
+<title>Acknowledgments</title>
+<para>We wish to thank Guillaume Damiand, Andreas Fabri, and Mael Rouxel-Labbé for useful discussions and reviews. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Weights.txt"/>
+  </compounddef>
+</doxygen>

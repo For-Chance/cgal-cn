@@ -1,0 +1,490 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_Conforming_Triangulations_and_Meshes"/><anchor id="index_1userchapter2DMeshes"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Laurent Rineau</para>
+</simplesect>
+This package implements Shewchuk&apos;s algorithm <ref refid="citelist_1CITEREF_s-mgdsa-00" kindref="member">[1]</ref> to construct conforming triangulations and 2D meshes. Conforming triangulations will be described in Section <ref refid="index_1secMesh_2_conforming_triangulation" kindref="member">Conforming Triangulations</ref> and meshes in Section <ref refid="index_1secMesh_2_meshes" kindref="member">Meshes</ref>.</para>
+<sect1 id="index_1secMesh_2_conforming_triangulation">
+<title>Conforming Triangulations</title>
+<sect2 id="index_1secMesh_2_conforming_definitions">
+<title>Definitions</title>
+<para>A triangulation is a <emphasis>Delaunay triangulation</emphasis> if the circumscribing circle of any facet of the triangulation contains no vertex in its interior. A <emphasis>constrained</emphasis> Delaunay triangulation is a constrained triangulation which is as much Delaunay as possible. The circumscribing circle of any facet of a constrained Delaunay triangulation contains in its interior no data point <emphasis>visible</emphasis> from the facet.</para>
+<para>An edge is said to be a <emphasis>Delaunay edge</emphasis> if it is inscribed in an empty circle (containing no data point in its interior). This edge is said to be a <emphasis>Gabriel edge</emphasis> if its diametrical circle is empty.</para>
+<para>A constrained Delaunay triangulation is said to be a <emphasis>conforming Delaunay triangulation</emphasis> if every constrained edge is a Delaunay edge. Because any edge in a constrained Delaunay triangulation is either a Delaunay edge or a constrained edge, a conforming Delaunay triangulation is in fact a Delaunay triangulation. The only difference is that some of the edges are marked as constrained edges.</para>
+<para>A constrained Delaunay triangulation is said to be a <emphasis>conforming Gabriel triangulation</emphasis> if every constrained edge is a Gabriel edge. The Gabriel property is stronger than the Delaunay property and each Gabriel edge is a Delaunay edge. Conforming Gabriel triangulations are thus also conforming Delaunay triangulations.</para>
+<para>Any constrained Delaunay triangulation can be refined into a conforming Delaunay triangulation or into a conforming Gabriel triangulation by adding vertices, called <emphasis>Steiner vertices</emphasis>, on constrained edges until they are decomposed into subconstraints small enough to be Delaunay or Gabriel edges.</para>
+</sect2>
+<sect2 id="index_1secMesh_2_building_conforming">
+<title>Building Conforming Triangulations</title>
+<para>Constrained Delaunay triangulations can be refined into conforming triangulations by the two following global functions:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>CDT&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgMesh2Functions_1gafbe2b6b96e7c8ce9a2816d50cd9bfacf" kindref="member">make_conforming_Delaunay_2</ref><sp/>(CDT&amp;<sp/>t)</highlight></codeline>
+</programlisting></para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>CDT&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgMesh2Functions_1ga05bf108ffbea1545b99a8b899ec5e2dc" kindref="member">make_conforming_Gabriel_2</ref><sp/>(CDT&amp;<sp/>t)</highlight></codeline>
+</programlisting></para>
+<para>In both cases, the template parameter <computeroutput>CDT</computeroutput> must be instantiated by a constrained Delaunay triangulation class (see Chapter <ref refid="index_1Chapter_2D_Triangulations" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">2D Triangulations</ref>).</para>
+<para>The geometric traits of the constrained Delaunay triangulation used to instantiate the parameter <computeroutput>CDT</computeroutput> has to be a model of the concept <computeroutput><ref refid="classConformingDelaunayTriangulationTraits__2" kindref="compound">ConformingDelaunayTriangulationTraits_2</ref></computeroutput>.</para>
+<para>The constrained Delaunay triangulation <computeroutput>t</computeroutput> is passed by reference and is refined into a conforming Delaunay triangulation or into a conforming Gabriel triangulation by adding vertices. The user is advised to make a copy of the input triangulation in the case where the original triangulation has to be preserved for other computations</para>
+<para>The algorithm used by <computeroutput><ref refid="group__PkgMesh2Functions_1gafbe2b6b96e7c8ce9a2816d50cd9bfacf" kindref="member">make_conforming_Delaunay_2()</ref></computeroutput> and <computeroutput><ref refid="group__PkgMesh2Functions_1ga05bf108ffbea1545b99a8b899ec5e2dc" kindref="member">make_conforming_Gabriel_2()</ref></computeroutput> builds internal data structures that would be computed twice if the two functions are called consecutively on the same triangulation. In order to avoid these data to be constructed twice, the advanced user can use the class <computeroutput><ref refid="classCGAL_1_1Triangulation__conformer__2" kindref="compound">Triangulation_conformer_2</ref>&lt;CDT&gt;</computeroutput> to refine a constrained Delaunay triangulation into a conforming Delaunay triangulation and then into a conforming Gabriel triangulation. For additional control of the refinement algorithm, this class also provides separate functions to insert one Steiner point at a time.</para>
+</sect2>
+<sect2 id="index_1secMesh_2_example_making_conforming">
+<title>Example: Making a Triangulation Conforming Delaunay and Then Conforming Gabriel</title>
+<para>This example inserts several segments into a constrained Delaunay triangulation, makes it conforming Delaunay, and then conforming Gabriel. At each step, the number of vertices of the triangulation is printed.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Mesh_2_2conforming_8cpp-example" kindref="compound">Mesh_2/conforming.cpp</ref> <programlisting filename="Mesh_2/conforming.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_conformer_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Point<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CDT<sp/>cdt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>a<sp/>constrained<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>va<sp/>=<sp/>cdt.<ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2_1ae157cc826f847c3c781c9e29497c05bd" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">insert</ref>(Point(<sp/>5.,<sp/>5.)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vb<sp/>=<sp/>cdt.insert(Point(-5.,<sp/>5.)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vc<sp/>=<sp/>cdt.insert(Point(<sp/>4.,<sp/>3.)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vd<sp/>=<sp/>cdt.insert(Point(<sp/>5.,-5.)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ve<sp/>=<sp/>cdt.insert(Point(<sp/>6.,<sp/>6.)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vf<sp/>=<sp/>cdt.insert(Point(-6.,<sp/>6.)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vg<sp/>=<sp/>cdt.insert(Point(-6.,-6.)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vh<sp/>=<sp/>cdt.insert(Point(<sp/>6.,-6.));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,va);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(ve,vf);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vf,vg);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vg,vh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vh,ve);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>before:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>make<sp/>it<sp/>conforming<sp/>Delaunay</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgMesh2Functions_1gafbe2b6b96e7c8ce9a2816d50cd9bfacf" kindref="member">CGAL::make_conforming_Delaunay_2</ref>(cdt);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>after<sp/>make_conforming_Delaunay_2:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>then<sp/>make<sp/>it<sp/>conforming<sp/>Gabriel</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgMesh2Functions_1ga05bf108ffbea1545b99a8b899ec5e2dc" kindref="member">CGAL::make_conforming_Gabriel_2</ref>(cdt);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>after<sp/>make_conforming_Gabriel_2:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>See <ref refid="index_1fig__Conformexampleconform" kindref="member">fig__Conformexampleconform</ref></para>
+<para><anchor id="index_1fig__Conformexampleconform"/> <image type="html" name="example-conform-Delaunay-Gabriel.png"></image>
+ <image type="latex" name="example-conform-Delaunay-Gabriel.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Conformexampleconform" kindref="member">fig__Conformexampleconform</ref> From left to right: Initial Delaunay triangulation, the corresponding conforming Delaunay, and the corresponding Gabriel triangulation. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1secMesh_2_meshes">
+<title>Meshes</title>
+<sect2 id="index_1secMesh_2_meshes_definition">
+<title>Definitions</title>
+<para>A mesh is a partition of a given region into simplices whose shapes and sizes satisfy several criteria.</para>
+<para>The domain is the region that the user wants to mesh. It has to be a bounded region of the plane. The domain is defined by a <emphasis>planar straight line graph</emphasis>, Pslg for short, which is a set of segments such that two segments in the set are either disjoint or share an endpoint. The segments of the Pslg are constraints that will be represented by a union of edges in the mesh. The Pslg can also contain isolated points that will appear as vertices of the mesh.</para>
+<para>The segments of the Pslg are either segments of the boundary or internals constraints. The segments of the Pslg have to cover the boundary of the domain.</para>
+<para>The Pslg divides the plane into several connected components. By default, the domain is the union of the bounded connected components.</para>
+<para>See <ref refid="index_1fig__Domain" kindref="member">fig__Domain</ref> for an example of a domain defined without using seed points, and a possible mesh of it.</para>
+<para><anchor id="index_1fig__Domain"/> <image type="html" name="domain-domain-mesh.png"></image>
+ <image type="latex" name="domain-domain-mesh.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Domain" kindref="member">fig__Domain</ref> A domain defined without seed points and the generated mesh. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The user can override this default by providing a set of seed points. Either seed points mark components to be meshed or they mark components not to be meshed (holes).</para>
+<para>See <ref refid="index_1fig__Domainseeds" kindref="member">fig__Domainseeds</ref> for another domain defined with the same Pslg and two seed points used to define holes. In the corresponding mesh these two holes are triangulated but not meshed.</para>
+<para><anchor id="index_1fig__Domainseeds"/> <image type="html" name="domain-seeds-domain-seeds-mesh.png"></image>
+ <image type="latex" name="domain-seeds-domain-seeds-mesh.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Domainseeds" kindref="member">fig__Domainseeds</ref> A domain with two seeds points defining holes and the generated mesh. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1secMesh_2_criteria">
+<title>Shape and Size Criteria</title>
+<para>The shape criterion for triangles is a lower bound <formula id="0">$ B$</formula> on the ratio between the circumradius and the shortest edge length. Such a bound implies a lower bound of <formula id="24">$ \arcsin{\frac{1}{2B}}$</formula> on the minimum angle of the triangle and an upper bound of <formula id="25">$ \pi - 2* \arcsin{\frac{1}{2B}}$</formula> on the maximum angle. Unfortunately, the termination of the algorithm is guaranteed only if <formula id="26">$ B \ge \sqrt{2}$</formula>, which corresponds to a lower bound of <formula id="21">$ 20.7$</formula> degrees over the angles.</para>
+<para>The size criterion can be any criterion that tends to prefer small triangles. For example, the size criterion can be an upper bound on the length of longest edge of triangles, or an upper bound on the radius of the circumcircle. The size bound can vary over the domain. For example, the size criterion could impose a small size for the triangles intersecting a given line.</para>
+<para>Both types of criteria are defined in an object <computeroutput>criteria</computeroutput> passed as parameter of the meshing functions.</para>
+</sect2>
+<sect2 id="index_1Mesh_2TheMeshingAlgorithm">
+<title>The Meshing Algorithm</title>
+<para>The input to a meshing problem is a Pslg and a set of seeds describing the domain to be meshed, and a set of size and shape criteria. The algorithm implemented in this package starts with a constrained Delaunay triangulation of the input Pslg and produces a mesh using the Delaunay refinement method. This method inserts new vertices to the triangulation, as far as possible from other vertices, and stops when the criteria are satisfied.</para>
+<para>If all angles between incident segments of the input Pslg are greater than <formula id="23">$ 60$</formula> degrees and if the bound on the circumradius/edge ratio is greater than <formula id="22">$ \sqrt{2}$</formula>, the algorithm is guaranteed to terminate with a mesh satisfying the size and shape criteria.</para>
+<para>If some input angles are smaller than <formula id="23">$ 60$</formula> degrees, the algorithm will end up with a mesh in which some triangles violate the criteria near small input angles. This is unavoidable since small angles formed by input segments cannot be suppressed. Furthermore, it has been shown (<ref refid="citelist_1CITEREF_s-mgdsa-00" kindref="member">[1]</ref>), that some domains with small input angles cannot be meshed with angles even smaller than the small input angles. Note that if the domain is a polygonal region, the resulting mesh will satisfy size and shape criteria except for the small input angles. In addition, the algorithm may succeed in producing meshes with a lower angle bound greater than <formula id="21">$ 20.7$</formula> degrees, but there is no such guarantee.</para>
+</sect2>
+<sect2 id="index_1secMesh_2_building_meshes">
+<title>Building Meshes</title>
+<para>Meshes are obtained from constrained Delaunay triangulations by calling the global function:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>CDT,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>NamedParameters&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2</ref><sp/>(CDT<sp/>&amp;t,<sp/>NamedParameters<sp/>np)</highlight></codeline>
+</programlisting></para>
+<para>The template parameter <computeroutput>CDT</computeroutput> must be instantiated by a constrained Delaunay triangulation class.</para>
+<para>The geometric traits class of <computeroutput>CDT</computeroutput> has to be a model of the concept <computeroutput><ref refid="classDelaunayMeshTraits__2" kindref="compound">DelaunayMeshTraits_2</ref></computeroutput>. This concept refines the concept <computeroutput><ref refid="classConformingDelaunayTriangulationTraits__2" kindref="compound">ConformingDelaunayTriangulationTraits_2</ref></computeroutput> adding the geometric predicates and constructors.</para>
+<para>The second template parameter <computeroutput>NamedParameters</computeroutput> enables to pass a sequence of seed points to define a domain. It further enables to pass meshing criteria that the triangles have to satisfy. The criteria must be a model of <computeroutput><ref refid="classMeshingCriteria__2" kindref="compound">MeshingCriteria_2</ref></computeroutput>.</para>
+<para>CGAL provides two models for this concept: <itemizedlist>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Delaunay__mesh__criteria__2" kindref="compound">Delaunay_mesh_criteria_2</ref>&lt;CDT&gt;</computeroutput>, that defines a shape criterion that bounds the minimum angle of triangles, </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Delaunay__mesh__size__criteria__2" kindref="compound">Delaunay_mesh_size_criteria_2</ref>&lt;CDT&gt;</computeroutput>, that adds to the previous criterion a bound on the maximum edge length. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>If the function <computeroutput><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2()</ref></computeroutput> is called several times on the same triangulation with different criteria, the algorithm rebuilds the internal data structure used for meshing at every call. In order to avoid rebuild the data structure at every call, the advanced user can use the class <computeroutput><ref refid="classCGAL_1_1Delaunay__mesher__2" kindref="compound">Delaunay_mesher_2</ref>&lt;CDT&gt;</computeroutput>. This class provides also step by step functions. Those functions insert one vertex at a time.</para>
+<para>Any object of type <computeroutput><ref refid="classCGAL_1_1Delaunay__mesher__2" kindref="compound">Delaunay_mesher_2</ref>&lt;CDT&gt;</computeroutput> is constructed from a reference to a <computeroutput>CDT</computeroutput>, and has several member functions to define the domain to be meshed and to mesh the <computeroutput>CDT</computeroutput>. See the example given below and the reference manual for details. Note that the <computeroutput>CDT</computeroutput> should not be externally modified during the life time of the <computeroutput><ref refid="classCGAL_1_1Delaunay__mesher__2" kindref="compound">Delaunay_mesher_2</ref>&lt;CDT&gt;</computeroutput> object.</para>
+<para>Once the mesh is constructed, one can determine which faces of the triangulation are in the mesh domain using the <computeroutput>is_in_domain()</computeroutput> member function of the face type (see the concept <computeroutput><ref refid="classDelaunayMeshFaceBase__2" kindref="compound">DelaunayMeshFaceBase_2</ref></computeroutput>).</para>
+</sect2>
+<sect2 id="index_1secMesh_2_optimization">
+<title>Optimization of Meshes with Lloyd</title>
+<para>The package also provides a global function that runs Lloyd optimization iterations on the mesh generated by Delaunay refinement. The goal of this mesh optimization is to improve the angles inside the mesh, and make them as close as possible to 60 degrees.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal">&lt;<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>CDT<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgMesh2Enum_1gab9fe60482a45120b3c061a8a4ec9018d" kindref="member">Mesh_optimization_return_code</ref><sp/><ref refid="group__PkgMesh2Functions_1gafeaf59d3fa014da287f8514913b38d05" kindref="member">lloyd_optimize_mesh_2</ref>(CDT&amp;<sp/>cdt);</highlight></codeline>
+</programlisting> Note that this global function has several named parameters (see details in reference pages) to tune the optimization process.</para>
+<para>This optimization process alternates relocating vertices to the center of mass of their Voronoi cells, and updating the Delaunay connectivity of the triangulation. The center of mass is computed with respect to a sizing function that was designed to preserve the local density of points in the mesh generated by Delaunay refinement.</para>
+<para>See Figure <ref refid="index_1fig__Lloydfigure" kindref="member">fig__Lloydfigure</ref> for a mesh generated by <computeroutput><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2()</ref></computeroutput> and optimized with <computeroutput><ref refid="group__PkgMesh2Functions_1gafeaf59d3fa014da287f8514913b38d05" kindref="member">lloyd_optimize_mesh_2()</ref></computeroutput>. Figure <ref refid="index_1fig__LloydHistogramfigure" kindref="member">fig__LloydHistogramfigure</ref> shows the histogram of angles inside these meshes.</para>
+<para><anchor id="index_1fig__Lloydfigure"/> <image type="html" name="lloyd.png"></image>
+ <image type="latex" name="lloyd.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Lloydfigure" kindref="member">fig__Lloydfigure</ref> (Left) Mesh generated by <computeroutput><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2()</ref></computeroutput> for a uniform sizing criterion. (Right) shows the same mesh after 100 iterations of Lloyd optimization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__LloydHistogramfigure"/> <image type="html" name="lloyd-histograms.png"></image>
+ <image type="latex" name="lloyd-histograms.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__LloydHistogramfigure" kindref="member">fig__LloydHistogramfigure</ref> Histograms of angles inside the mesh after Delaunay refinement, and after 10 and 100 iterations of Lloyd optimization. After Delaunay refinement, angles are in the interval [28.5; 121.9] degrees. After 10 iterations of Lloyd optimization, they are in [29.1; 110.8]. 100 iterations take them to [29.3; 109.9]. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>As of CGAL 5.6, <computeroutput><ref refid="group__PkgMesh2Functions_1gafeaf59d3fa014da287f8514913b38d05" kindref="member">lloyd_optimize_mesh_2()</ref></computeroutput> uses <ref refid="group__bgl__namedparameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> to set parameters. More details are provided in <ref refid="FromBoostNPtoCGALNP" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Upgrading Code using Boost Parameters to CGAL Named Function Parameters</ref>.</para>
+</sect2>
+<sect2 id="index_1Mesh_2Examples">
+<title>Examples</title>
+<sect3 id="index_1Mesh_2ExampleUsingtheGlobalFunction">
+<title>Example Using the Global Function</title>
+<para>The following example inserts several segments into a constrained triangulation and then meshes it using the global function <computeroutput><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2()</ref></computeroutput>. The size and shape criteria are the default ones provided by the criteria class <computeroutput><ref refid="classCGAL_1_1Delaunay__mesh__criteria__2" kindref="compound">Delaunay_mesh_criteria_2</ref>&lt;K&gt;</computeroutput>. No seeds are given, meaning that the mesh domain covers the whole plane except the unbounded component.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Mesh_2_2mesh_global_8cpp-example" kindref="compound">Mesh_2/mesh_global.cpp</ref> <programlisting filename="Mesh_2/mesh_global.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesher_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_face_base_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_size_criteria_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_2&lt;K&gt;</ref><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__face__base__2" kindref="compound">CGAL::Delaunay_mesh_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, Tds&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__size__criteria__2" kindref="compound">CGAL::Delaunay_mesh_size_criteria_2&lt;CDT&gt;</ref><sp/>Criteria;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Point<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CDT<sp/>cdt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>va<sp/>=<sp/>cdt.insert(Point(-4,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vb<sp/>=<sp/>cdt.insert(Point(0,-1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vc<sp/>=<sp/>cdt.insert(Point(4,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vd<sp/>=<sp/>cdt.insert(Point(0,1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert(Point(2,<sp/>0.6));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,<sp/>vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,<sp/>vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,<sp/>va);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Meshing<sp/>the<sp/>triangulation...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">CGAL::refine_Delaunay_mesh_2</ref>(cdt,<sp/>CGAL::parameters::criteria(Criteria(0.125,<sp/>0.5)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Mesh_2ExampleUsingtheClass">
+<title>Example Using the Class Delaunay_mesher_2&lt;CDT&gt;</title>
+<para>This example uses the class <computeroutput><ref refid="classCGAL_1_1Delaunay__mesher__2" kindref="compound">Delaunay_mesher_2</ref>&lt;CDT&gt;</computeroutput> and calls the <computeroutput>refine_mesh()</computeroutput> member function twice, changing the size and shape criteria in between. In such a case, using twice the global function <computeroutput><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2()</ref></computeroutput> would be less efficient, because some internal structures needed by the algorithm would be built twice.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Mesh_2_2mesh_class_8cpp-example" kindref="compound">Mesh_2/mesh_class.cpp</ref> <programlisting filename="Mesh_2/mesh_class.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesher_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_face_base_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_size_criteria_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_2&lt;K&gt;</ref><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__face__base__2" kindref="compound">CGAL::Delaunay_mesh_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, Tds&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__size__criteria__2" kindref="compound">CGAL::Delaunay_mesh_size_criteria_2&lt;CDT&gt;</ref><sp/>Criteria;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesher__2" kindref="compound">CGAL::Delaunay_mesher_2&lt;CDT, Criteria&gt;</ref><sp/>Mesher;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Point<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CDT<sp/>cdt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>va<sp/>=<sp/>cdt.insert(Point(-4,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vb<sp/>=<sp/>cdt.insert(Point(0,-1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vc<sp/>=<sp/>cdt.insert(Point(4,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vd<sp/>=<sp/>cdt.insert(Point(0,1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert(Point(2,<sp/>0.6));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,<sp/>vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,<sp/>vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,<sp/>va);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Meshing<sp/>the<sp/>triangulation<sp/>with<sp/>default<sp/>criteria...&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesher<sp/>mesher(cdt);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesher.refine_mesh();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Meshing<sp/>with<sp/>new<sp/>criteria...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>0.125<sp/>is<sp/>the<sp/>default<sp/>shape<sp/>bound.<sp/>It<sp/>corresponds<sp/>to<sp/>abound<sp/>20.6<sp/>degree.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>0.5<sp/>is<sp/>the<sp/>upper<sp/>bound<sp/>on<sp/>the<sp/>length<sp/>of<sp/>the<sp/>longest<sp/>edge.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>See<sp/>reference<sp/>manual<sp/>for<sp/>Delaunay_mesh_size_traits_2&lt;K&gt;.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesher.set_criteria(Criteria(0.125,<sp/>0.5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesher.refine_mesh();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Mesh_2ExampleUsingSeeds">
+<title>Example Using Seeds</title>
+<para>This example uses the global function <computeroutput><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2()</ref></computeroutput> but defines a domain by using one seed. The size and shape criteria are the default ones provided by the criteria class <computeroutput><ref refid="classCGAL_1_1Delaunay__mesh__criteria__2" kindref="compound">Delaunay_mesh_criteria_2</ref>&lt;K&gt;</computeroutput>.</para>
+<para>Once the mesh is constructed, the <computeroutput>is_in_domain()</computeroutput> member function of faces is used to count them.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Mesh_2_2mesh_with_seeds_8cpp-example" kindref="compound">Mesh_2/mesh_with_seeds.cpp</ref> <programlisting filename="Mesh_2/mesh_with_seeds.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesher_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_face_base_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_constrained_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_2&lt;K&gt;</ref><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__face__base__2" kindref="compound">CGAL::Delaunay_mesh_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, Tds&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Point<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CDT<sp/>cdt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>va<sp/>=<sp/>cdt.<ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2_1ae157cc826f847c3c781c9e29497c05bd" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">insert</ref>(Point(2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vb<sp/>=<sp/>cdt.insert(Point(0,2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vc<sp/>=<sp/>cdt.insert(Point(-2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vd<sp/>=<sp/>cdt.insert(Point(0,-2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,<sp/>vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,<sp/>vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,<sp/>va);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>va<sp/>=<sp/>cdt.insert(Point(3,3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vb<sp/>=<sp/>cdt.insert(Point(-3,3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vc<sp/>=<sp/>cdt.insert(Point(-3,-3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vd<sp/>=<sp/>cdt.insert(Point(3,0-3));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,<sp/>vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,<sp/>vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,<sp/>va);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Point&gt;<sp/>list_of_seeds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>list_of_seeds.push_back(Point(0,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Meshing<sp/>the<sp/>domain...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">CGAL::refine_Delaunay_mesh_2</ref>(cdt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::seeds(list_of_seeds));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>finite<sp/>faces:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_faces()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>mesh_faces_counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(CDT::Finite_faces_iterator<sp/>fit<sp/>=<sp/>cdt.finite_faces_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>fit<sp/>!=<sp/>cdt.finite_faces_end();<sp/>++fit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(fit-&gt;is_in_domain())<sp/>++mesh_faces_counter;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>faces<sp/>in<sp/>the<sp/>mesh<sp/>domain:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>mesh_faces_counter<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawConstrainedTriangulation2_1gaa8ce0931d83c1728d860109afa4b2661" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::draw</ref>(cdt);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Mesh_2ExampleUsingMarkDomains">
+<title>Example with a Domain Defined by Nesting Level.</title>
+<para>When the domain is defined by polygons for the outer boundaries and the boundaries of holes the function <computeroutput><ref refid="group__PkgTriangulation2Miscellaneous_1gabe989734ed8d720d4385900d50b3c9c4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">mark_domain_in_triangulation()</ref></computeroutput> can be called instead of passing seedpoints.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Mesh_2_2mesh_marked_domain_8cpp-example" kindref="compound">Mesh_2/mesh_marked_domain.cpp</ref> <programlisting filename="Mesh_2/mesh_marked_domain.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesher_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_face_base_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_size_criteria_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/mark_domain_in_triangulation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_constrained_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_2&lt;K&gt;</ref><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__face__base__2" kindref="compound">CGAL::Delaunay_mesh_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, Tds&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Point<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CDT<sp/>cdt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>va<sp/>=<sp/>cdt.<ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2_1ae157cc826f847c3c781c9e29497c05bd" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">insert</ref>(Point(2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vb<sp/>=<sp/>cdt.insert(Point(0,2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vc<sp/>=<sp/>cdt.insert(Point(-2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vd<sp/>=<sp/>cdt.insert(Point(0,-2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,<sp/>vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,<sp/>vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,<sp/>va);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>va<sp/>=<sp/>cdt.insert(Point(3,3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vb<sp/>=<sp/>cdt.insert(Point(-3,3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vc<sp/>=<sp/>cdt.insert(Point(-3,-3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vd<sp/>=<sp/>cdt.insert(Point(3,0-3));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,<sp/>vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,<sp/>vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,<sp/>va);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTriangulation2Miscellaneous_1gabe989734ed8d720d4385900d50b3c9c4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::mark_domain_in_triangulation</ref>(cdt);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Meshing<sp/>the<sp/>domain...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">CGAL::refine_Delaunay_mesh_2</ref>(cdt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::domain_is_initialized(</highlight><highlight class="keyword">true</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>finite<sp/>faces:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_faces()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>mesh_faces_counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(CDT::Finite_faces_iterator<sp/>fit<sp/>=<sp/>cdt.finite_faces_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>fit<sp/>!=<sp/>cdt.finite_faces_end();<sp/>++fit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(fit-&gt;is_in_domain())<sp/>++mesh_faces_counter;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>faces<sp/>in<sp/>the<sp/>mesh<sp/>domain:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>mesh_faces_counter<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawConstrainedTriangulation2_1gaa8ce0931d83c1728d860109afa4b2661" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::draw</ref>(cdt);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Mesh_2ExampleLloyd">
+<title>Example Using the Lloyd optimizer</title>
+<para>This example uses the global function <computeroutput><ref refid="group__PkgMesh2Functions_1gafeaf59d3fa014da287f8514913b38d05" kindref="member">lloyd_optimize_mesh_2()</ref></computeroutput>. The mesh is generated using the function <computeroutput><ref refid="group__PkgMesh2Functions_1gad0e4753d46c0203cb3d45d102840e483" kindref="member">refine_Delaunay_mesh_2()</ref></computeroutput> of <computeroutput><ref refid="classCGAL_1_1Delaunay__mesher__2" kindref="compound">CGAL::Delaunay_mesher_2</ref></computeroutput>, and is then optimized using <computeroutput><ref refid="group__PkgMesh2Functions_1gafeaf59d3fa014da287f8514913b38d05" kindref="member">lloyd_optimize_mesh_2()</ref></computeroutput>. The optimization will stop after 10 (set by <computeroutput>max_iteration_number</computeroutput>) iterations of alternating vertex relocations and Delaunay connectivity updates. More termination conditions can be used and are detailed in the Reference Manual.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Mesh_2_2mesh_optimization_8cpp-example" kindref="compound">Mesh_2/mesh_optimization.cpp</ref> <programlisting filename="Mesh_2/mesh_optimization.cpp"><codeline><highlight class="preprocessor">#define<sp/>CGAL_MESH_2_OPTIMIZER_VERBOSE</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//#define<sp/>CGAL_MESH_2_OPTIMIZERS_DEBUG</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//#define<sp/>CGAL_MESH_2_SIZING_FIELD_USE_BARYCENTRIC_COORDINATES</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesher_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_face_base_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_vertex_base_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_mesh_size_criteria_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/lloyd_optimize_mesh_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__vertex__base__2" kindref="compound">CGAL::Delaunay_mesh_vertex_base_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__face__base__2" kindref="compound">CGAL::Delaunay_mesh_face_base_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, Tds&gt;</ref><sp/><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesh__size__criteria__2" kindref="compound">CGAL::Delaunay_mesh_size_criteria_2&lt;CDT&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Criteria;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__mesher__2" kindref="compound">CGAL::Delaunay_mesher_2&lt;CDT, Criteria&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Mesher;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CDT::Point<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CDT<sp/>cdt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>va<sp/>=<sp/>cdt.insert(Point(-2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vb<sp/>=<sp/>cdt.insert(Point(0,-2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vc<sp/>=<sp/>cdt.insert(Point(2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>vd<sp/>=<sp/>cdt.insert(Point(0,1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert(Point(2,<sp/>0.6));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(va,<sp/>vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vb,<sp/>vc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vc,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cdt.insert_constraint(vd,<sp/>va);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Meshing...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesher<sp/>mesher(cdt);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesher.set_criteria(Criteria(0.125,<sp/>0.05));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mesher.refine_mesh();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Run<sp/>Lloyd<sp/>optimization...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgMesh2Functions_1gafeaf59d3fa014da287f8514913b38d05" kindref="member">CGAL::lloyd_optimize_mesh_2</ref>(cdt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::number_of_iterations(10));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>done.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>cdt.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+</sect2>
+</sect1>
+<sect1 id="index_1secMesh_2_IO">
+<title>Input/Output</title>
+<para>It is possible to export the result of a meshing in VTU, using the function <computeroutput><ref refid="group__PkgMesh2IO_1ga938b5d46b0dcff1b56f7342926e9f564" kindref="member">CGAL::IO::write_VTU()</ref></computeroutput>. For more information about this format, see <ref refid="IOStreamSupportedFileFormats_1IOStreamVTK" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">VTK (VTU / VTP / legacy) File Formats</ref>. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Mesh_2.txt"/>
+  </compounddef>
+</doxygen>

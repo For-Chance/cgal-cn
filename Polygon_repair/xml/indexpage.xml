@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_Polygon_repair"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Ken Arroyo Ohori</para>
+</simplesect>
+</para>
+<sect1 id="index_1SectionPolygonRepair_Introduction">
+<title>Introduction</title>
+<para>This package implements a polygon repair method. Starting from possibly invalid input in the form of a polygon, polygon with holes or multipolygon with holes, the method computes an arrangement of the input edges, labels each face according to what it represents (exterior, polygon interior or hole), and reconstructs the polygon(s) represented by the arrangement. The method returns valid output stored in a multipolygon with holes.</para>
+<para>Different arrangement and labelling heuristics are possible, but currently only the <emphasis>even-odd</emphasis> rule is implemented in this package. This rule results in areas that are alternately assigned as polygon interiors and exterior/holes each time that an input edge is passed. It does not distinguish between edges that are part of outer boundaries from those of inner boundaries. In a next version we will add the <emphasis>winding number</emphasis> rule.</para>
+</sect1>
+<sect1 id="index_1SectionPolygonRepair_Definitions">
+<title>Definitions</title>
+<para><itemizedlist>
+<listitem><para>A valid <emphasis>polygon</emphasis> (without holes) is a point set in <formula id="0">$ \mathbb{R}^2$</formula> that is bounded by a cycle of linear edges, which is known as its <emphasis>outer boundary</emphasis>. This outer boundary should be <emphasis>simple</emphasis>, meaning that the interiors of its edges are pairwise disjoint and all of its vertices have a degree of two. It is thus topologically equivalent to a disk and is represented internally as the sequence of points at the common end points of the edges around its outer boundary.</para>
+</listitem><listitem><para>A valid <emphasis>polygon with holes</emphasis> is a point set in <formula id="0">$ \mathbb{R}^2$</formula> that is bounded by one outer boundary and zero or more <emphasis>inner boundaries</emphasis>, where each inner boundary represents a hole in the polygon. Considered independently, each boundary should be simple. The different boundaries of a polygon are allowed to intersect tangentially at their common vertices (with no common edges), forming vertices with degrees of a multiple of two the tangential points. The interior of a polygon with holes should form a connected point set. Note that a valid polygon can also be represented as a valid polygon with holes (where the number of holes is zero).</para>
+</listitem><listitem><para>A valid <emphasis>multipolygon with holes</emphasis> is a point set in <formula id="0">$ \mathbb{R}^2$</formula> that is represented by a set of zero or more valid polygons with holes. The interiors of the polygons with holes should be pairwise disjoint, but they are allowed to intersect tangentially at their common vertices. Note that a valid polygon with holes can also be represented as a valid multipolygon with holes (with only one polygon).</para>
+</listitem></itemizedlist>
+</para>
+<para><anchor id="index_1fig__valid"/> <image type="html" name="valid.svg"></image>
+ <image type="latex" name="valid.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__valid" kindref="member">fig__valid</ref> Valid: (a) polygon, (b-c) polygons with holes, and (d-e) multipolygons with holes. (c) and (e) show cases where boundaries intersect tangentially at a single vertex. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__invalid"/> <image type="html" name="invalid.svg"></image>
+ <image type="latex" name="invalid.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__invalid" kindref="member">fig__invalid</ref> Invalid: (a) self-intersecting polygon self-intersection, (b) self-touching polygon, (c-d) polygons with badly nested holes, (e) polygon with hole touching at edge, (f) polygon with hole that separates interior into two parts, (g) multipolygon with overlapping polygons, and (h) multipolygon with polygons that touch at an edge. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1SubsectionPolygonRepair_Output">
+<title>Stricter Conditions for Output</title>
+<para>The conditions listed above are sufficient to define valid polygons, polygons with holes and multipolygons with holes for most applications. However, in order to ensure unique deterministic output from the repair algorithm, the valid multipolygons with holes returned by the package conform to more strict criteria:</para>
+<para><itemizedlist>
+<listitem><para>Adjacent collinear edges touching at vertices of degree two are merged</para>
+</listitem><listitem><para>The sequence of vertices representing a boundary starts from its lexicographically smallest vertex</para>
+</listitem><listitem><para>Outer boundaries are oriented counter-clockwise and inner boundaries are oriented clockwise</para>
+</listitem><listitem><para>The inner boundaries of a polygon with holes are stored in lexicographic order</para>
+</listitem><listitem><para>The polygons with holes of a multipolygon with holes are also stored in lexicographic order</para>
+</listitem></itemizedlist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1SectionPolygonRepair_Algorithm">
+<title>Algorithm</title>
+<para>Broadly, the algorithm consists of three steps:</para>
+<para><orderedlist>
+<listitem><para><emphasis>Arrangement</emphasis>: the edges in the polygon, polygon with holes or multipolygon with holes are added as edges in the arrangement.</para>
+</listitem><listitem><para><emphasis>Labeling of the faces</emphasis>: the resulting faces are labeled with ids according to what they represent (exterior, polygon interior or hole).</para>
+</listitem><listitem><para><emphasis>Reconstruction of the multipolygon</emphasis>: each boundary is reconstructed, then these are assembled into individual polygons with holes and put into a single multipolygon with holes.</para>
+</listitem></orderedlist>
+</para>
+<para><anchor id="index_1fig__inout"/> <image type="html" name="inout.svg"></image>
+ <image type="latex" name="inout.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__inout" kindref="member">fig__inout</ref> Examples of polygons with holes (a-d) and multipolygons with holes (e-h) before (left) and after (right) being repaired. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1SubsectionPolygonRepair_Arrangement">
+<title>Arrangement</title>
+<para>For the purposes of the repair operation, the input polygon, polygon with holes or multipolygon is merely used as a container of input line segments. These line segments are added to the arrangement as edges. Internally, this is done using a constrained triangulation where they are added as constraints.</para>
+<para>With the even-odd rule, only the edges that are present an odd number of times in the input will be edges in the final arrangement. When these edges are only partially overlapping, only the parts that overlap an odd number of times will be edges in the final arrangement.</para>
+<para>This procedure is done in two steps: 1. preprocessing to eliminate identical edges that are present an even number of times, and 2. adding edges incrementally while applying an even-odd counting mechanism, which erases existing (parts of) edges when new overlapping ones are added.</para>
+</sect2>
+<sect2 id="index_1SubsectionPolygonRepair_Labeling">
+<title>Labeling</title>
+<para>First, the polygon exterior is labeled. For this, all of the faces that can be accessed from the exterior without passing through an edge are labeled as exterior faces.</para>
+<para>Then, all other faces are labeled. For the even-odd rule, the label applied alternates between polygon interior and hole every time that an edge is passed.</para>
+</sect2>
+<sect2 id="index_1SubsectionPolygonRepair_Reconstruction">
+<title>Reconstruction of the Multipolygon</title>
+<para>The algorithm reconstructs the multipolygon boundary by boundary, obtaining counter-clockwise cycles for outer boundaries and clockwise cycles for inner boundaries. Once all boundaries have been reconstructed, the boundaries are assembled into multipolygons using the face labels to know which polygon with holes inner/outer boundaries belong to, and using the orientation to distinguish between the outer and inner boundaries of each polygon with holes.</para>
+</sect2>
+<sect2 id="index_1SubsectionPolygonRepair_Notes">
+<title>Notes on the Output</title>
+<para>If the input is already valid, the method will return a valid output representing the same area. However, the output might be different in order to conform to the stricter conditions to generate deterministic output (see <ref refid="index_1SubsectionPolygonRepair_Output" kindref="member">Stricter Conditions for Output</ref>).</para>
+<para>Also, it is worth noting that even the repair of a single polygon without holes but with self-intersections can result in a multipolygon with holes. This is why the repair function will always return a multipolygon with holes. The user can then check whether it consists of a single polygon with holes, and if a polygon with holes has zero holes and extract these if needed.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1SectionPolygonRepair_Examples">
+<title>Examples</title>
+<sect2 id="index_1SubsectionPolygonRepair_Repair">
+<title>Repairing a (Multi)polygon</title>
+<para>It is possible to repair a polygon, polygon with holes or multipolygon with holes using the even-odd rule by calling the <computeroutput><ref refid="group__PkgPolygonRepairFunctions_1gac19cf27226df0fae15e4c1b3f9065a9a" kindref="member">Polygon_repair::repair()</ref></computeroutput> function as shown in the following example. This function returns a repaired multipolygon with holes.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Polygon_repair_2repair_polygon_2_8cpp-example" kindref="compound">Polygon_repair/repair_polygon_2.cpp</ref> <programlisting filename="Polygon_repair/repair_polygon_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_repair/repair.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/WKT.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;Kernel&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;Kernel&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Multipolygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Multipolygon_with_holes_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Multipolygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Multipolygon_with_holes_2&lt;Kernel&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in(</highlight><highlight class="stringliteral">&quot;data/bridge-edge.wkt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref><sp/>pin;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsWKT_1ga0bf10061c888cb9be8e2c6e12be48110" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::read_polygon_WKT</ref>(in,<sp/>pin);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Multipolygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Multipolygon_with_holes_2</ref><sp/>mp<sp/>=<sp/><ref refid="group__PkgPolygonRepairFunctions_1gac19cf27226df0fae15e4c1b3f9065a9a" kindref="member">CGAL::Polygon_repair::repair</ref>(pin);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(mp.number_of_polygons_with_holes()<sp/>&gt;<sp/>1)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsWKT_1ga56eb9fc151c6a52af723d65612f4d2ee" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_multi_polygon_WKT</ref>(std::cout,<sp/>mp);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsWKT_1ga11a7d9adde86643a19b8635e83cc3956" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_polygon_WKT</ref>(std::cout,<sp/>mp.polygons_with_holes()[0]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1SectionPolygonRepair_Performance">
+<title>Performance</title>
+<para>The method can repair large invalid polygons of millions of vertices in a few seconds as long as the number of intersections between line segments is limited. This is a realistic assumption with many invalid data sets, which only have relatively minor issues involving a small number of their vertices/edges. However, it is worth noting that there can be a potentially quadratic number of intersection between edges in the worst case, leading to much worse performance since all of these intersections need to be calculated in the overlay.</para>
+<para><table rows="3" cols="4"><row>
+<entry thead="yes" align='center'><para>Polygon   </para>
+</entry><entry thead="yes" align='center'><para>Vertices   </para>
+</entry><entry thead="yes" align='center'><para>Holes   </para>
+</entry><entry thead="yes"><para>Time    </para>
+</entry></row>
+<row>
+<entry thead="no" align='center'><para><image type="html" name="Corine180927.jpg" inline="yes"></image>
+ <image type="latex" name="Corine180927.jpg" inline="yes"></image>
+ <image type="rtf" name="Corine180927.jpg" inline="yes"></image>
+ <image type="docbook" name="Corine180927.jpg" inline="yes"></image>
+ <image type="xml" name="Corine180927.jpg" inline="yes"></image>
+  </para>
+</entry><entry thead="no" align='center'><para>101973   </para>
+</entry><entry thead="no" align='center'><para>298   </para>
+</entry><entry thead="no"><para>0.652 sec    </para>
+</entry></row>
+<row>
+<entry thead="no" align='center'><para><image type="html" name="Corine2018418.jpg" inline="yes"></image>
+ <image type="latex" name="Corine2018418.jpg" inline="yes"></image>
+ <image type="rtf" name="Corine2018418.jpg" inline="yes"></image>
+ <image type="docbook" name="Corine2018418.jpg" inline="yes"></image>
+ <image type="xml" name="Corine2018418.jpg" inline="yes"></image>
+  </para>
+</entry><entry thead="no" align='center'><para>43925   </para>
+</entry><entry thead="no" align='center'><para>125   </para>
+</entry><entry thead="no"><para>0.190 sec   </para>
+</entry></row>
+</table>
+</para>
+</sect1>
+<sect1 id="index_1SectionPolygonRepair_History">
+<title>History</title>
+<para>The polygon repair method as originally developed is described by Ledoux et al. <ref refid="citelist_1CITEREF_ledoux2014triangulation" kindref="member">[1]</ref> and implemented in the <ulink url="https://github.com/tudelft3d/prepair/"><emphasis>prepair</emphasis></ulink> software. This package is a reimplementation of the method with a new approach to label and reconstruct the multipolygons. It also incorporates improvements later added to <emphasis>prepair</emphasis>, such as the application of the even-odd counting heuristics to edges, which enables correct counting even on partially overlapping edges.</para>
+<para>Ken Arroyo Ohori developed this package during the Google Summer of Code 2023 mentored by Sébastien Loriot and Andreas Fabri. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Polygon_repair.txt"/>
+  </compounddef>
+</doxygen>

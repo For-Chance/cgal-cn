@@ -1,0 +1,302 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Approximation_of_Ridges_and_Umbilics_on_Triangulated_Surface_Meshes"/><anchor id="index_1chapRidges3"/> <simplesect kind="authors"><para>Marc Pouget and Fr<eacute/>d<eacute/>ric Cazals <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+</simplesect>
+<anchor id="index_1fig__davidcrest"/> <image type="html" name="david_crest.jpg"></image>
+ <image type="latex" name="david_crest.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__davidcrest" kindref="member">fig__davidcrest</ref> Crest ridges on the David, model provided by the Digital Michelangelo Project. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>This chapter describes the CGAL package for the approximating the ridges and umbilics of a smooth surface discretized by a triangle mesh. Given a smooth surface, a ridge is a curve along which one of the principal curvatures has an extremum along its curvature line. An umbilic is a point at which both principal curvatures are equal. Ridges define a singular curve, i.e., a self-intersecting curve, and umbilics are special points on this curve. Ridges are curves of <emphasis>extremal</emphasis> curvature and therefore encode important information used in segmentation, registration, matching and surface analysis. Based on the results of the article <ref refid="citelist_1CITEREF_cgal:cp-tdare-05" kindref="member">[2]</ref>, we propose algorithms to identify and extract different parts of this singular ridge curve as well as umbilics on a surface given as a triangulated surface mesh. Differential quantities associated to the mesh vertices are assumed to be given for these algorithms; such quantities may be computed by the package <ref refid="packages_1PkgJetFitting3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Estimation of Local Differential Properties of Point-Sampled Surfaces</ref>.</para>
+<para>Note that this package needs the third party library <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen</ref> for linear algebra operations.</para>
+<sect1 id="index_1Ridges_3Overview">
+<title>Overview</title>
+<para>Section <ref refid="index_1smooth" kindref="member">Ridges and Umbilics of a Smooth Surface</ref> presents the basics of the theory of ridges and umbilics on smooth surfaces. Sections <ref refid="index_1Ridges_3Approximating" kindref="member">Approximating Ridges on Triangulated Surface Meshes</ref> and <ref refid="index_1Ridges_3Approximating_1" kindref="member">Approximating Umbilics on Triangulated Surface Meshes</ref> present algorithms for approximating the ridges and umbilics (of a smooth surface) from a triangle mesh. Section <ref refid="index_1Ridges_3Software" kindref="member">Software Design</ref> gives the package specifications, while example calls to functions of the package are provided in Section <ref refid="index_1Ridges_3Examples" kindref="member">Examples</ref>.</para>
+</sect1>
+<sect1 id="index_1smooth">
+<title>Ridges and Umbilics of a Smooth Surface</title>
+<para>For a detailed introduction to ridges and related topics, the reader may consult <ref refid="citelist_1CITEREF_cgal:hgygm-ttdpf-99" kindref="member">[3]</ref>,<ref refid="citelist_1CITEREF_cgal:p-gd-01" kindref="member">[5]</ref>, as well as the survey article <ref refid="citelist_1CITEREF_cgal:cp-ssulc-05" kindref="member">[1]</ref>. In the sequel, we just introduce the basic notions so as to explain our algorithms. Consider a smooth embedded surface, and denote <formula id="4">$ k_1$</formula> and <formula id="5">$ k_2$</formula> the principal curvatures, with <formula id="6">$ k_1\geq k_2$</formula>. Umbilics are the points where <formula id="7">$ k_1=k_2$</formula>. For any non umbilical point, the corresponding principal directions of curvature are well defined, and we denote them <formula id="8">$ d_1$</formula> and <formula id="9">$ d_2$</formula>. In local coordinates, we denote <formula id="10">$ \langle , \rangle$</formula> the inner product induced by the ambient Euclidean space, and <formula id="11">$ dk_1$</formula>, <formula id="12">$ dk_2$</formula> the gradients of the principal curvatures. Ridges, illustrated in <ref refid="index_1fig__ellipsoidridges" kindref="member">fig__ellipsoidridges</ref> for the standard ellipsoid, are defined by:</para>
+<para><bold>Definition.</bold><anchor id="index_1defridgeextrema"/>A non umbilical point is called <itemizedlist>
+<listitem>
+<para>a max ridge point, if the <emphasis>extremality coefficient</emphasis> <formula id="13">$ b_0=\langle
+dk_1,d_1 \rangle$</formula> vanishes, i.e. <formula id="14">$ b_0=0$</formula>.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>a min ridge point, if the <emphasis>extremality coefficient</emphasis> <formula id="15">$ b_3=\langle dk_2,d_2 \rangle$</formula> vanishes, i.e. <formula id="16">$ b_3=0$</formula> Notations <formula id="17">$ b_0, b_3$</formula> comes from Equation <ref refid="index_1eqmonge" kindref="member">eqmonge</ref> . </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>The previous characterization of ridges involves third-order differential properties. Using fourth-order differential quantities, a ridge point can further be qualified as <emphasis>elliptic</emphasis> if it corresponds to a maximum of <formula id="4">$ k_1$</formula> or a minimum of <formula id="5">$ k_2$</formula>, or <emphasis>hyperbolic</emphasis> otherwise. Hence we end up with four types of ridges, namely: <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aad6458197d2d914616a1229703641fc26" kindref="member">MAX_ELLIPTIC_RIDGE</ref>, <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aafff4a2edf212ef44875cd3fd82f1fc6a" kindref="member">MAX_HYPERBOLIC_RIDGE</ref>, <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aaf28972caa9c208fa7096a992139b582c" kindref="member">MIN_ELLIPTIC_RIDGE</ref>, <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aac4a20a4d417d135de77f1d7c6cb4cdaf" kindref="member">MIN_HYPERBOLIC_RIDGE</ref>, which are illustrated in <ref refid="index_1fig__ellipsoidridges" kindref="member">fig__ellipsoidridges</ref>. Also of interest are the <emphasis>crest lines</emphasis>, a crest line being an elliptic ridge which is a maximum of <formula id="18">$ \max(|k_1|,|k_2|)$</formula>. Crest lines form a subset of elliptic ridges, and can be seen as the visually most salient curves on a surface. Hence we provide the two additional ridge types <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aa8476643dc6a52935b0413cf080bb8ed4" kindref="member">MAX_CREST_RIDGE</ref> and <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aa224c1b10b418e4511734720d6db26049" kindref="member">MIN_CREST_RIDGE</ref>, which are illustrated in <ref refid="index_1fig__davidcrest" kindref="member">fig__davidcrest</ref>.</para>
+<para><anchor id="index_1fig__ellipsoidridges"/> <image type="html" name="ellipsoid_ridges.png"></image>
+ <image type="latex" name="ellipsoid_ridges.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__ellipsoidridges" kindref="member">fig__ellipsoidridges</ref> Ridges on the ellipsoid, normals pointing outward. Color coding: <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aad6458197d2d914616a1229703641fc26" kindref="member">MAX_ELLIPTIC_RIDGE</ref> are blue, <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aafff4a2edf212ef44875cd3fd82f1fc6a" kindref="member">MAX_HYPERBOLIC_RIDGE</ref> are green, <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aaf28972caa9c208fa7096a992139b582c" kindref="member">MIN_ELLIPTIC_RIDGE</ref> are red and <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aac4a20a4d417d135de77f1d7c6cb4cdaf" kindref="member">MIN_HYPERBOLIC_RIDGE</ref> are yellow. The red line is also the <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aa224c1b10b418e4511734720d6db26049" kindref="member">MIN_CREST_RIDGE</ref> and this is the only crest ridge of the ellipsoid. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>At any point of the surface which is not an umbilic, principal directions <formula id="19">$ d_1, d_2$</formula> are well defined, and these (non oriented) directions together with the normal vector <formula id="20">$ n$</formula> define two direct orthonormal frames. If <formula id="21">$ v_1$</formula> is a unit vector of direction <formula id="8">$ d_1$</formula> then there exists a unique unit vector <formula id="22">$ v_2$</formula> so that <formula id="23">$ (v_1,v_2,n)$</formula> is direct, that is has the same orientation as the canonical basis of the ambient <formula id="24">$ 3d$</formula> space (and the other possible frame is <formula id="25">$ (-v_1,-v_2,n)$</formula>). In the coordinate systems <formula id="23">$ (v_1,v_2,n)$</formula>, the surface has the following canonical form, known as the Monge form :</para>
+<para><anchor id="index_1eqmonge"/> <formula id="26">\begin{eqnarray}
+z(x,y) = &amp; \frac{1}{2}(k_1x^2 + k_2y^2)+
+\frac{1}{6}(b_0x^3+3b_1x^2y+3b_2xy^2+b_3y^3) \\
+&amp; +\frac{1}{24}(c_0x^4+4c_1x^3y+6c_2x^2y^2+4c_3xy^3+c_4y^4) + h.o.t
+\end{eqnarray}</formula></para>
+<para>The Taylor expansion of <formula id="4">$ k_1$</formula> (resp. <formula id="5">$ k_2$</formula>) along the max (resp. min) curvature line going through the origin and parameterized by <formula id="27">$ x$</formula> (resp. <formula id="28">$ y$</formula>) are:</para>
+<para><anchor id="index_1eqtaylor_along_line"/> <formula id="29">\begin{equation}
+k_1(x) = k_1 + b_0x + \frac{P_1}{2(k_1-k_2)}x^2 + ... , \quad \quad \quad
+P_1= 3b_1^2+(k_1-k_2)(c_0-3k_1^3).
+\end{equation}</formula></para>
+<para><anchor id="index_1eqtaylor_along_red_line"/> <formula id="30">\begin{equation}
+k_2(y) = k_2 + b_3y + \frac{P_2}{2(k_2-k_1)}y^2 + ... , \quad \quad \quad
+P_2= 3b_2^2+(k_2-k_1)(c_4-3k_2^3).
+\end{equation}</formula></para>
+<para>Notice also that switching from one to the other of the two afore-mentioned coordinate systems reverts the sign of all the odd coefficients on the Monge form of the surface.<linebreak/>
+</para>
+<para><linebreak/>
+</para>
+<para>Hence ridge types are characterized by <itemizedlist>
+<listitem>
+<para>max ridge if <formula id="14">$ b_0=0$</formula> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aad6458197d2d914616a1229703641fc26" kindref="member">MAX_ELLIPTIC_RIDGE</ref> if <formula id="14">$ b_0=0$</formula> and <formula id="31">$ P_1&lt;0$</formula> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aafff4a2edf212ef44875cd3fd82f1fc6a" kindref="member">MAX_HYPERBOLIC_RIDGE</ref> if <formula id="14">$ b_0=0$</formula> and <formula id="32">$ P_1&gt;0$</formula> </para>
+</listitem>
+<listitem>
+<para>min ridge if <formula id="16">$ b_3=0$</formula> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aaf28972caa9c208fa7096a992139b582c" kindref="member">MIN_ELLIPTIC_RIDGE</ref> if <formula id="16">$ b_3=0$</formula> and <formula id="33">$ P_2&lt;0$</formula> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aac4a20a4d417d135de77f1d7c6cb4cdaf" kindref="member">MIN_HYPERBOLIC_RIDGE</ref> if <formula id="16">$ b_3=0$</formula> and <formula id="34">$ P_2&gt;0$</formula> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aa8476643dc6a52935b0413cf080bb8ed4" kindref="member">MAX_CREST_RIDGE</ref> if <formula id="14">$ b_0=0$</formula> and <formula id="31">$ P_1&lt;0$</formula> and <formula id="35">$ |k_1|&gt;|k_2|$</formula> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aa224c1b10b418e4511734720d6db26049" kindref="member">MIN_CREST_RIDGE</ref> if <formula id="16">$ b_3=0$</formula> and <formula id="33">$ P_2&lt;0$</formula> and <formula id="36">$ |k_2|&gt;|k_1|$</formula> </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>As illustrated in <ref refid="index_1fig__index_umbilic" kindref="member">fig__index_umbilic</ref> and <ref refid="index_1fig__umbilics" kindref="member">fig__umbilics</ref>, the patterns made by curvature lines around an umbilic can be characterized using the notion of an <emphasis>index</emphasis> associated to the principal directions - see also <ref refid="citelist_1CITEREF_cgal:cp-ssulc-05" kindref="member">[1]</ref>. As depicted in <ref refid="index_1fig__index_umbilic" kindref="member">fig__index_umbilic</ref>, consider a small circuit <formula id="37">$ C$</formula> around the umbilic, and a point <formula id="38">$ p \in C$</formula>. Starting from an initial orientation <formula id="39">$ u$</formula> of a tangent vector to the curvature line through point <formula id="40">$ p$</formula>, propagate <emphasis>by continuity</emphasis> this orientation around the circuit. The index is defined by the angle swept by <formula id="39">$ u$</formula> around this revolution, normalized by <formula id="41">$ 2\pi$</formula>. In our example, the index is thus 1/2.</para>
+<para>If the index of the principal direction field is <formula id="42">$ 1/2$</formula> then it is called a <ref refid="group__PkgRidges3Enums_1gga4a6962972d77b9dcc9dfd82fdb5cf822afb00126ebe97b59d3426f9bf4cc93e98" kindref="member">ELLIPTIC_UMBILIC</ref>, if it is <formula id="43">$ -1/2$</formula> it is called a <ref refid="group__PkgRidges3Enums_1gga4a6962972d77b9dcc9dfd82fdb5cf822a08e952e539375e05e9b2575bb413dcd9" kindref="member">HYPERBOLIC_UMBILIC</ref>. Otherwise the umbilic is qualified <ref refid="group__PkgRidges3Enums_1gga4a6962972d77b9dcc9dfd82fdb5cf822a34921ace95210d956a9ba2c8615933a7" kindref="member">NON_GENERIC_UMBILIC</ref>.</para>
+<para><anchor id="index_1fig__index_umbilic"/> <image type="html" name="index_umbilic.png"></image>
+ <image type="latex" name="index_umbilic.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__index_umbilic" kindref="member">fig__index_umbilic</ref> <ref refid="classIndex" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Index</ref> <formula id="44">$1/2$</formula> umbilic or elliptic umbilic. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__umbilics"/> <image type="html" name="lemon.png"></image>
+ <image type="latex" name="lemon.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__umbilics" kindref="member">fig__umbilics</ref> Elliptic and hyperbolic umbilics. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Ridges_3Approximating">
+<title>Approximating Ridges on Triangulated Surface Meshes</title>
+<para>Our method aims at reporting ridges as polygonal lines living on the mesh. It assumes differential quantities are available for each vertex of the mesh (principal curvatures and directions together with third order quantities <formula id="17">$ b_0, b_3$</formula> and optionally fourth order quantities <formula id="45">$ P_1, P_2$</formula>). These differential quantities may be computed for the smooth surface the mesh is inscribed in (analytically or using approximation methods), or may be estimated for a mesh given without reference to an underlying smooth surface. Although the ridge approximation algorithm is the same in both cases, one cannot ambition to ask for the same certificates. This distinction calls for the notion of <emphasis>compliant</emphasis> mesh.</para>
+<para><bold>Compliant meshes.</bold></para>
+<para>Ridges of a smooth surface are points with prescribed differential properties, and reporting them from a mesh inscribed in the surface requires delicate hypothesis on the geometry of that mesh so as to get a certified result. In this paragraph, we assume the mesh provided complies with a number of hypothesis, which guarantee the topology of the ridges reported matches that of the ridges on the smooth surface. To summarize things, a compliant mesh is a mesh dense enough so that (i) umbilics are properly isolated (ii) ridges running next to one another are also properly separated. See <ref refid="citelist_1CITEREF_cgal:cp-tdare-05" kindref="member">[2]</ref> for a detailed discussion of <emphasis>compliant</emphasis> meshes.<linebreak/>
+</para>
+<para>As 0-level set of the extremality coefficients <formula id="46">$ b_0$</formula> and <formula id="47">$ b_3$</formula>, ridges are extracted by a marching triangles algorithm.A marching triangles algorithm is similar to a 2d marching cubes algorithm (or marching rectangles algorithm), except that a one-manifold is reported on a two-manifold tessellated by triangles.</para>
+<para>As the signs of these extremality coefficients depend on the orientation of the principal directions, we expect both extremalities and vectors orienting the principal direction to be given at each point vertex of the mesh. Except in the neighborhood of umbilics, if the mesh is dense enough, a coherent orientation of principal directions at both endpoints of an edge is chosen such that the angle between the two vectors is acute. This rule, the <emphasis>acute rule</emphasis>, is precisely analyzed in <ref refid="citelist_1CITEREF_cgal:cp-tdare-05" kindref="member">[2]</ref>. Moreover, we only seek ridges in triangles for which one can find an orientation of its three vertices such that the three edges are coherently oriented by the acute rule. Such triangles are called <emphasis>regular</emphasis>. This said, two remarks are in order.</para>
+<para><emphasis> - Regular triangles and ridge segments.</emphasis> A regular triangle has 0 or 2 edges crossed by a max (resp. min) ridge, which is tantamount to a sign change of <formula id="46">$ b_0$</formula> (resp. <formula id="47">$ b_3$</formula>) along the corresponding edges. In the latter case, we say that the triangle contains a ridge segment. Two methods are provided to compute its type, be it elliptic or hyperbolic. First, if fourth order differential quantities are provided, one can use the <formula id="48">$ P_1$</formula> ( <formula id="49">$ P_2$</formula>) values of Equations <ref refid="index_1eqtaylor_along_line" kindref="member">eqtaylor_along_line</ref> ( <ref refid="index_1eqtaylor_along_red_line" kindref="member">eqtaylor_along_red_line</ref>) for a max (min) ridge. The value of <formula id="50">$ P_i$</formula> for a ridge segment is defined as the mean value of the <formula id="50">$ P_i$</formula> values of the two crossing points on edges (while the value at a crossing point on an edge is the <formula id="51">$ b_i$</formula>-weighted mean value of the values at endpoints). Alternatively, if third order differential quantities only are available, one may use the geometric method developed in <ref refid="citelist_1CITEREF_cgal:cp-tdare-05" kindref="member">[2]</ref>.</para>
+<para>Using the notion of ridge segment, a <computeroutput><ref refid="classCGAL_1_1Ridge__line" kindref="compound">Ridge_line</ref></computeroutput> is defined as a maximal connected sequence of ridge segments of the same type and connected together. Notice that the topology of a <computeroutput><ref refid="classCGAL_1_1Ridge__line" kindref="compound">Ridge_line</ref></computeroutput> is either that of an interval or a circle.</para>
+<para><emphasis> - Non-regular triangles.</emphasis> In the neighborhood of umbilics, triangle are less likely to be regular and the detection of ridges cannot be relevant by this method. This is why we propose another method to detect umbilics independently.</para>
+<para><bold>Non compliant meshes: filtering ridges on <emphasis>strength</emphasis> and <emphasis>sharpness</emphasis>.</bold></para>
+<para>For real world applications dealing with coarse meshes, or meshes featuring degenerate regions or sharp features, or meshes conveying some amount of noise, the <emphasis>compliance</emphasis> hypothesis <ref refid="citelist_1CITEREF_cgal:cp-tdare-05" kindref="member">[2]</ref> cannot be met. In that case, it still makes sense to seek loci of points featuring extremality of estimated principal curvatures, but the ridges reported may require filtering. For example, if the principal curvatures are constant<itemizedlist>
+<listitem><para>which is the case on a plane or a cylinder, then all points are ridge points. In this context, an appealing notion is that of <emphasis>sharp</emphasis> ridge or <emphasis>prominent</emphasis> ridge. Since ridges are witnessed by zero crossings of <formula id="46">$ b_0$</formula> and <formula id="47">$ b_3$</formula>, one can expect erroneous detections as long as these coefficients remain small. In order to select the most prominent ridge points, we focus on points where the variation of the curvature is fast along the curvature line. One can observe that, at a ridge point, according to Equation <ref refid="index_1eqtaylor_along_line" kindref="member">eqtaylor_along_line</ref>, the second derivative of <formula id="4">$ k_1$</formula> along its curvature line satisfies <formula id="52">$ k_1^{&apos;&apos;}(0) = P_1/(k_1-k_2)$</formula>. Using this observation, one can define the <emphasis>sharpness of a ridge</emphasis> as the integral of the absolute value of <formula id="53">$ P_1/(k_1-k_2)$</formula> along the ridge. As the second derivative of the curvature is homogeneous to the inverse of the cube of a length, the sharpness is homogeneous to the inverse of the square of a length. Multiplying the sharpness by the square of the model size gives a threshold and an associated sharpness-filter which are scale independent. Another filtering is also available with the <emphasis>strength </emphasis> which is the integral of the curvature along the ridge line <ref refid="citelist_1CITEREF_cgal:ybs-rvlmi-04" kindref="member">[4]</ref>.</para>
+</listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1Ridges_3Approximating_1">
+<title>Approximating Umbilics on Triangulated Surface Meshes</title>
+<para><anchor id="index_1umbilicmesh"/> The method aims at identifying some vertices of a mesh as umbilics. It assumes principal curvatures and directions are given at each vertex on the mesh.</para>
+<para><bold>Algorithm.</bold></para>
+<para>Assume each vertex <formula id="54">$ v$</formula> of the mesh comes with a patch (a topological disk) around it. Checking whether vertex <formula id="54">$ v$</formula> is an umbilic is a two stages process, which are respectively concerned with the variation of the function <formula id="55">$ k_1-k_2$</formula> over the patch, and the index of the vertex computed from the boundary of the patch. More precisely, vertex <formula id="54">$ v$</formula> is declared to be an umbilic if the following two conditions are met: <itemizedlist>
+<listitem>
+<para>the function <formula id="55">$ k_1-k_2$</formula> has its minimum at <formula id="54">$ v$</formula> amongst all the vertices of the patch; </para>
+</listitem>
+<listitem>
+<para>the deviation <formula id="56">$ \delta$</formula> of any principal direction along the patch boundary, traversed counter-clock-wise (CCW), has prescribed properties: <itemizedlist>
+<listitem>
+<para><formula id="57">$ \delta \in ]\pi/2,3\pi/2[$</formula>, then the umbilic is called elliptic, </para>
+</listitem>
+<listitem>
+<para><formula id="58">$ \delta \in ]-3\pi/2,-\pi/2[$</formula>, then the umbilic is called a hyperbolic, </para>
+</listitem>
+<listitem>
+<para>otherwise the umbilic is called non-generic. </para>
+</listitem>
+</itemizedlist>
+</para>
+</listitem>
+</itemizedlist>
+</para>
+<para><bold>Finding patches around vertices.</bold></para>
+<para>Given a vertex <formula id="54">$ v$</formula> and a parameter <formula id="59">$ t$</formula>, we aim at defining a collection of triangles around <formula id="54">$ v$</formula> so that (i) this collection defines a topological disk on the triangulation <formula id="60">$ T$</formula> and (ii) its size depends on <formula id="59">$ t$</formula>. First we collect the 1-ring triangles. We define the size <formula id="61">$ s$</formula> of this 1-ring patch as the (Euclidean) distance from <formula id="54">$ v$</formula> to its farthest 1-ring vertex neighbor. We then collect recursively adjacent triangles so that the patch remains a topological disk and such that these triangles are at distance less than <formula id="62">$ s\times t$</formula>. Parameter <formula id="59">$ t$</formula> is the only parameter of the algorithm.</para>
+<para><bold>Umbilical patches versus ridges.</bold> On a generic surface, generic umbilics are traversed by one or three ridges. For compliant meshes, an umbilic can thus be connected to the ridge points located on the boundary of its patch. This functionality is not provided, and the interested reader is referred to <ref refid="citelist_1CITEREF_cgal:cp-tdare-05" kindref="member">[2]</ref> for more details.</para>
+</sect1>
+<sect1 id="index_1Ridges_3Software">
+<title>Software Design</title>
+<para><anchor id="index_1soft"/> All classes of this package are templated by the parameter <computeroutput>TriangleMesh</computeroutput>, which defines the type of the mesh to which the approximation algorithms operate.</para>
+<para>The differential quantities are provided at vertices of this mesh via property maps, a concept commonly used in the Boost library. Property maps enables the user to store scalars and vectors associated to a vertex either <emphasis>internally</emphasis> in extended vertices or <emphasis>externally</emphasis> with a <computeroutput>std::map</computeroutput> combined with a <ulink url="https://www.boost.org/libs/property_map/doc/associative_property_map.html"><computeroutput>boost::associative_property_map</computeroutput></ulink>.</para>
+<para>Output of ridges or umbilics are provided via output iterators.</para>
+<para>Approximation of ridges and umbilics are performed by two independent classes, which we now further describe.</para>
+<sect2 id="index_1Ridges_3RidgeApproximation">
+<title>Ridge Approximation</title>
+<para>The main class is <computeroutput><ref refid="classCGAL_1_1Ridge__approximation" kindref="compound">Ridge_approximation</ref>&lt;TriangleMesh,VertexFTMap,VertexVectorMap&gt;</computeroutput>. Its construction requires the mesh and the property maps defining the differential quantities for principal curvatures <formula id="4">$ k_1$</formula> and <formula id="5">$ k_2$</formula>, the third order extremalities <formula id="46">$ b_0$</formula> and <formula id="47">$ b_3$</formula>, the principal directions of curvature <formula id="8">$ d_1$</formula> and <formula id="9">$ d_2$</formula>, and the fourth order quantities <formula id="48">$ P_1$</formula> and <formula id="49">$ P_2$</formula> if the tagging of ridges as elliptic or hyperbolic is to be done using the polynomials <formula id="48">$ P_1$</formula> and <formula id="49">$ P_2$</formula>.</para>
+<para>Three functions (provided as members and also as global functions) enable the computation of different types of ridges : <itemizedlist>
+<listitem>
+<para><computeroutput><ref refid="group__PkgRidges3Ref_1gacbcb335296cafd49ca33420d2fea8c24" kindref="member">compute_max_ridges()</ref></computeroutput> (resp. <computeroutput><ref refid="group__PkgRidges3Ref_1ga03c751ca758e75a4e00c9c60843e0eb5" kindref="member">compute_min_ridges()</ref></computeroutput>) outputs ridges of types <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aad6458197d2d914616a1229703641fc26" kindref="member">MAX_ELLIPTIC_RIDGE</ref> and <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aafff4a2edf212ef44875cd3fd82f1fc6a" kindref="member">MAX_HYPERBOLIC_RIDGE</ref> (resp. <computeroutput>MIN_ELLIPTIC_RIDGE</computeroutput> and <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aac4a20a4d417d135de77f1d7c6cb4cdaf" kindref="member">MIN_HYPERBOLIC_RIDGE</ref>). </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="group__PkgRidges3Ref_1ga160ff11edf5b6fd969f94461703d4e35" kindref="member">compute_crest_ridges()</ref></computeroutput> outputs ridges of types <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aa8476643dc6a52935b0413cf080bb8ed4" kindref="member">MAX_CREST_RIDGE</ref> and <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aa224c1b10b418e4511734720d6db26049" kindref="member">MIN_CREST_RIDGE</ref>. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>These functions allows the user to specify how the elliptic/hyperbolic tagging is carried out. Notice the rationale for the choice of these three functions is simple: each computation needs a single pass over the triangles of the mesh. This should be clear for the min and max ridges. For crests, just notice max and min crests cannot intersect over a triangle.<linebreak/>
+</para>
+<para><linebreak/>
+</para>
+<para>The ridge lines are stored in <computeroutput><ref refid="classCGAL_1_1Ridge__line" kindref="compound">Ridge_line</ref></computeroutput> objects and output through an iterator. Each ridge line is represented as a list of halfedges of the mesh it crosses with a scalar defining the barycentric coordinate of the crossing point with respect to the half-egde endpoints. Each ridge line comes with its type <computeroutput>Ridge_type</computeroutput>, its strength and sharpness.</para>
+<para>If one chooses to use only third order quantities, the quantities <formula id="50">$ P_i$</formula> do not have to be defined. Then the sharpness will not be defined.</para>
+</sect2>
+<sect2 id="index_1Ridges_3UmbilicApproximation">
+<title>Umbilic Approximation</title>
+<para>The main class is <computeroutput><ref refid="classCGAL_1_1Umbilic__approximation" kindref="compound">Umbilic_approximation</ref>&lt;TriangleMesh,VertexFTMap,VertexVectorMap&gt;</computeroutput>. Its construction requires the mesh and the property maps defining the differential quantities for principal curvatures <formula id="4">$ k_1$</formula> and <formula id="5">$ k_2$</formula>, and the principal directions of curvature <formula id="8">$ d_1$</formula> and <formula id="9">$ d_2$</formula>. The member function <computeroutput>compute()</computeroutput> (or the global function <computeroutput><ref refid="group__PkgRidges3Ref_1gaec8861e49a5cddc02ac9723f8f2b88ba" kindref="member">compute_umbilics()</ref></computeroutput>) has a parameter to define the size of the neighborhood of the umbilic.</para>
+<para>Umbilics are stored in <computeroutput><ref refid="classCGAL_1_1Umbilic" kindref="compound">Umbilic</ref></computeroutput> objects, they come with their type : <ref refid="group__PkgRidges3Enums_1gga4a6962972d77b9dcc9dfd82fdb5cf822afb00126ebe97b59d3426f9bf4cc93e98" kindref="member">ELLIPTIC_UMBILIC</ref>, <ref refid="group__PkgRidges3Enums_1gga4a6962972d77b9dcc9dfd82fdb5cf822a08e952e539375e05e9b2575bb413dcd9" kindref="member">HYPERBOLIC_UMBILIC</ref> or <ref refid="group__PkgRidges3Enums_1gga4a6962972d77b9dcc9dfd82fdb5cf822a34921ace95210d956a9ba2c8615933a7" kindref="member">NON_GENERIC_UMBILIC</ref>; the vertex of the mesh they are associated to and the list of half-edges representing the contour of the neighborhood.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Ridges_3Examples">
+<title>Examples</title>
+<sect2 id="index_1Ridges_3Exampleprogram">
+<title>Example Program</title>
+<para>The following program computes ridges and umbilics from an off file. It uses the package <ref refid="packages_1PkgJetFitting3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Estimation of Local Differential Properties of Point-Sampled Surfaces</ref> to estimate the differential quantities. The default output file gives rough data for visualization purpose, a verbose output file may also be asked for. Parameters are <itemizedlist>
+<listitem>
+<para><formula id="63">$ d$</formula>, the degree of the jet for the <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Jet_fitting_3.tag">Monge_via_jet_fitting</ref></computeroutput> class, <formula id="63">$ d$</formula> must be greater or equal to 3 which is the default value; </para>
+</listitem>
+<listitem>
+<para><formula id="64">$ m$</formula>, the degree of the Monge representation for the <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Jet_fitting_3.tag">Monge_via_jet_fitting</ref></computeroutput> class, <formula id="64">$ m$</formula> must be 3 (the default value) or 4 and smaller than <formula id="63">$ d$</formula>; </para>
+</listitem>
+<listitem>
+<para><formula id="65">$ a$</formula>, the number of rings of neighbors collected for the <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Jet_fitting_3.tag">Monge_via_jet_fitting</ref></computeroutput> class, in addition the number of vertices collected must be greater than <formula id="66">$ Nd:=(d+1)(d+2)/2$</formula> to make the approximation possible. <formula id="65">$ a$</formula> may be an integer greater than 1, the value 0 (which is the default) means that the minimum number of rings is collected to make the approximation possible. (Alternatively option <formula id="40">$ p$</formula> allows the specification of a constant number of neighbors); </para>
+</listitem>
+<listitem>
+<para><formula id="59">$ t$</formula>, the <computeroutput>Ridge_order</computeroutput> for the distinction between elliptic and hyperbolic ridges, <formula id="59">$ t$</formula> is 3 (default) or 4; </para>
+</listitem>
+<listitem>
+<para><formula id="39">$ u$</formula>, the parameter for umbilic patch size, <formula id="67">$ u \geq 1$</formula> (default is 1). </para>
+</listitem>
+</itemizedlist>
+</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="comment">//this<sp/>is<sp/>an<sp/>enriched<sp/>Polyhedron<sp/>with<sp/>facets&apos;<sp/>normal</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;PolyhedralSurf.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Ridges.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Umbilics.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Traits<sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;PolyhedralSurf&gt;::vertex_descriptor<sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;PolyhedralSurf&gt;::vertex_iterator<sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;PolyhedralSurf&gt;::face_descriptor<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;vertex_descriptor,<sp/>FT&gt;<sp/>VertexFT_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;<sp/>VertexFT_map<sp/>&gt;<sp/>VertexFT_property_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;vertex_descriptor,<sp/>Vector_3&gt;<sp/>VertexVector_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;<sp/>VertexVector_map<sp/>&gt;<sp/>VertexVector_property_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//RIDGES</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Ridge__line" kindref="compound">CGAL::Ridge_line&lt;PolyhedralSurf&gt;</ref><sp/><ref refid="classCGAL_1_1Ridge__line" kindref="compound">Ridge_line</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Ridge__approximation" kindref="compound">CGAL::Ridge_approximation</ref><sp/>&lt;PolyhedralSurf,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>VertexFT_property_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>VertexVector_property_map<sp/>&gt;<sp/><ref refid="classCGAL_1_1Ridge__approximation" kindref="compound">Ridge_approximation</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//UMBILICS</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Umbilic" kindref="compound">CGAL::Umbilic&lt;PolyhedralSurf&gt;</ref><sp/><ref refid="classCGAL_1_1Umbilic" kindref="compound">Umbilic</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Umbilic__approximation" kindref="compound">CGAL::Umbilic_approximation</ref><sp/>&lt;<sp/>PolyhedralSurf,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>VertexFT_property_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>VertexVector_property_map<sp/>&gt;<sp/><ref refid="classCGAL_1_1Umbilic__approximation" kindref="compound">Umbilic_approximation</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//create<sp/>property<sp/>maps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">VertexFT_map<sp/>vertex_k1_map,<sp/>vertex_k2_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_b0_map,<sp/>vertex_b3_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_P1_map,<sp/>vertex_P2_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>VertexVector_map<sp/>vertex_d1_map,<sp/>vertex_d2_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">VertexFT_property_map<sp/>vertex_k1_pm(vertex_k1_map),<sp/>vertex_k2_pm(vertex_k2_map),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_b0_pm(vertex_b0_map),<sp/>vertex_b3_pm(vertex_b3_map),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_P1_pm(vertex_P1_map),<sp/>vertex_P2_pm(vertex_P2_map);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>VertexVector_property_map<sp/>vertex_d1_pm(vertex_d1_map),<sp/>vertex_d2_pm(vertex_d2_map);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//compute<sp/>differential<sp/>quantities<sp/>with<sp/>the<sp/>jet<sp/>fitting<sp/>package</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>...</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//initialize<sp/>the<sp/>property<sp/>maps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>...</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Ridges</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//--------------------------------------------------------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Ridge__approximation" kindref="compound">Ridge_approximation</ref><sp/>ridge_approximation(P,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_k1_pm,<sp/>vertex_k2_pm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_b0_pm,<sp/>vertex_b3_pm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_P1_pm,<sp/>vertex_P2_pm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_d1_pm,<sp/>vertex_d2_pm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Ridge_line*&gt;<sp/>ridge_lines;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::back_insert_iterator&lt;std::vector&lt;Ridge_line*&gt;<sp/>&gt;<sp/>ii(ridge_lines);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Find<sp/>MAX_RIDGE,<sp/>MIN_RIDGE,<sp/>CREST<sp/>or<sp/>all<sp/>ridges</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ridge_approximation.compute_max_ridges(ii,<sp/>tag_order);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ridge_approximation.compute_min_ridges(ii,<sp/>tag_order);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ridge_approximation.compute_crest_ridges(ii,<sp/>tag_order);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>UMBILICS</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//--------------------------------------------------------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Umbilic__approximation" kindref="compound">Umbilic_approximation</ref><sp/>umbilic_approximation(P,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_k1_pm,<sp/>vertex_k2_pm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_d1_pm,<sp/>vertex_d2_pm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Umbilic*&gt;<sp/>umbilics;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::back_insert_iterator&lt;std::vector&lt;Umbilic*&gt;<sp/>&gt;<sp/>umb_it(umbilics);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>umbilic_approximation.compute(umb_it,<sp/>umb_size);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Ridges_3ExampleRidgesandUmbilicsonanEllipsoid">
+<title>Example: Ridges and Umbilics on an Ellipsoid</title>
+<para>For <ref refid="index_1fig__ellipsoidridgesexample" kindref="member">fig__ellipsoidridgesexample</ref>, the data have been computed as follows:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">./Compute_Ridges_Umbilics<sp/>-f<sp/>data/ellipsoid_u_0.02.off<sp/>-d<sp/>4<sp/>-m<sp/>4<sp/>-a<sp/>3<sp/>-t<sp/>3</highlight></codeline>
+</programlisting></para>
+<para>In addition, the four elliptic umbilics are detected, the standard output being</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">nb<sp/>of<sp/>umbilics<sp/>4</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Umbilic" kindref="compound">Umbilic</ref><sp/>at<sp/>location<sp/>(-0.80899<sp/>0.00426003<sp/>0.293896)<sp/>of<sp/>type<sp/>elliptic</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Umbilic" kindref="compound">Umbilic</ref><sp/>at<sp/>location<sp/>(-0.811197<sp/>0.0122098<sp/>-0.292259)<sp/>of<sp/>type<sp/>elliptic</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Umbilic" kindref="compound">Umbilic</ref><sp/>at<sp/>location<sp/>(0.808372<sp/>-0.00551307<sp/>-0.29431)<sp/>of<sp/>type<sp/>elliptic</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Umbilic" kindref="compound">Umbilic</ref><sp/>at<sp/>location<sp/>(0.81413<sp/>0.0018689<sp/>0.290339)<sp/>of<sp/>type<sp/>elliptic</highlight></codeline>
+</programlisting></para>
+<para><anchor id="index_1fig__ellipsoidridgesexample"/> <image type="html" name="ellipsoid_ridges.png"></image>
+ <image type="latex" name="ellipsoid_ridges.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__ellipsoidridgesexample" kindref="member">fig__ellipsoidridgesexample</ref> Ridges on the ellipsoid, normals pointing outward. Color coding : <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aad6458197d2d914616a1229703641fc26" kindref="member">MAX_ELLIPTIC_RIDGE</ref> are blue, <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aafff4a2edf212ef44875cd3fd82f1fc6a" kindref="member">MAX_HYPERBOLIC_RIDGE</ref> are green, <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aaf28972caa9c208fa7096a992139b582c" kindref="member">MIN_ELLIPTIC_RIDGE</ref> are red and <ref refid="group__PkgRidges3Enums_1gga52a2c136a49dc8f32e146aa8204cb65aac4a20a4d417d135de77f1d7c6cb4cdaf" kindref="member">MIN_HYPERBOLIC_RIDGE</ref> are yellow. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Ridges_3ExampleFilteringofCrestRidgesona">
+<title>Example: Filtering of Crest Ridges on a Mechanical Part</title>
+<para><ref refid="index_1fig__figmechanical_crest_filteredintro" kindref="member">fig__figmechanical_crest_filteredintro</ref> illustrates the filtering of crest ridges on a mechanical model.</para>
+<para><anchor id="index_1fig__figmechanical_crest_filteredintro"/> <image type="html" name="mecanic-sub1_crest-jpg.png"></image>
+ <image type="latex" name="mecanic-sub1_crest-jpg.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figmechanical_crest_filteredintro" kindref="member">fig__figmechanical_crest_filteredintro</ref> Mechanical part (37k pts). Left: All crest lines. Middle: crests filtered with the strength threshold 1. Right: crests filtered with the sharpness threshold 100 000. Notice that any point on a flat or cylindrical part lies on two ridges, so that the noise observed on the first two figures is unavoidable. It is however easily filtered out with the sharpness as can be seen on the right figure. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+ </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Ridges_3.txt"/>
+  </compounddef>
+</doxygen>

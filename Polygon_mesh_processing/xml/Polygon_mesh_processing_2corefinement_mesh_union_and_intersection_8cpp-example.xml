@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Polygon_mesh_processing_2corefinement_mesh_union_and_intersection_8cpp-example" kind="example">
+    <compoundname>Polygon_mesh_processing/corefinement_mesh_union_and_intersection.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Polygon_mesh_processing/corefinement_mesh_union_and_intersection.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/corefinement.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;array&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;tuple&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;K::Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PMP<sp/>=<sp/>CGAL::Polygon_mesh_processing;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">params<sp/>=<sp/><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename1<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/blobby.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename2<sp/>=<sp/>(argc<sp/>&gt;<sp/>2)<sp/>?<sp/>argv[2]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/eight.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh1,<sp/>mesh2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!PMP::IO::read_polygon_mesh(filename1,<sp/>mesh1)<sp/>||<sp/>!PMP::IO::read_polygon_mesh(filename2,<sp/>mesh2))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>out_union,<sp/>out_intersection;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::array&lt;std::optional&lt;Mesh*&gt;,<sp/>4&gt;<sp/>output;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output[PMP::Corefinement::UNION]<sp/>=<sp/>&amp;out_union;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output[PMP::Corefinement::INTERSECTION]<sp/>=<sp/>&amp;out_intersection;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>the<sp/>example,<sp/>we<sp/>explicit<sp/>the<sp/>named<sp/>parameters,<sp/>this<sp/>is<sp/>identical<sp/>to</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>PMP::corefine_and_compute_boolean_operations(mesh1,<sp/>mesh2,<sp/>output)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::array&lt;bool,<sp/>4&gt;<sp/>res<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>PMP::corefine_and_compute_boolean_operations(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>mesh1,<sp/>mesh2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>params::default_values(),<sp/></highlight><highlight class="comment">//<sp/>mesh1<sp/>named<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>params::default_values(),<sp/></highlight><highlight class="comment">//<sp/>mesh2<sp/>named<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::make_tuple(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>params::vertex_point_map(get(boost::vertex_point,<sp/>out_union)),<sp/></highlight><highlight class="comment">//<sp/>named<sp/>parameters<sp/>for<sp/>out_union</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>params::vertex_point_map(get(boost::vertex_point,<sp/>out_intersection)),<sp/></highlight><highlight class="comment">//<sp/>named<sp/>parameters<sp/>for<sp/>out_intersection</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>params::default_values(),<sp/></highlight><highlight class="comment">//<sp/>named<sp/>parameters<sp/>for<sp/>mesh1-mesh2<sp/>not<sp/>used</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>params::default_values()<sp/>)</highlight><highlight class="comment">//<sp/>named<sp/>parameters<sp/>for<sp/>mesh2-mesh1<sp/>not<sp/>used)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(res[PMP::Corefinement::UNION])</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Union<sp/>was<sp/>successfully<sp/>computed\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgBGLIOFct_1gafa143949a33371dc6df8307be1ab8a66" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_polygon_mesh</ref>(</highlight><highlight class="stringliteral">&quot;union.off&quot;</highlight><highlight class="normal">,<sp/>out_union,<sp/>CGAL::parameters::stream_precision(17));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Union<sp/>could<sp/>not<sp/>be<sp/>computed\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(res[PMP::Corefinement::INTERSECTION])</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Intersection<sp/>was<sp/>successfully<sp/>computed\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgBGLIOFct_1gafa143949a33371dc6df8307be1ab8a66" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_polygon_mesh</ref>(</highlight><highlight class="stringliteral">&quot;intersection.off&quot;</highlight><highlight class="normal">,<sp/>out_intersection,<sp/>CGAL::parameters::stream_precision(17));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Intersection<sp/>could<sp/>not<sp/>be<sp/>computed\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

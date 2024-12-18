@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="windows" kind="page">
+    <compoundname>windows</compoundname>
+    <title>Using CGAL on Windows (with Visual C++)</title>
+    <briefdescription>
+<para><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> </para>
+    </briefdescription>
+    <detaileddescription>
+<para>CGAL 6.0.1 is supported for the following MS Visual <computeroutput>C++</computeroutput> compilers: 15.9, 16.0, 17.0 (Visual Studio 2017, 2019, and 2022).</para>
+<para>CGAL is a library that has mandatory dependencies that must be first installed: <ref refid="thirdparty_1thirdpartyBoost" kindref="member">Boost</ref> and a <ref refid="thirdparty_1thirdpartyMP" kindref="member">Multi Precision Number Type Library</ref>.</para>
+<para>You have two options to install CGAL and its dependencies: you can either use the <emphasis>Vcpkg library manager</emphasis>, which will automatically install an appropriate version of these dependencies as you install CGAL, or you can install the dependencies on your own (making sure that you are using a supported version) by following their respective installation instructions.</para>
+<para>If you choose to use <computeroutput>vcpkg</computeroutput>, you might have to bootstrap and download and compile it, but from then on <computeroutput>vcpkg</computeroutput> will make your life easier. On the other hand, if you need to use a specific version, or have already installed a certain version of a dependency and do not wish to potentially have multiple versions installed, you will want to use the CGAL source archive.</para>
+<para>We explain the two approaches in the next two sections.</para>
+<sect1 id="windows_1sec-installing-with-vcpkg">
+<title>Installing CGAL with the Vcpkg Library Manager</title>
+<sect2 id="windows_1ssec-vcpk-install-vcpk">
+<title>Installing Vcpkg</title>
+<para>The first step is to clone or download <computeroutput>vcpkg</computeroutput> from <ulink url="https://github.com/microsoft/vcpkg">https://github.com/microsoft/vcpkg</ulink>. <verbatim>C:\dev&gt; git clone https://github.com/microsoft/vcpkg
+C:\dev&gt; cd vcpkg
+C:\dev\vcpkg&gt; .\bootstrap-vcpkg.bat
+</verbatim> </para>
+</sect2>
+<sect2 id="windows_1ssec-vcpk-install-cgal">
+<title>Installing CGAL with Vcpkg</title>
+<para>By default <computeroutput>vcpkg</computeroutput> installs for 32 bit binaries and will use the latest version of Visual C++ installed on your machine. If you develop 64 bit software you must set the Windows environment variable <computeroutput>VCPKG_DEFAULT_TRIPLET</computeroutput> to <computeroutput>x64-windows</computeroutput> or add the suffix <computeroutput>:x64-windows</computeroutput> to the package name you want to install (for example <computeroutput>cgal:x64-windows</computeroutput>). We refer to the <ulink url="https://github.com/microsoft/vcpkg/blob/master/docs/examples/installing-and-using-packages.md#step-2-use">official documentation</ulink> of <computeroutput>vcpkg</computeroutput> if you want to compile for an older version of a compiler.</para>
+<para>Because of a bug with gmp in vcpkg for windows, you need to install <computeroutput>yasm-tool</computeroutput> in 32 bits to be able to correctly build gmp 64bits, needed for cgal: <verbatim>C:\dev\vcpkg&gt; .\vcpkg.exe install yasm-tool:x86-windows
+</verbatim> You are now ready to install CGAL: <verbatim>C:\dev\vcpkg&gt; .\vcpkg.exe install cgal
+</verbatim> This will take several minutes as it downloads GMP, MPFR, all boost header files, and it will compile GMP and MPFR, as well as several boost libraries. Afterwards, you will find the include files, libraries, and dlls in the subdirectory <computeroutput>C:\dev\vcpkg\installed\x64-windows</computeroutput>.</para>
+<para>Note that CGAL is a header-only library, and there are therefore no <computeroutput>lib</computeroutput> or <computeroutput>dll</computeroutput> files for CGAL.</para>
+</sect2>
+<sect2 id="windows_1ssec-vcpkg-compile-example">
+<title>Compiling an Example</title>
+<para>In this section we show how to compile a program that uses CGAL. The examples you find in these User Manual pages are not downloaded when you install CGAL with the Vcpkg library manager. You must download them separately from the following download page: <ulink url="https://github.com/CGAL/cgal/releases/download/v6.0.1/CGAL-6.0.1-examples.zip">CGAL-6.0.1-examples.zip</ulink></para>
+<para>Assuming you have unzipped this file in your home directory <computeroutput>C:\Users\Me</computeroutput>, we will next compile an example from the 2D Triangulation package.</para>
+<sect3 id="windows_1sssec-vcpkg-configuration-example">
+<title>Configuring of an Example</title>
+<para>Before building anything using CGAL, you have to choose the compiler/linker, set compiler and linker flags, specify which third-party libraries you want to use and where they can be found. Gathering all this information is called <emphasis>configuration</emphasis> and we use <emphasis>CMake</emphasis> as configuration tool (see Section <ref refid="thirdparty_1seccmake" kindref="member">CMake</ref> for more information on supported versions and where to download it).</para>
+<para>The end of the process is marked by the generation of a Visual C++ solution and a project file that you can use to build your program. <verbatim>C:\Users\Me\CGAL-6.0.1&gt; cd examples\Triangulation_2
+C:\Users\Me\CGAL-6.0.1\examples\Triangulation_2&gt; mkdir build
+C:\Users\Me\CGAL-6.0.1\examples\Triangulation_2&gt; cd build
+C:\Users\Me\CGAL-6.0.1\examples\Triangulation_2\build&gt; cmake-gui ..
+</verbatim> The command <computeroutput>cmake-gui</computeroutput> launches the graphical interface for <computeroutput>cmake</computeroutput>. When you hit the <emphasis>Configure</emphasis> button, you must: <itemizedlist>
+<listitem>
+<para>specify the <emphasis>Generator</emphasis> (e.g., Visual Studio 16 2019), </para>
+</listitem>
+<listitem>
+<para>specify the <emphasis>Optional Platform</emphasis> (e.g., <computeroutput>x64</computeroutput> in case you want to create 64 bit binaries), </para>
+</listitem>
+<listitem>
+<para>select <emphasis>Specify toolchain file for cross compilation</emphasis> (the file <computeroutput>vcpkg.cmake</computeroutput> within the directory where you have installed <computeroutput>vcpkg</computeroutput>, e.g. <computeroutput>C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake</computeroutput>). </para>
+</listitem>
+</itemizedlist>
+</para>
+<para><anchor id="windows_1fig__toolchain"/> <image type="html" name="toolchain.png"></image>
+ <image type="latex" name="toolchain.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="windows_1fig__toolchain" kindref="member">fig__toolchain</ref> The box to check to get to the toolchain option <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Once the configuration process is done, tick <emphasis>Advanced</emphasis> and <emphasis>Grouped</emphasis> in <computeroutput>cmake-gui</computeroutput>. You will see entries for where header files and libraries are taken from.</para>
+<para>If you do not need to debug, you should set the variable <computeroutput>CMAKE_BUILD_TYPE</computeroutput> to <computeroutput>Release</computeroutput>.</para>
+</sect3>
+<sect3 id="windows_1sssect-vcpkg-additional-dependencies">
+<title>Additional Dependencies</title>
+<para>Some CGAL packages also have additional dependencies. For example, during the configuration process above, you may have observed the following message: <verbatim>NOTICE: The example draw_triangulation_2 requires Qt and will not be compiled
+</verbatim> CGAL is a library of algorithms and data structures and as such does not depend on <computeroutput>Qt</computeroutput>. However, one of the examples in the Triangulation_2 package does require <computeroutput>Qt</computeroutput> for visualization purposes. If you already have <computeroutput>Qt</computeroutput> installed, you can simply fill in the requested CMake variables and paths. Otherwise, you can also install it using <computeroutput>vcpkg</computeroutput>: <verbatim>C:\dev\vcpkg&gt; .\vcpkg.exe install qt6
+</verbatim> Remember to specify <computeroutput>--triplet</computeroutput> or the related environment variable in case you target 64-bit applications.</para>
+<para>As Qt6 is modular and as the CGAL examples and demos use only some of these modules you can save download and compilation time by specifying an <emphasis>installation option</emphasis>: <verbatim>C:\dev\vcpkg&gt; .\vcpkg.exe install cgal[qt]
+</verbatim> In both cases, when you start <computeroutput>cmake-gui</computeroutput> again and hit the <emphasis>Configure</emphasis> button, the CMake variables and paths concerning Qt should now be filled.</para>
+<para>Note that not all optional dependencies are available through the Vcpkg library manager. In this case, you must download and install them independently (see page <ref refid="thirdparty" kindref="compound">Compilers and Third Party Dependencies</ref> for information on support versions and download links) as well as fill the missing information within the <computeroutput>CMake</computeroutput> interface until configuration is successful (no more red lines indicating missing dependencies).</para>
+<para><htmlonly block="yes"> &lt;div class=&quot;CGALAdvanced&quot;&gt; &lt;div&gt;Advanced&lt;/div&gt; </htmlonly></para>
+<para>You may also decide to solve missing dependencies using the <computeroutput>CMake</computeroutput> command line tool (which is not recommended). If so, the page <ref refid="configurationvariables" kindref="compound">Summary of CGAL&apos;s Configuration Variables</ref> lists variables which can be used to specify the location of third-party software. <htmlonly block="yes"> &lt;/div&gt; </htmlonly></para>
+</sect3>
+<sect3 id="windows_1sssect-vcpkg-compilation">
+<title>Compilation of an Example</title>
+<para>Once the configuration process is successful, hit the <emphasis>Generate</emphasis> button, and you will find the file <computeroutput>Triangulation_2_examples.sln</computeroutput> in the directory <computeroutput>C:\Users\Me\CGAL-6.0.1\examples\Triangulation_2\build</computeroutput>. Double-click it to open it. There is one project per <computeroutput>.cpp</computeroutput> file in the directory. Compile them all, or just the one you are interested in.</para>
+</sect3>
+</sect2>
+<sect2 id="windows_1subsect-vpckg-my-code">
+<title>Configuring and Compiling Your Code Using CGAL</title>
+<para>Configuring and compiling your own code is practically the same as for CGAL examples if you use <computeroutput>cmake</computeroutput>. Running <computeroutput>cmake</computeroutput> (or <computeroutput>cmake-gui</computeroutput>) requires a <computeroutput>CMakeLists.txt</computeroutput> file. This file is automatically provided for all examples and demos of CGAL. For your own programs, you are advised to look at the <computeroutput>CMakeLists.txt</computeroutput> files in the example folder of the package(s) that you are using to learn how to specify CGAL and additional third party dependencies.</para>
+</sect2>
+</sect1>
+<sect1 id="windows_1install-from-source">
+<title>Installing from the Source Archive</title>
+<para>You can download and extract <computeroutput>CGAL-6.0.1</computeroutput><computeroutput>.zip</computeroutput> from <ulink url="https://www.cgal.org/download/windows.html">https://www.cgal.org/download/windows.html</ulink>.</para>
+<sect2 id="windows_1ssect-installer-gmp-mpfr">
+<title>Installing GMP and MPFR</title>
+<para>Precompiled version of GMP and MPFR are provided in the asset <emphasis>GMP and MPFR libraries, for Windows 64bits</emphasis> from <ulink url="https://github.com/CGAL/cgal/releases">https://github.com/CGAL/cgal/releases</ulink>. If you only install those libraries to use CGAL, then you should extract this archive inside the directory <computeroutput>CGAL-6.0.1</computeroutput> created when extracting the CGAL zip source archive. That way those dependencies will be automatically detected by cmake (you should then get the directory <computeroutput>CGAL-6.0.1</computeroutput><computeroutput>\</computeroutput><computeroutput>auxiliary</computeroutput><computeroutput>\</computeroutput><computeroutput>gmp</computeroutput>).</para>
+</sect2>
+<sect2 id="windows_1ssect-installer-boost">
+<title>Installing Boost</title>
+<para><computeroutput>Boost</computeroutput> is a mandatory dependency of CGAL. Binary versions of <computeroutput>Boost</computeroutput> are available on <ulink url="https://sourceforge.net/projects/boost/files/boost-binaries/">SourceForge</ulink>. The <computeroutput>Boost</computeroutput> installers install both <computeroutput>Boost</computeroutput> headers and precompiled libraries. Please note that the CGAL project is not responsible for the files provided on this website. When CGAL 6.0.1 was released, the latest version of <computeroutput>Boost</computeroutput> was 1.71. A typical installation of <computeroutput>Boost</computeroutput> would consist of the following steps:</para>
+<para><itemizedlist>
+<listitem>
+<para>Download and run the file boost_1_71_0-msvc-XX.Y-64.exe (where XX.Y = 14.0 for VC 2015, XX.Y = 14.1 for 2017, XX.Y = 14.2 for VC 2019). </para>
+</listitem>
+<listitem>
+<para>Extract the files to a new directory, e.g. <computeroutput>c:\dev\libboost_1_71_0</computeroutput>. </para>
+</listitem>
+<listitem>
+<para>Set the following two environment variables to point respectively to the path of the libraries and the headers <itemizedlist>
+<listitem>
+<para><computeroutput>BOOST_LIBRARYDIR = C:\dev\libboost_1_71_0\lib64-msvc-XX.Y</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>BOOST_INCLUDEDIR = C:\dev\libboost_1_71_0</computeroutput> </para>
+</listitem>
+</itemizedlist>
+as this will help <computeroutput>cmake</computeroutput> to find Boost. </para>
+</listitem>
+<listitem>
+<para>Add the path to the Boost <computeroutput>dlls</computeroutput> (<computeroutput>C:\dev\libboost_1_71_0\lib64-msvc-XX.Y</computeroutput>) files to the <computeroutput>PATH</computeroutput> environment variable. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+<sect2 id="windows_1ssect-installer-compile-example">
+<title>Compiling an Example</title>
+<para>We assume that you have downloaded the examples with the CGAL Installer.</para>
+<para>Before building anything using CGAL, you have to choose the compiler/linker, set compiler and linker flags, specify which third-party libraries you want to use and where they can be found. Gathering all this information is called <emphasis>configuration</emphasis> and we use CMake as configuration tool (see Section <ref refid="thirdparty_1seccmake" kindref="member">CMake</ref> for more information on minimal supported versions and where to download it).</para>
+<para>The end of the process is marked by the generation of a Visual C++ solution and a project file that you can use to build your program. <verbatim>C:\dev\CGAL-6.0.1&gt; cd examples\Triangulation_2
+C:\dev\CGAL-6.0.1\examples\Triangulation_2&gt; mkdir build
+C:\dev\CGAL-6.0.1\examples\Triangulation_2&gt; cd build
+C:\dev\CGAL-6.0.1\examples\Triangulation_2\build&gt; cmake-gui ..
+</verbatim> The command <computeroutput>cmake-gui</computeroutput> launches the graphical interface for <computeroutput>cmake</computeroutput>. When you hit the <emphasis>Configure</emphasis> button, you must: <itemizedlist>
+<listitem>
+<para>Specify the <emphasis>Generator</emphasis>, e.g., Visual Studio 16 2019), and </para>
+</listitem>
+<listitem>
+<para>specify an <emphasis>Optional Platform</emphasis> (<computeroutput>x64</computeroutput> in case you want to create 64 bit binaries). </para>
+</listitem>
+</itemizedlist>
+Once the configuration is done, tick <computeroutput>Advanced</computeroutput> and <computeroutput>Grouped</computeroutput> in <computeroutput>cmake-gui</computeroutput>. You will see entries for where header files and libraries are taken from.</para>
+<para>If you do not need to debug, you should set the variable <computeroutput>CMAKE_BUILD_TYPE</computeroutput> to <computeroutput>Release</computeroutput>.</para>
+<sect3 id="windows_1ssect-installer-additional-dependencies">
+<title>Additional Dependencies</title>
+<para>Some CGAL packages also have additional dependencies. For example, during the configuration process above, you may have observed the following message: <verbatim>NOTICE: The example draw_triangulation_2 requires Qt and will not be compiled
+</verbatim> CGAL is a library of algorithms and data structures and as such does not depend on <computeroutput>Qt</computeroutput>. However, one of the examples does for visualization purposes only. Either you have Qt installed and you can fill in the requested CMake variables, or you must install it. A typical <computeroutput>Qt</computeroutput> installation would consist of the following steps:</para>
+<para><itemizedlist>
+<listitem>
+<para>Download and install the Qt library for open source development package for your Visual Studio version at <ulink url="https://www.qt.io/download-open-source#source">https://www.qt.io/download-open-source#source</ulink>. </para>
+</listitem>
+<listitem>
+<para>Add the environment variable <computeroutput>QTDIR</computeroutput> pointing to the place you installed Qt, e.g., <computeroutput>C:\dev\Qt\Qt6.13.1</computeroutput>, as this will help <computeroutput>cmake</computeroutput> to find Qt. </para>
+</listitem>
+<listitem>
+<para>Add the bin directory of Qt, e.g. add <computeroutput>C:\dev\Qt\Qt6.13.1\msvcXXXX_YY\bin</computeroutput> to <computeroutput>PATH</computeroutput>, where <computeroutput>XXXX_YY</computeroutput> is something like <computeroutput>vc2017_64</computeroutput>. To avoid any conflict with another dll with the same name from another folder, add this path as the first in the list. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Once you have installed <computeroutput>Qt</computeroutput>, the CMake variables concerning <computeroutput>Qt</computeroutput> should now be filled when you press <emphasis>Configure</emphasis> in the CGAL directory.</para>
+<para>You must follow a similar process for other dependencies (see page <ref refid="thirdparty" kindref="compound">Compilers and Third Party Dependencies</ref> for information on supported versions of third party libraries as well as download links) and fill the missing information within the <computeroutput>CMake</computeroutput> interface until configuration is successful (no more red lines indicating missing dependencies).</para>
+<para><htmlonly block="yes"> &lt;div class=&quot;CGALAdvanced&quot;&gt; &lt;div&gt;Advanced&lt;/div&gt; </htmlonly></para>
+<para>You may also decide to solve missing dependencies using the <computeroutput>CMake</computeroutput> command line tool (which is not recommended). If so, the page <ref refid="configurationvariables" kindref="compound">Summary of CGAL&apos;s Configuration Variables</ref> lists variables which can be used to specify the location of third-party software. <htmlonly block="yes"> &lt;/div&gt; </htmlonly></para>
+</sect3>
+<sect3 id="windows_1sssect-installer-compilation">
+<title>Compilation of an Example</title>
+<para>Once the configuration process is successful, hit the <emphasis>Generate</emphasis> button, and you will find the file <computeroutput>Triangulation_2_examples.sln</computeroutput> in the directory <computeroutput>C:\dev\CGAL-6.0.1\examples\Triangulation_2\build</computeroutput>. Double-click it in order to open it. You will see one project per <computeroutput>.cpp</computeroutput> file. Compile them all, or just the one you are interested in.</para>
+</sect3>
+</sect2>
+<sect2 id="windows_1subsect-installer-my-code">
+<title>Configuring and Compiling My Code Using CGAL</title>
+<para>Configuring and compiling your own code is practically the same as for CGAL examples if you use <computeroutput>cmake</computeroutput>. Running <computeroutput>cmake</computeroutput> (or <computeroutput>cmake-gui</computeroutput>) requires a <computeroutput>CMakeLists.txt</computeroutput> file. This file is automatically provided for all examples and demos of CGAL. For your own programs, you are advised to look at the <computeroutput>CMakeLists.txt</computeroutput> files in the example folder of the package(s) that you are using to learn how to specify CGAL and additional third party dependencies.</para>
+</sect2>
+</sect1>
+<sect1 id="windows_1sec-win-demo">
+<title>Trying CGAL algorithms using a Precompiled Demo</title>
+<para>CGAL provides a few demos offering a graphical user interface for some CGAL algorithms. All precompiled demos are available for download on the <ref refid="packages" kindref="compound">Package Overview</ref> page. A link is provided in the column on the right, to download an archive. It contains the demo executable itself, and a set of dll files that must remain in the same directory as the <computeroutput>.exe</computeroutput> of the demo. See for example the <ref refid="packages_1PkgConvexHull3" kindref="member">3D Convex Hulls</ref> package. </para>
+</sect1>
+    </detaileddescription>
+    <location file="windows.txt"/>
+  </compounddef>
+</doxygen>

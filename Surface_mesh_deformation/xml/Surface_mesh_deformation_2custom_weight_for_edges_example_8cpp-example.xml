@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Surface_mesh_deformation_2custom_weight_for_edges_example_8cpp-example" kind="example">
+    <compoundname>Surface_mesh_deformation/custom_weight_for_edges_example.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Surface_mesh_deformation/custom_weight_for_edges_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_deformation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_iterator<sp/><sp/><sp/><sp/><sp/><sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_iterator<sp/><sp/><sp/><sp/>halfedge_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;vertex_descriptor,<sp/>std::size_t&gt;<sp/><sp/><sp/>Internal_vertex_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;halfedge_descriptor,<sp/>std::size_t&gt;<sp/><sp/><sp/><sp/><sp/>Internal_hedge_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Internal_vertex_map&gt;<sp/><sp/><sp/>Vertex_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Internal_hedge_map&gt;<sp/><sp/><sp/><sp/><sp/>Hedge_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>A<sp/>model<sp/>of<sp/>SurfaceMeshDeformationWeights<sp/>using<sp/>a<sp/>map<sp/>of<sp/>pre-computed<sp/>weights</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Weights_from_map</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Polyhedron<sp/>Halfedge_graph;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Weights_from_map(std::map&lt;halfedge_descriptor,<sp/>double&gt;*<sp/>weight_map)<sp/>:<sp/>weight_map(weight_map)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>VertexPo</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">Map&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>operator()(halfedge_descriptor<sp/>e,<sp/>Polyhedron&amp;<sp/></highlight><highlight class="comment">/*P*/</highlight><highlight class="normal">,<sp/>VertexPointMap<sp/></highlight><highlight class="comment">/*vpm*/</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(*weight_map)[e];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;halfedge_descriptor,<sp/>double&gt;*<sp/>weight_map;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">CGAL::Surface_mesh_deformation&lt;Polyhedron, Vertex_index_map, Hedge_index_map, CGAL::ORIGINAL_ARAP, Weights_from_map&gt;</ref><sp/>Surface_mesh_deformation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/plane.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!input<sp/>||<sp/>!(input<sp/>&gt;&gt;<sp/>mesh)<sp/>||<sp/>mesh.empty()<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Cannot<sp/>open<sp/><sp/>data/plane.off&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;halfedge_descriptor,<sp/>double&gt;<sp/>weight_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Store<sp/>all<sp/>the<sp/>weights</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(halfedge_descriptor<sp/>h<sp/>:<sp/>halfedges(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>weight_map[h]<sp/>=<sp/>1.0;<sp/></highlight><highlight class="comment">//<sp/>store<sp/>some<sp/>precomputed<sp/>weights</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>and<sp/>initialize<sp/>the<sp/>vertex<sp/>index<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Internal_vertex_map<sp/>internal_vertex_index_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_index_map<sp/>vertex_index_map(internal_vertex_index_map);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vb,<sp/>ve;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>v<sp/>:<sp/>vertices(mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>put(vertex_index_map,<sp/>v,<sp/>counter++);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>and<sp/>initialize<sp/>the<sp/>halfedge<sp/>index<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Internal_hedge_map<sp/>internal_hedge_index_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Hedge_index_map<sp/>hedge_index_map(internal_hedge_index_map);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(halfedge_descriptor<sp/>h<sp/>:<sp/>halfedges(mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>put(hedge_index_map,<sp/>h,<sp/>counter++);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_deformation<sp/>deform_mesh(mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_index_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>hedge_index_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get(CGAL::vertex_point,<sp/>mesh),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Weights_from_map(&amp;weight_map));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Deform<sp/>mesh<sp/>as<sp/>desired</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>.....</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

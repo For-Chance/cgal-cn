@@ -1,0 +1,26 @@
+var classCGAL_1_1Rectangular__p__center__default__traits__2 =
+[
+    [ "Construct_iso_rectangle_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#ac6118ebe2a67c15b121864f54370da22", null ],
+    [ "Construct_point_2_above_left_implicit_point_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#ab1a0d959ee399743bf08d8cf28f5de5a", null ],
+    [ "Construct_point_2_above_right_implicit_point_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a94daec8e0edce9ee1d7cdfb2d519a373", null ],
+    [ "Construct_point_2_below_left_implicit_point_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a30013a92e42b488551041da1e4ce6d4f", null ],
+    [ "Construct_point_2_below_right_implicit_point_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a864e9cc782e18013365507ab14cb655d", null ],
+    [ "Construct_vertex_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a056f11c117d82cd291b94d15529a43b0", null ],
+    [ "FT", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#ab3bd4a9e600b91d2d53a24e178339eb2", null ],
+    [ "Infinity_distance_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a08935ac34873bde99121969a1f9db18f", null ],
+    [ "Iso_rectangle_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a054a7b1fb661de15c95e8e76499ad9c7", null ],
+    [ "Less_x_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a4b0a4ec2535a4f6098984af5d2971ea0", null ],
+    [ "Less_y_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a66dad843f7f6fcd6cc9670483ffa5cc7", null ],
+    [ "Point_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#addf92f6a95a09dea9dca610114c98224", null ],
+    [ "Signed_infinity_distance_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#aa303f8de6dffcc0513e2144d76f55408", null ],
+    [ "Signed_x_distance_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a83c5512285d054dd35ee026be6165865", null ],
+    [ "Signed_y_distance_2", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#aa2e55ed8fb5f28978faa3dcea437e397", null ],
+    [ "construct_iso_rectangle_2_above_left_point_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#acd39c8987848e0f438de32ad431e02f8", null ],
+    [ "construct_iso_rectangle_2_above_right_point_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#aa8f649c72a10519373afb871b7fef1b1", null ],
+    [ "construct_iso_rectangle_2_below_left_point_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a9f1b06179e652303e9fb792130add3ff", null ],
+    [ "construct_iso_rectangle_2_below_right_point_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a5d7905fe33685e8e154c750eb0eb0be4", null ],
+    [ "construct_iso_rectangle_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#aeaf94eb9415ce5a2ba24745c96b9c719", null ],
+    [ "construct_vertex_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a24c5fd210267cef9b7403d997c477acd", null ],
+    [ "inf_distance_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#afccd690d01b4b47136c8679c31c6d083", null ],
+    [ "signed_inf_distance_2_object", "classCGAL_1_1Rectangular__p__center__default__traits__2.html#a01941caac5b00ecb76d3f474379b36b4", null ]
+];

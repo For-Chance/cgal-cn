@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Surface_mesh_skeletonization_2simple_mcfskel_example_8cpp-example" kind="example">
+    <compoundname>Surface_mesh_skeletonization/simple_mcfskel_example.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Surface_mesh_skeletonization/simple_mcfskel_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/extract_mean_curvature_flow_skeleton.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/graph/split_graph_into_polylines.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization" kindref="compound">CGAL::Mean_curvature_flow_skeletonization&lt;Polyhedron&gt;</ref><sp/>Skeletonization;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeletonization::Skeleton<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeleton::vertex_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton_vertex;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeleton::edge_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton_edge;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//only<sp/>needed<sp/>for<sp/>the<sp/>display<sp/>of<sp/>the<sp/>skeleton<sp/>as<sp/>maximal<sp/>polylines</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Display_polylines{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Skeleton&amp;<sp/>skeleton;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream&amp;<sp/>out;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>polyline_size;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::stringstream<sp/>sstr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Display_polylines(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Skeleton&amp;<sp/>skeleton,<sp/>std::ofstream&amp;<sp/>out)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>skeleton(skeleton),<sp/>out(out)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>start_new_polyline(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polyline_size=0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sstr.str(</highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sstr.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>add_node(Skeleton_vertex<sp/>v){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>++polyline_size;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sstr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>skeleton[v].point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>end_polyline()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/>polyline_size<sp/>&lt;&lt;<sp/>sstr.str()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>This<sp/>example<sp/>extracts<sp/>a<sp/>medially<sp/>centered<sp/>skeleton<sp/>from<sp/>a<sp/>given<sp/>mesh.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Input<sp/>geometry<sp/>is<sp/>not<sp/>triangulated.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Skeleton<sp/>skeleton;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMeshSkeletonizationRef_1gaf4b49adaa500340ce11630f91b320aec" kindref="member">CGAL::extract_mean_curvature_flow_skeleton</ref>(tmesh,<sp/>skeleton);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>of<sp/>the<sp/>skeleton:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>boost::num_vertices(skeleton)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>edges<sp/>of<sp/>the<sp/>skeleton:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>boost::num_edges(skeleton)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Output<sp/>all<sp/>the<sp/>edges<sp/>of<sp/>the<sp/>skeleton.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;skel-poly.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Display_polylines<sp/>display(skeleton,output);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgBGLPartition_1ga99ea6bf193f1194db5e523e713c82fb9" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::split_graph_into_polylines</ref>(skeleton,<sp/>display);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Output<sp/>skeleton<sp/>points<sp/>and<sp/>the<sp/>corresponding<sp/>surface<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.open(</highlight><highlight class="stringliteral">&quot;correspondance-poly.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Skeleton_vertex<sp/>v<sp/>:<sp/><ref refid="namespaceCGAL_1ac87cfb03dd80e388d2fe53af9e53e9ed" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::make_range</ref>(vertices(skeleton)))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>skeleton[v].vertices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>skeleton[v].point<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>get(CGAL::vertex_point,<sp/>tmesh,<sp/>vd)<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

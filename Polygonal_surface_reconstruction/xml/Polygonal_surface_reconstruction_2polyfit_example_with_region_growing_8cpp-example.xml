@@ -1,0 +1,178 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Polygonal_surface_reconstruction_2polyfit_example_with_region_growing_8cpp-example" kind="example">
+    <compoundname>Polygonal_surface_reconstruction/polyfit_example_with_region_growing.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Polygonal_surface_reconstruction/polyfit_example_with_region_growing.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/read_points.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Shape_detection/Region_growing/Region_growing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Point__set_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL/Shape_detection/Region_growing/Point_set.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygonal_surface_reconstruction.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_SCIP<sp/><sp/></highlight><highlight class="comment">//<sp/>defined<sp/>(or<sp/>not)<sp/>by<sp/>CMake<sp/>scripts,<sp/>do<sp/>not<sp/>define<sp/>by<sp/>hand</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/SCIP_mixed_integer_program_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1SCIP__mixed__integer__program__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">CGAL::SCIP_mixed_integer_program_traits&lt;double&gt;</ref><sp/>MIP_Solver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#elif<sp/>defined(CGAL_USE_GLPK)<sp/><sp/></highlight><highlight class="comment">//<sp/>defined<sp/>(or<sp/>not)<sp/>by<sp/>CMake<sp/>scripts,<sp/>do<sp/>not<sp/>define<sp/>by<sp/>hand</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/GLPK_mixed_integer_program_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1GLPK__mixed__integer__program__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">CGAL::GLPK_mixed_integer_program_traits&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>MIP_Solver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>defined(CGAL_USE_GLPK)<sp/>||<sp/>defined(CGAL_USE_SCIP)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/range/irange.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1a55e83f5a9f8ca43588b02ae8256a8fbd" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::FT</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Point<sp/>with<sp/>normal,<sp/>and<sp/>plane<sp/>index.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::tuple&lt;Point,<sp/>Vector,<sp/>int&gt;<sp/>PNI;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;PNI&gt;<sp/>Point_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Nth_of_tuple_property_map&lt;0,<sp/>PNI&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Nth_of_tuple_property_map&lt;1,<sp/>PNI&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Normal_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Nth_of_tuple_property_map&lt;2,<sp/>PNI&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Plane_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map_region_growing<sp/>=<sp/>CGAL::Compose_property_map&lt;CGAL::Random_access_property_map&lt;Point_vector&gt;,<sp/>Point_map<sp/>&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Normal_map_region_growing<sp/>=<sp/>CGAL::Compose_property_map&lt;CGAL::Random_access_property_map&lt;Point_vector&gt;,<sp/>Normal_map<sp/>&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Region_type<sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Point__set_1_1Least__squares__plane__fit__region" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Point_set::Least_squares_plane_fit_region&lt;Kernel, std::size_t, Point_map_region_growing, Normal_map_region_growing&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Neighbor_query<sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Point__set_1_1Sphere__neighbor__query" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Point_set::Sphere_neighbor_query&lt;Kernel, std::size_t, Point_map_region_growing&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Region_growing<sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Region__growing" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Region_growing&lt;Neighbor_query, Region_type&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Surface_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygonal__surface__reconstruction" kindref="compound">CGAL::Polygonal_surface_reconstruction&lt;Kernel&gt;</ref><sp/>Polygonal_surface_reconstruction;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">/*</highlight></codeline>
+<codeline><highlight class="comment">*<sp/>This<sp/>example<sp/>first<sp/>extracts<sp/>planes<sp/>from<sp/>the<sp/>input<sp/>point<sp/>cloud</highlight></codeline>
+<codeline><highlight class="comment">*<sp/>(using<sp/>region<sp/>growing)<sp/>and<sp/>then<sp/>reconstructs</highlight></codeline>
+<codeline><highlight class="comment">*<sp/>the<sp/>surface<sp/>model<sp/>from<sp/>the<sp/>planes.</highlight></codeline>
+<codeline><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_vector<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>point<sp/>set<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>input_file<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input_stream(input_file.c_str());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(input_stream.fail())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Failed<sp/>open<sp/>file<sp/>\&apos;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>input_file<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\&apos;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input_stream.close();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Loading<sp/>point<sp/>cloud:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>input_file<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Timer<sp/>t;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgPointSetProcessing3IO_1ga8fac388459c5cf96bf11ce3b4e0459c1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::IO::read_points</ref>(input_file.c_str(),<sp/>std::back_inserter(points),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::point_map(Point_map()).normal_map(Normal_map())))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>input_file<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Done.<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points.<sp/>Time:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>t.time()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>sec.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Shape<sp/>detection.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Default<sp/>parameter<sp/>values<sp/>for<sp/>the<sp/>data<sp/>file<sp/>cube.pwn.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>search_sphere_radius<sp/>=<sp/>FT(2)<sp/>/<sp/>FT(100);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>max_distance_to_plane<sp/>=<sp/>FT(2)<sp/>/<sp/>FT(1000);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>max_accepted_angle<sp/>=<sp/>FT(25);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>min_region_size<sp/>=<sp/>200;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_map_region_growing<sp/>point_map_rg(CGAL::make_random_access_property_map(points));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Normal_map_region_growing<sp/>normal_map_rg(CGAL::make_random_access_property_map(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>instances<sp/>of<sp/>the<sp/>classes<sp/>Neighbor_query<sp/>and<sp/>Region_type.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Neighbor_query<sp/>neighbor_query(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::irange&lt;std::size_t&gt;(0,<sp/>points.size()),<sp/>CGAL::parameters::sphere_radius(search_sphere_radius).point_map(point_map_rg));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Region_type<sp/>region_type(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>::</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>maximum_distance(max_distance_to_plane).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>maximum_angle(max_accepted_angle).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>minimum_region_size(min_region_size).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>point_map(point_map_rg).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>normal_map(normal_map_rg));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>instance<sp/>of<sp/>the<sp/>region<sp/>growing<sp/>class.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Region_growing<sp/>region_growing(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::irange&lt;std::size_t&gt;(0,<sp/>points.size()),<sp/>neighbor_query,<sp/>region_type);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Extracting<sp/>planes...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;typename<sp/>Region_growing::Primitive_and_region&gt;<sp/>regions;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.reset();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>region_growing.detect(std::back_inserter(regions));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Done.<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>regions.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>planes<sp/>extracted.<sp/>Time:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>t.time()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>sec.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Stores<sp/>the<sp/>plane<sp/>index<sp/>of<sp/>each<sp/>point<sp/>as<sp/>the<sp/>third<sp/>element<sp/>of<sp/>the<sp/>tuple.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>points.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Uses<sp/>the<sp/>get<sp/>function<sp/>from<sp/>the<sp/>property<sp/>map<sp/>that<sp/>accesses<sp/>the<sp/>3rd<sp/>element<sp/>of<sp/>the<sp/>tuple.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points[i].get&lt;2&gt;()<sp/>=<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(get(region_growing.region_map(),<sp/>i));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Reconstruction.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Generating<sp/>candidate<sp/>faces...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.reset();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polygonal_surface_reconstruction<sp/>algo(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point_map(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Normal_map(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Plane_index_map()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Done.<sp/>Time:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>t.time()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>sec.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh<sp/>model;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Reconstructing...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.reset();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!algo.reconstruct&lt;MIP_Solver&gt;(model))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Failed:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>algo.error_message()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Done.<sp/>Time:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>t.time()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>sec.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Saving...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.reset();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string&amp;<sp/>output_file(</highlight><highlight class="stringliteral">&quot;with_region_growing_result.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="group__PkgSurfaceMeshIOFuncOFF_1ga262ddfd1db6f3b56ee2c4d0bfbe36de5" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::IO::write_OFF</ref>(output_file,<sp/>model))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Done.<sp/>Saved<sp/>to<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>output_file<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;.<sp/>Time:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>t.time()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>sec.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Failed<sp/>saving<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;This<sp/>test<sp/>requires<sp/>either<sp/>GLPK<sp/>or<sp/>SCIP.\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/><sp/></highlight><highlight class="comment">//<sp/>defined(CGAL_USE_GLPK)<sp/>||<sp/>defined(CGAL_USE_SCIP)</highlight><highlight class="normal"></highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

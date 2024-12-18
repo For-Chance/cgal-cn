@@ -1,0 +1,739 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Triangulated_Surface_Mesh_Approximation"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Pierre Alliez, David Cohen-Steiner, Lingjie Zhu</para>
+</simplesect>
+</para>
+<sect1 id="index_1sma_introduction">
+<title>Introduction</title>
+<para>This package implements the <emphasis>Variational Shape Approximation</emphasis> <ref refid="citelist_1CITEREF_cgal:cad-vsa-04" kindref="member">[1]</ref> (VSA) method to approximate an input surface mesh by a simpler surface triangle mesh. The input of the algorithm must be:<itemizedlist>
+<listitem><para>Triangulated</para>
+</listitem><listitem><para>Combinatorially 2-manifold</para>
+</listitem></itemizedlist>
+</para>
+<para>The output is a triangle soup and can be built into a polygon surface mesh.</para>
+<para>Given an input surface triangle mesh, VSA leverages a discrete clustering algorithm to approximate it by a set of local simple shapes referred to as proxies. Each cluster is represented as a connected set of triangles of the input mesh, and the output mesh is constructed by generating a surface triangle mesh which approximates the clusters. The approximation error is one-sided, defined between the clusters and their associated proxies. Two error metrics ( <formula id="0">$ \mathcal{L}^2 $</formula>, <formula id="1">$ \mathcal{L}^{2,1} $</formula>) for planar proxies are provided via the classes <computeroutput><ref refid="classCGAL_1_1Surface__mesh__approximation_1_1L2__metric__plane__proxy" kindref="compound">CGAL::Surface_mesh_approximation::L2_metric_plane_proxy</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Surface__mesh__approximation_1_1L21__metric__plane__proxy" kindref="compound">CGAL::Surface_mesh_approximation::L21_metric_plane_proxy</ref></computeroutput>, and the algorithm design is generic to other user-defined metrics. The current proxies are planes or vectors, however the algorithm design is generic for future extensions to non-planar proxies <ref refid="citelist_1CITEREF_cgal:ywly-vmsqs-12" kindref="member">[4]</ref><ref refid="citelist_1CITEREF_cgal:wk-srhvs-05" kindref="member">[3]</ref>. The default <formula id="1">$ \mathcal{L}^{2,1} $</formula> metric is recommended in terms of computation and visual perception <ref refid="citelist_1CITEREF_cgal:cad-vsa-04" kindref="member">[1]</ref>. A brief background about <emphasis>Proxy</emphasis> and <emphasis>ErrorMetric</emphasis> is provided in Section <ref refid="index_1sma_background" kindref="member">Background</ref>.</para>
+<para><anchor id="index_1fig__Approximation_teaser"/> <image type="html" name="teaser.jpg"></image>
+ <image type="latex" name="teaser.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Approximation_teaser" kindref="member">fig__Approximation_teaser</ref> Variational shape approximation on two models with the <formula id="1">$ \mathcal{L}^{2,1} $</formula> error metric and planar proxies. From left to right: partition of the input surface triangle mesh, anchor vertices and edges, and output triangle mesh. The partition is optimized via discrete clustering of the input triangles, so as to minimize the approximation error from the clusters to the planar proxies (not shown). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>This package offers both the approximation and mesh construction functionalities, through the free function <computeroutput><ref refid="group__PkgTSMARef_1ga4bd463b1bad91654f253895861d37dbd" kindref="member">CGAL::Surface_mesh_approximation::approximate_triangle_mesh()</ref></computeroutput> which runs a fully automated version of the algorithm: <linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_approximation_2vsa_simple_approximation_example_8cpp-example" kindref="compound">Surface_mesh_approximation/vsa_simple_approximation_example.cpp</ref> <programlisting filename="Surface_mesh_approximation/vsa_simple_approximation_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_approximation/approximate_triangle_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">VSA<sp/>=<sp/>CGAL::Surface_mesh_approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/bear.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>reads<sp/>input<sp/>surface<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PMP__IO__grp_1gac5b3295bd1b6375628a46d1fbaf7e881" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">CGAL::Polygon_mesh_processing::IO::read_polygon_mesh</ref>(filename,<sp/>mesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>output<sp/>will<sp/>be<sp/>an<sp/>indexed<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Kernel::Point_3&gt;<sp/>anchors;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::array&lt;std::size_t,<sp/>3&gt;<sp/>&gt;<sp/>triangles;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>free<sp/>function<sp/>interface<sp/>with<sp/>named<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>VSA::approximate_triangle_mesh(mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::verbose_level(VSA::MAIN_STEPS).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>max_number_of_proxies(200).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>anchors(std::back_inserter(anchors)).<sp/></highlight><highlight class="comment">//<sp/>anchor<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>triangles(std::back_inserter(triangles)));<sp/></highlight><highlight class="comment">//<sp/>indexed<sp/>triangles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#anchor<sp/>points:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>anchors.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#triangles:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>triangles.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>A class interface is also provided for advanced users, in which a series of pliant operators offer interactive capabilities during clustering and customization in terms of error and proxies.</para>
+</sect1>
+<sect1 id="index_1sma_overview">
+<title>Overview</title>
+<para>The package contains 3 main components: approximation algorithm, pliant operators and meshing as shown in Figure <ref refid="index_1fig__workflow" kindref="member">fig__workflow</ref>.</para>
+<para><anchor id="index_1fig__workflow"/> <image type="html" name="workflow.svg"></image>
+ <image type="latex" name="workflow.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__workflow" kindref="member">fig__workflow</ref> From left to right are 3 components of the approximation package: approximation algorithm (left), optional pliant operations (middle) and meshing (right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1sma_approximation">
+<title>Approximation</title>
+<para>The left part of Figure <ref refid="index_1fig__workflow" kindref="member">fig__workflow</ref> depicts the workflow of the approximation algorithm.</para>
+<sect3 id="index_1sma_clustering">
+<title>Clustering Iteration</title>
+<para>Figure <ref refid="index_1fig__iterations" kindref="member">fig__iterations</ref> depicts several Lloyd <ref refid="citelist_1CITEREF_cgal:l-lsqp-82" kindref="member">[2]</ref> clustering iterations on the plane-sphere model with planar proxies and the <formula id="1">$ \mathcal{L}^{2,1} $</formula> metric. We plot the fitting error against each iteration. After 8 iterations, the error barely changes. Based on this observation, we consider that the clustering converges if the error change between the current and previous iteration is lower than a user-specified threshold (indicated by two green dash lines).</para>
+<para><anchor id="index_1fig__iterations"/> <image type="html" name="iterations.jpg"></image>
+ <image type="latex" name="iterations.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__iterations" kindref="member">fig__iterations</ref> Discrete Lloyd iterations on the plane-sphere model with planar proxies and the <formula id="1">$ \mathcal{L}^{2,1} $</formula> metric: (left) random seeding of 6 proxies; (center) after one iteration; (right) after 8 iterations, the regions settle. The red lines depict the proxy normals drawn at the seed faces. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1sma_seeding">
+<title>Seeding</title>
+<para>Each proxy is always associated to a <emphasis>seed</emphasis> triangle face in the input surface mesh. While the proxies may be viewed as centers (or best representative) in a geometric error sense, the seed of each proxy is used as the starting point in the clustering process. Seeding is the processing of deciding how to select a seed face where a new proxy/partition can be initialized from.</para>
+<para>To start the clustering iterations, we need an initial set of proxies. The default (hierarchical) approach generates one proxy per connected component, seeded at arbitrarily chosen faces. It then adds more proxies in batches, in order to drive the error down. After each batch of proxies added, it performs several inner clustering iterations, which is referred to as <emphasis>relaxation</emphasis> in the seeding step.</para>
+<para>Assuming a clustering partition of <formula id="2">$n$</formula> regions with errors <formula id="3">$ \{E_k\}_{k=1\cdots n} $</formula>, and we wish to add <formula id="4">$m$</formula> proxies. We provide 3 different seeding methods:<itemizedlist>
+<listitem><para><bold>Random</bold>. <formula id="4">$m$</formula> seed faces are picked randomly on the surface, excluding the current seed faces.</para>
+</listitem><listitem><para><bold>Incremental</bold>. Each new proxy is initialized from a face of the region with the largest approximation error. The face itself is chosen as the one realizing the largest error in its region.</para>
+</listitem><listitem><para><bold>Hierarchical</bold>. <formula id="4">$m$</formula> seed faces are dispatched within the current partition, where each region is refined with a number of proxies chosen in accordance to its fitting error:<itemizedlist>
+<listitem><para>calculate total error <formula id="5">$ E_{total} $</formula>, then average error <formula id="6">$ E_{avg} = E_{total} / m $</formula> (assuming that each new proxy shares the same amount of error)</para>
+</listitem><listitem><para>sort errors <formula id="7">$ \{E_{min},\cdots,E_{max}\} $</formula></para>
+</listitem><listitem><para>from <formula id="8">$ E_{min} $</formula> to <formula id="9">$ E_{max} $</formula>, we diffuse the error <emphasis>hierarchically</emphasis> one after another. More specifically, the number of proxies <formula id="10">$N_k$</formula> added to the <formula id="11">$k$</formula>th region is proportional to its error: <formula id="12">\[ N_k = \lfloor E_k / E_{avg} + 0.5 \rfloor, \]</formula> and the remaining error is added to the next proxy error in order to keep the total error unchanged: <formula id="13">\[ E&apos;_{k+1} = (E_k - N_k * E_{avg}) + E_{k+1}. \]</formula></para>
+</listitem></itemizedlist>
+</para>
+</listitem></itemizedlist>
+</para>
+<para>Figure <ref refid="index_1fig__seeding_method" kindref="member">fig__seeding_method</ref> depicts different seeding methods. Random initialization randomly selects a set of input triangle faces as proxy seeds. While it is very fast, the subsequent clustering process can be entrapped in a bad local minimum, especially on shapes with regions surrounded by sharp creases (left closeup). Incremental initialization adds the proxies one by one at the most distorted region. It can thus be slow due to the large number of interleaved relaxation iterations. Hierarchical initialization (selected by default) repeatedly doubles the number of proxies in a hierarchical refinement sequence, so as to generate clustering regions with evenly distributed fitting errors. Time consumption is typically in-between the former two. Statistics and comparisons are available in Section <ref refid="index_1sma_perf" kindref="member">Performances</ref>.</para>
+<para><anchor id="index_1fig__seeding_method"/> <image type="html" name="seeding_method.jpg"></image>
+ <image type="latex" name="seeding_method.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__seeding_method" kindref="member">fig__seeding_method</ref> Different seeding methods on the sphere-cube model. From left to right: initial partition ( <formula id="1">$ \mathcal{L}^{2,1} $</formula> metrics and 20 proxies), add 5 proxy seeds (red faces) with random, incremental and hierarchical methods respectively. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1sma_stop">
+<title>Stop Criteria</title>
+<para>To determine when to stop adding more proxies, we can specify either the maximum number of proxies required to approximate the geometry or the minimum error drop percentage with respect to the very first partition. More specifically, we can decide:<itemizedlist>
+<listitem><para><bold>Maximum number of proxies</bold>. Adding proxies until the specified number is met.</para>
+</listitem><listitem><para><bold>Minimum error drop</bold>. Starting from the very first partition (with one proxy per connected component) with fitting error <formula id="14">$ \hat E $</formula>, the algorithm adds proxies until the approximation error drops below the specified percentage <formula id="15">$ target\_drop * \hat E $</formula>. As depicted by Figure <ref refid="index_1fig__nb_proxies" kindref="member">fig__nb_proxies</ref>, specifying a minimum error drop of 10% (yellow dash lines) as stopping criterion, yields 12 proxies on the plane-sphere model. When both criteria are provided, the first criterion met stops the seeding. Different seeding examples are depicted by Figure <ref refid="index_1fig__meshing" kindref="member">fig__meshing</ref>. To balance between performance and speed, we recommend using hierarchical seeding and specifying both stopping criteria.</para>
+</listitem></itemizedlist>
+</para>
+<para><anchor id="index_1fig__nb_proxies"/> <image type="html" name="nb_proxies.jpg"></image>
+ <image type="latex" name="nb_proxies.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__nb_proxies" kindref="member">fig__nb_proxies</ref> Using different number of proxies to approximate the plane-sphere model. From left to right: 8, 14, 20 proxies. We plot right the error against the number of proxies. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+</sect2>
+<sect2 id="index_1sma_operations">
+<title>Pliant Operators</title>
+<para>For interactive use, the approach can yield better approximations of the geometry via adding/removing proxies and tunneling out of local minima via additional operations:<itemizedlist>
+<listitem><para><bold>Merging</bold>. Merging two adjacent regions.</para>
+</listitem><listitem><para><bold>Splitting</bold>. Splitting one specified region into smaller ones to reduce the error. By default bisection is performed but N-section is also possible. We first select the request number of face seeds from the specified region, then perform the refitting process confined to the region.</para>
+</listitem><listitem><para><bold>Adding</bold>. Adding one or more proxies to further reduce the approximation error. As for the seeding process, addition can be performed incrementally or hierarchically, as shown in Figure <ref refid="index_1fig__seeding_method" kindref="member">fig__seeding_method</ref>.</para>
+</listitem><listitem><para><bold>Teleporting</bold>. A teleportation operator is a combination of merging and adding proxies: merging the pair of adjacent regions and adding a proxy seed to the worst region. More specifically, the pair of regions whose merging realizes the smallest error after merging and local re-fitting, is selected for merging. In practice, the teleport operation can temporarily either decrease or increase the total approximation error. We provide an optional heuristic to evaluate if the teleportation is worth it by verifying whether the error increase induced by a (simulated) deletion is smaller than half of the error of the worst region. If this test fails, no teleportation is judged necessary.</para>
+</listitem></itemizedlist>
+</para>
+<para><anchor id="index_1fig__operations"/> <image type="html" name="operations.jpg"></image>
+ <image type="latex" name="operations.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__operations" kindref="member">fig__operations</ref> Operations on the sphere-cube union model. Upper row: merging (9 proxies) and the reverse bisection splitting (10 partitions) on the confined region. Lower row: one teleportation operation of merging and adding a face seed, the sphere is approximated with one more proxy. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>As depicted in Figure <ref refid="index_1fig__operations" kindref="member">fig__operations</ref>, teleportation provides a means to relocate a local minimum region entrapped in the planar part (left) to the most needed regions on the sphere (right). In <ref refid="index_1sma_example3" kindref="member">Class Interface</ref>, the class interface is used to control the approximation process through the aforementioned operations.</para>
+</sect2>
+<sect2 id="index_1sma_meshing">
+<title>Meshing</title>
+<para>This package implements the meshing algorithm described in <ref refid="citelist_1CITEREF_cgal:cad-vsa-04" kindref="member">[1]</ref> by generating a triangle mesh approximation of the clustering partition. The meshing algorithm has two major steps:<itemizedlist>
+<listitem><para><bold>Finding anchors</bold>. <emphasis>Anchors</emphasis> are just a subset of the vertices of the input mesh on the region boundaries.</para>
+</listitem><listitem><para><bold>Discrete constrained 2D Delaunay triangulation</bold>. Connecting the anchors to generate the final approximated triangle mesh.</para>
+</listitem></itemizedlist>
+</para>
+<sect3 id="index_1sma_anchors_basic">
+<title>Basic Anchors</title>
+<para>A vertex is selected as a basic anchor if it is:<itemizedlist>
+<listitem><para>not a mesh boundary vertex and adjacent to at least three regions,</para>
+</listitem><listitem><para>or a mesh boundary vertex adjacent to at least two regions.</para>
+</listitem></itemizedlist>
+</para>
+</sect3>
+<sect3 id="index_1sma_anchors_subdivision">
+<title>Subdivision Anchors</title>
+<para>Walking along the boundary of a proxy region (counterclockwise), a <emphasis>chord</emphasis> is a sequence of halfedges connecting two anchors. One cluster boundary cycle may consist of several chords. A connected region with holes may yield several boundary cycles (Figure <ref refid="index_1fig__operations" kindref="member">fig__operations</ref>, planar part before teleportation).</para>
+<para>In order to approximate complex boundaries well, more anchors are generated by recursive chord subdivision (Figure <ref refid="index_1fig__chord" kindref="member">fig__chord</ref>). An anchor <formula id="16">$ \mathbf{c} $</formula> is added at the furthest vertex of a chord <formula id="17">$ (\mathbf{a}, \mathbf{b}) $</formula>, split it into <formula id="18">$ (\mathbf{a}, \mathbf{c}) $</formula> and <formula id="19">$ (\mathbf{c}, \mathbf{b}) $</formula>, if the distance <formula id="20">$ d = \Vert \mathbf{c} , (\mathbf{a}, \mathbf{b}) \Vert $</formula> is beyond certain threshold. To make <formula id="21">$ d $</formula> independent to the scale of the input: <formula id="22">\[ d = d / input\_mesh\_average\_edge\_length. \]</formula> Optionally, <formula id="21">$ d $</formula> can be measured as the ratio of the chord length: <formula id="23">\[ d = d / \Vert(\mathbf{a}, \mathbf{b})\Vert. \]</formula> Also, we can add a dihedral angle weight <formula id="24">$ sin(\mathbf{N}_i,\mathbf{N}_j) $</formula> to the distance measurement, where <formula id="25">$ \mathbf{N}_i,\mathbf{N}_j $</formula> are the normals of the proxies separated by the chord <formula id="17">$ (\mathbf{a}, \mathbf{b}) $</formula>. If the angle between proxy <formula id="26">$ P_i $</formula> and <formula id="27">$ P_j $</formula> is rather small, then a coarse approximation will do as it does not add geometric information on the shape. Trivial chords (made of a single edge) are not subdivided. In case of circular chords, additional anchors may be added to maintain the topology, as detailed in Section <ref refid="index_1sma_anchors_additional" kindref="member">Additional Anchors</ref>.</para>
+<para><anchor id="index_1fig__chord"/> <image type="html" name="chord.jpg"></image>
+ <image type="latex" name="chord.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__chord" kindref="member">fig__chord</ref> Varying the chord error. From left to right: clustering partition, and meshing with decreasing absolute chord error 5, 3 and 1 without dihedral angle weight. The boundaries of the partition (red lines) are approximated with increasing accuracy. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1sma_anchors_additional">
+<title>Additional Anchors</title>
+<para>For a boundary cycle without any anchor such as the hole depicted Figure <ref refid="index_1fig__operations" kindref="member">fig__operations</ref>, we first add a starting anchor to the boundary. We then subdivide this circular chord to ensure that every boundary cycle has at least 2 anchors (i.e., every chord is connecting 2 different anchors, Figure <ref refid="index_1fig__anchors" kindref="member">fig__anchors</ref>). Finally, we add additional anchors to ensure that at least three anchor vertices are generated on every boundary cycle.</para>
+<para><anchor id="index_1fig__anchors"/> <image type="html" name="anchors.jpg"></image>
+ <image type="latex" name="anchors.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__anchors" kindref="member">fig__anchors</ref> Adding anchors. From left to right: starting from a partition (grey) with a hole (white) and two encircled regions (green and blue), we add a starting anchor (orange disk) to the boundary cycle (red dash line) without any anchor (2nd), subdivide the circular chord (3rd, the number indicates the level of recursion) and add anchors to the boundary cycle with less than 2 anchors (4th, red dash lines). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1sma_triangulation">
+<title>Discrete Triangulation</title>
+<para>With the anchors defined, their chord connection graph forms a general polygon mesh. Because of non-flat, concave polygon or polygons with holes, we need to triangulate this initial polygon mesh. The triangulation is generated by computing a discrete variant of a constrained 2D Delaunay triangulation, where distances are measured on the input triangle mesh.</para>
+<para>The first image of Figure <ref refid="index_1fig__triangulation" kindref="member">fig__triangulation</ref> depicts how the Delaunay triangulation of set of points (colored disks) is deduced from its dual Voronoi diagram (colored regions separated by blue lines) by connecting the points indicated by the vertices (red circles) where 3 Voronoi cells meet. In an analogous manner, we construct discrete Voronoi cells from which the triangulation is extracted.</para>
+<para>In a first step, we start a flooding of the interior of the region, coloring the vertices according to their closest anchor vertex. We then only flood the boundary of a region so that every vertex on it is colored depending on the closest anchor vertex. This enforces the constrained edges by forcing the boundary to be in it.</para>
+<para><anchor id="index_1fig__triangulation"/> <image type="html" name="triangulation.jpg"></image>
+ <image type="latex" name="triangulation.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__triangulation" kindref="member">fig__triangulation</ref> Discrete constrained triangulation on a sphere model. The triangulation process first floods the inner vertices (red arrows, 2nd) to simulate the Voronoi diagram. It then constructs constrained edges between anchor vertices, by flooding along the boundary edges (red arrows, 3rd). Finally, triangles (red hollow triangle, 4th) are formed by connecting the source anchors (black arrows, 4th) of the faces where 3 Voronoi cells meet (red solid triangle, 4th). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>After each clustering region is triangulated, the final anchor positions are recomputed by averaging the projections of an anchor on its incident proxies.</para>
+<para>In <ref refid="index_1fig__meshing" kindref="member">fig__meshing</ref>, the bear model is approximated through <formula id="1">$ \mathcal{L}^{2,1} $</formula> metric and the final number of proxies is determined by monitoring the error drop. The anchor points (black) are attached to the corresponding vertex on the mesh (white). The red lines connecting the anchor points approximate the boundary of each region.</para>
+<para><anchor id="index_1fig__meshing"/> <image type="html" name="meshing.jpg"></image>
+ <image type="latex" name="meshing.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__meshing" kindref="member">fig__meshing</ref> Meshing the bear model with decreasing target error drop. From left to right, the target error drop are 6%, 4% and 2% to the initial error respectively, the output mesh densifies. Notice the boundary subdivision in the black rectangle area. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>As there is no guarantee that the output mesh is 2-manifold and oriented, the main input is an indexed triangle set. We can use <ref refid="index_1PMPPolygonSoups" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">Polygon Soups</ref> to build the triangle soup into a valid polygon mesh.</para>
+</sect3>
+</sect2>
+<sect2 id="index_1sma_api">
+<title>API</title>
+<para>This package can be used with any class model of the concept <computeroutput><ref refid="classFaceListGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceListGraph</ref></computeroutput> described in <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref>.</para>
+<para>Free function with <ref refid="group__bgl__namedparameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> options.<itemizedlist>
+<listitem><para><computeroutput><ref refid="group__PkgTSMARef_1ga4bd463b1bad91654f253895861d37dbd" kindref="member">CGAL::Surface_mesh_approximation::approximate_triangle_mesh()</ref></computeroutput>: given a triangle mesh, approximate the geometry with default <formula id="1">$ \mathcal{L}^{2,1} $</formula> metric.</para>
+</listitem></itemizedlist>
+</para>
+<para>Class interface:<itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Variational__shape__approximation" kindref="compound">CGAL::Variational_shape_approximation</ref></computeroutput>: allowing more customization of the proxy, metric and approximation process. As shown in Figure <ref refid="index_1fig__workflow" kindref="member">fig__workflow</ref>, typical calling order of the approximation and meshing process is:<itemizedlist>
+<listitem><para><ref refid="classCGAL_1_1Variational__shape__approximation_1a8b5b69c3f841a27f7a5c9ebde1ecc8bb" kindref="member">initialize seeds </ref></para>
+</listitem><listitem><para><ref refid="classCGAL_1_1Variational__shape__approximation_1a9fa9ea011fc167ebc5aa301452af60cf" kindref="member">run clustering iterations </ref></para>
+</listitem><listitem><para><ref refid="classCGAL_1_1Variational__shape__approximation_1a94c248ead7a448407ee5ef0a0865a969" kindref="member">extract mesh </ref></para>
+</listitem><listitem><para><ref refid="classCGAL_1_1Variational__shape__approximation_1a057ed7685d6b18427956ab101a76c486" kindref="member">take outputs </ref></para>
+</listitem></itemizedlist>
+</para>
+</listitem></itemizedlist>
+</para>
+<para>One thing to note is that some parameters depend heavily on the input, like the number of proxies. Although we can approximate a geometry with any number of proxies regardless of the quality, it is not recommended to use all the defaults without any consideration of the input.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1sma_examples">
+<title>Examples</title>
+<sect2 id="index_1sma_example1">
+<title>Free Function Approximation</title>
+<para>The following example calls the free function <computeroutput><ref refid="group__PkgTSMARef_1ga4bd463b1bad91654f253895861d37dbd" kindref="member">CGAL::Surface_mesh_approximation::approximate_triangle_mesh()</ref></computeroutput> on the input triangle mesh with default <computeroutput><ref refid="classCGAL_1_1Surface__mesh__approximation_1_1L21__metric__plane__proxy" kindref="compound">CGAL::Surface_mesh_approximation::L21_metric_plane_proxy</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_approximation_2vsa_approximation_example_8cpp-example" kindref="compound">Surface_mesh_approximation/vsa_approximation_example.cpp</ref> <programlisting filename="Surface_mesh_approximation/vsa_approximation_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_approximation/approximate_triangle_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/orient_polygon_soup.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/orientation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">VSA<sp/>=<sp/>CGAL::Surface_mesh_approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PMP<sp/>=<sp/><ref refid="classCGAL_1_1Polygon__mesh__processing_1_1Adaptive__sizing__field" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">CGAL::Polygon_mesh_processing</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/bear.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>input<sp/>surface<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PMP__IO__grp_1gac5b3295bd1b6375628a46d1fbaf7e881" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">CGAL::Polygon_mesh_processing::IO::read_polygon_mesh</ref>(filename,<sp/>mesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>indexed<sp/>triangles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Kernel::Point_3&gt;<sp/>anchors;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::array&lt;std::size_t,<sp/>3&gt;<sp/>&gt;<sp/>triangles;<sp/></highlight><highlight class="comment">//<sp/>triplets<sp/>of<sp/>indices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>free<sp/>function<sp/>interface<sp/>with<sp/>named<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_manifold<sp/>=<sp/>VSA::approximate_triangle_mesh(mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::seeding_method(VSA::HIERARCHICAL).<sp/></highlight><highlight class="comment">//<sp/>hierarchical<sp/>seeding</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>max_number_of_proxies(200).<sp/></highlight><highlight class="comment">//<sp/>seeding<sp/>with<sp/>maximum<sp/>number<sp/>of<sp/>proxies</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>number_of_iterations(30).<sp/></highlight><highlight class="comment">//<sp/>number<sp/>of<sp/>clustering<sp/>iterations<sp/>after<sp/>seeding</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>anchors(std::back_inserter(anchors)).<sp/></highlight><highlight class="comment">//<sp/>anchor<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>triangles(std::back_inserter(triangles)));<sp/></highlight><highlight class="comment">//<sp/>indexed<sp/>triangles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#anchor<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>anchors.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#triangles:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>triangles.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(is_manifold)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;oriented,<sp/>2-manifold<sp/>output.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>convert<sp/>from<sp/>soup<sp/>to<sp/>surface<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>PMP::orient_polygon_soup(anchors,<sp/>triangles);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Mesh<sp/>output;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>PMP::polygon_soup_to_polygon_mesh(anchors,<sp/>triangles,<sp/>output);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<ref refid="group__PkgBGLHelperFct_1gae04c8044cf1eee6a84baa5b79ab99fef" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_closed</ref>(output)<sp/>&amp;&amp;<sp/>(!PMP::is_outward_oriented(output)))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>PMP::reverse_face_orientations(output);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;dump.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/>output;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out.close();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The function parameters are provided through <ref refid="group__bgl__namedparameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref>. Setting the non-default parameter values requires calling the functions with the required parameters, connected by a dot and in an arbitrary order. The following example shows a different configuration of parameters and retrieves the indexed face proxy map and the proxies:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_approximation_2vsa_approximation_2_example_8cpp-example" kindref="compound">Surface_mesh_approximation/vsa_approximation_2_example.cpp</ref> <programlisting filename="Surface_mesh_approximation/vsa_approximation_2_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_approximation/approximate_triangle_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::face_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Property_map&lt;face_descriptor,<sp/>std::size_t&gt;<sp/><sp/><sp/><sp/><sp/><sp/>Face_proxy_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">VSA<sp/>=<sp/>CGAL::Surface_mesh_approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/bear.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>input<sp/>surface<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PMP__IO__grp_1gac5b3295bd1b6375628a46d1fbaf7e881" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">CGAL::Polygon_mesh_processing::IO::read_polygon_mesh</ref>(filename,<sp/>mesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>indexed<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Kernel::Point_3&gt;<sp/>anchors;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::array&lt;std::size_t,<sp/>3&gt;<sp/>&gt;<sp/>triangles;<sp/></highlight><highlight class="comment">//<sp/>triplets<sp/>of<sp/>indices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>face<sp/>proxy<sp/>index<sp/>property<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Face_proxy_pmap<sp/>fpxmap<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>mesh.add_property_map&lt;face_descriptor,<sp/>std::size_t&gt;(</highlight><highlight class="stringliteral">&quot;f:proxy_id&quot;</highlight><highlight class="normal">,<sp/>0).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>planar<sp/>proxies</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Kernel::Vector_3&gt;<sp/>proxies;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>free<sp/>function<sp/>interface<sp/>with<sp/>named<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>VSA::approximate_triangle_mesh(mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::min_error_drop(0.05).<sp/></highlight><highlight class="comment">//<sp/>seeding<sp/>with<sp/>minimum<sp/>error<sp/>drop</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>number_of_iterations(40).<sp/></highlight><highlight class="comment">//<sp/>set<sp/>number<sp/>of<sp/>clustering<sp/>iterations<sp/>after<sp/>seeding</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>subdivision_ratio(0.3).<sp/></highlight><highlight class="comment">//<sp/>set<sp/>chord<sp/>subdivision<sp/>ratio<sp/>threshold<sp/>when<sp/>meshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face_proxy_map(fpxmap).<sp/></highlight><highlight class="comment">//<sp/>get<sp/>face<sp/>partition<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>proxies(std::back_inserter(proxies)).<sp/></highlight><highlight class="comment">//<sp/>output<sp/>proxies</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>anchors(std::back_inserter(anchors)).<sp/></highlight><highlight class="comment">//<sp/>output<sp/>anchor<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>triangles(std::back_inserter(triangles)));<sp/></highlight><highlight class="comment">//<sp/>output<sp/>indexed<sp/>triangles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The face proxy index map and the output proxies provide a means to access the partition and the proxy parameters as illustrated by <ref refid="index_1fig__iterations" kindref="member">fig__iterations</ref>.</para>
+</sect2>
+<sect2 id="index_1sma_example2">
+<title>Free Function Segmentation</title>
+<para>The free function can be used for retrieving the segmentation via proxy ids output into the proxy output iterator:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_approximation_2vsa_segmentation_example_8cpp-example" kindref="compound">Surface_mesh_approximation/vsa_segmentation_example.cpp</ref> <programlisting filename="Surface_mesh_approximation/vsa_segmentation_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_approximation/approximate_triangle_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::face_descriptor<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Property_map&lt;face_descriptor,<sp/>std::size_t&gt;<sp/>Face_proxy_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">VSA<sp/>=<sp/>CGAL::Surface_mesh_approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/bear.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>reads<sp/>input<sp/>surface<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PMP__IO__grp_1gac5b3295bd1b6375628a46d1fbaf7e881" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">CGAL::Polygon_mesh_processing::IO::read_polygon_mesh</ref>(filename,<sp/>mesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>face<sp/>proxy<sp/>index<sp/>property<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Face_proxy_pmap<sp/>fpxmap<sp/>=<sp/>mesh.add_property_map&lt;face_descriptor,<sp/>std::size_t&gt;(</highlight><highlight class="stringliteral">&quot;f:proxy_id&quot;</highlight><highlight class="normal">,<sp/>0).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>free<sp/>function<sp/>interface<sp/>with<sp/>named<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>VSA::approximate_triangle_mesh(mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::max_number_of_proxies(200).<sp/></highlight><highlight class="comment">//<sp/>first<sp/>stop<sp/>criterion</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>min_error_drop(0.05).<sp/></highlight><highlight class="comment">//<sp/>second<sp/>stop<sp/>criterion</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>number_of_iterations(30).<sp/></highlight><highlight class="comment">//<sp/>number<sp/>of<sp/>relaxation<sp/>iterations<sp/>after<sp/>seeding</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face_proxy_map(fpxmap));<sp/></highlight><highlight class="comment">//<sp/>output<sp/>face-proxy<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>iterates<sp/>over<sp/>faces<sp/>and<sp/>outputs<sp/>segment<sp/>id<sp/>to<sp/>console</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(face_descriptor<sp/>f<sp/>:<sp/>faces(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>fpxmap[f]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1sma_example3">
+<title>Class Interface</title>
+<para>The class interface <computeroutput><ref refid="classCGAL_1_1Variational__shape__approximation" kindref="compound">CGAL::Variational_shape_approximation</ref></computeroutput> offers a flexible means to control of the algorithm. The following example uses the <computeroutput><ref refid="classCGAL_1_1Surface__mesh__approximation_1_1L2__metric__plane__proxy" kindref="compound">CGAL::Surface_mesh_approximation::L2_metric_plane_proxy</ref></computeroutput> to approximate the shape.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_approximation_2vsa_class_interface_example_8cpp-example" kindref="compound">Surface_mesh_approximation/vsa_class_interface_example.cpp</ref> <programlisting filename="Surface_mesh_approximation/vsa_class_interface_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Variational_shape_approximation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">VSA<sp/>=<sp/>CGAL::Surface_mesh_approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::property_map&lt;Mesh,<sp/>boost::vertex_point_t&gt;::type<sp/>Vertex_point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Variational__shape__approximation" kindref="compound">CGAL::Variational_shape_approximation&lt;Mesh, Vertex_point_map&gt;</ref><sp/>Mesh_approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>L21<sp/>error<sp/>metric</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh_approximation::Error_metric<sp/>L21_metric;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/bear.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>reads<sp/>input<sp/>surface<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PMP__IO__grp_1gac5b3295bd1b6375628a46d1fbaf7e881" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">CGAL::Polygon_mesh_processing::IO::read_polygon_mesh</ref>(filename,<sp/>mesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_point_map<sp/>vpmap<sp/>=<sp/>get(boost::vertex_point,<sp/></highlight><highlight class="keyword">const_cast&lt;</highlight><highlight class="normal">Mesh<sp/>&amp;</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(mesh));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>error<sp/>metric<sp/>and<sp/>fitting<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>L21_metric<sp/>error_metric(mesh,<sp/>vpmap);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>creates<sp/>VSA<sp/>algorithm<sp/>instance</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_approximation<sp/>approx(mesh,<sp/>vpmap,<sp/>error_metric);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>seeds<sp/>100<sp/>random<sp/>proxies</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.initialize_seeds(CGAL::parameters::seeding_method(VSA::RANDOM)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>.max_number_of_proxies(100));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>runs<sp/>30<sp/>iterations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.run(30);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>adds<sp/>3<sp/>proxies<sp/>to<sp/>the<sp/>one<sp/>with<sp/>the<sp/>maximum<sp/>fitting<sp/>error,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>running<sp/>5<sp/>iterations<sp/>between<sp/>each<sp/>addition</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.add_to_furthest_proxies(3,<sp/>5);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>runs<sp/>10<sp/>iterations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.run(10);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>teleports<sp/>2<sp/>proxies<sp/>to<sp/>tunnel<sp/>out<sp/>of<sp/>local<sp/>minima,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>running<sp/>5<sp/>iterations<sp/>between<sp/>each<sp/>teleport</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.teleport_proxies(2,<sp/>5);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>runs<sp/>10<sp/>iterations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.run(10);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>extract<sp/>approximated<sp/>mesh<sp/>with<sp/>default<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.extract_mesh(<ref refid="group__PkgSTLExtensionRef_1gaac7f54fe7abb7321d8d755683eaafaf2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters::default_values</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>get<sp/>approximated<sp/>triangle<sp/>soup</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Kernel::Point_3&gt;<sp/>anchors;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::array&lt;std::size_t,<sp/>3&gt;<sp/>&gt;<sp/>triangles;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.output(CGAL::parameters::anchors(std::back_inserter(anchors)).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>triangles(std::back_inserter(triangles)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1sma_example4">
+<title>Customized Proxy and Error Metric</title>
+<para><anchor id="index_1fig__vsa_metric_comparison"/> <image type="html" name="vsa_metric_comparison_200_30.jpg"></image>
+ <image type="latex" name="vsa_metric_comparison_200_30.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__vsa_metric_comparison" kindref="member">fig__vsa_metric_comparison</ref> Comparison of different error metrics on the bear model, with 200 proxies and hierarchical seeding. From left to right: <formula id="1">$ \mathcal{L}^{2,1} $</formula> metric, <formula id="0">$ \mathcal{L}^2 $</formula> metric and custom compact metric. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The following example defines a point-wise proxy to yield an isotropic approximation. The output mesh is depicted in Figure <ref refid="index_1fig__vsa_metric_comparison" kindref="member">fig__vsa_metric_comparison</ref>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_approximation_2vsa_isotropic_metric_example_8cpp-example" kindref="compound">Surface_mesh_approximation/vsa_isotropic_metric_example.cpp</ref> <programlisting filename="Surface_mesh_approximation/vsa_isotropic_metric_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Variational_shape_approximation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::face_descriptor<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::property_map&lt;Mesh,<sp/>boost::vertex_point_t&gt;::type<sp/>Vertex_point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Property_map&lt;face_descriptor,<sp/>FT&gt;<sp/>Face_area_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Property_map&lt;face_descriptor,<sp/>Point_3&gt;<sp/>Face_center_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">VSA<sp/>=<sp/>CGAL::Surface_mesh_approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>user-defined<sp/>&quot;compact&quot;<sp/>error<sp/>metric<sp/>using<sp/>type<sp/>Point_3<sp/>as<sp/>proxy</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Compact_metric_point_proxy</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>use<sp/>point<sp/>as<sp/>proxy</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>Proxy;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>we<sp/>keep<sp/>a<sp/>precomputed<sp/>property<sp/>map<sp/>to<sp/>speed<sp/>up<sp/>computations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Compact_metric_point_proxy(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Face_center_map<sp/>&amp;center_pmap_,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Face_area_map<sp/>&amp;area_pmap_)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>center_pmap(center_pmap_),<sp/>area_pmap(area_pmap_)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>compute<sp/>and<sp/>return<sp/>error<sp/>from<sp/>a<sp/>face<sp/>to<sp/>a<sp/>proxy,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>defined<sp/>as<sp/>the<sp/>Euclidean<sp/>distance<sp/>between</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>face<sp/>center<sp/>of<sp/>mass<sp/>and<sp/>proxy<sp/>point.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>compute_error(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>face_descriptor<sp/>&amp;f,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Mesh<sp/>&amp;,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Proxy<sp/>&amp;px)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL::sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(center_pmap[f],<sp/>px));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>template<sp/>functor<sp/>to<sp/>compute<sp/>a<sp/>best-fit</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>proxy<sp/>from<sp/>a<sp/>range<sp/>of<sp/>faces</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>FaceRange&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Proxy<sp/>fit_proxy(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FaceRange<sp/>&amp;faces,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Mesh<sp/>&amp;)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>fitting<sp/>center</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector_3<sp/>center<sp/>=<sp/><ref refid="group__kernel__enums_1ga4a98ec6bd9dfd8fe8c46fea553b5d238" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::NULL_VECTOR</ref>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FT<sp/>sum_areas<sp/>=<sp/>FT(0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>face_descriptor&amp;<sp/>f<sp/>:<sp/>faces)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>center<sp/>=<sp/>center<sp/>+<sp/>(center_pmap[f]<sp/>-<sp/><ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>)<sp/>*<sp/>area_pmap[f];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>sum_areas<sp/>+=<sp/>area_pmap[f];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>deal<sp/>with<sp/>case<sp/>where<sp/>sum<sp/>=<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(center<sp/>==<sp/><ref refid="group__kernel__enums_1ga4a98ec6bd9dfd8fe8c46fea553b5d238" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::NULL_VECTOR</ref><sp/>||<sp/>sum_areas<sp/>&lt;=<sp/>FT(0.0))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>degenerate<sp/>geometry.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::exit(EXIT_FAILURE);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>center<sp/>=<sp/>center<sp/>/<sp/>sum_areas;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref><sp/>+<sp/>center;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Face_center_map<sp/>center_pmap;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Face_area_map<sp/>area_pmap;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Variational__shape__approximation" kindref="compound">CGAL::Variational_shape_approximation</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh,<sp/>Vertex_point_map,<sp/>Compact_metric_point_proxy&gt;<sp/>Approximation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/bear.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>reads<sp/>input<sp/>surface<sp/>triangle<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PMP__IO__grp_1gac5b3295bd1b6375628a46d1fbaf7e881" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">CGAL::Polygon_mesh_processing::IO::read_polygon_mesh</ref>(filename,<sp/>mesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>precomputed<sp/>face<sp/>normal<sp/>and<sp/>area<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_point_map<sp/>vpmap<sp/>=<sp/>get(boost::vertex_point,<sp/></highlight><highlight class="keyword">const_cast&lt;</highlight><highlight class="normal">Mesh<sp/>&amp;</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(mesh));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Face_area_map<sp/>area_pmap<sp/>=<sp/>mesh.add_property_map&lt;face_descriptor,<sp/>FT&gt;(</highlight><highlight class="stringliteral">&quot;f:area&quot;</highlight><highlight class="normal">,<sp/>FT(0.0)).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Face_center_map<sp/>center_pmap<sp/>=<sp/>mesh.add_property_map&lt;face_descriptor,<sp/>Point_3&gt;(</highlight><highlight class="stringliteral">&quot;f:center&quot;</highlight><highlight class="normal">,<sp/><ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(face_descriptor<sp/>f<sp/>:<sp/>faces(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>halfedge_descriptor<sp/>he<sp/>=<sp/>halfedge(f,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_3<sp/>&amp;p0<sp/>=<sp/>vpmap[source(he,<sp/>mesh)];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_3<sp/>&amp;p1<sp/>=<sp/>vpmap[target(he,<sp/>mesh)];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_3<sp/>&amp;p2<sp/>=<sp/>vpmap[target(next(he,<sp/>mesh),<sp/>mesh)];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>put(area_pmap,<sp/>f,<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL::sqrt</ref>(<ref refid="group__squared__area__grp_1ga4a78403d9db87ffea0efec851fea117c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_area</ref>(p0,<sp/>p1,<sp/>p2)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>put(center_pmap,<sp/>f,<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::centroid</ref>(p0,<sp/>p1,<sp/>p2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>error<sp/>metric<sp/>and<sp/>fitting<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Compact_metric_point_proxy<sp/>error_metric(center_pmap,<sp/>area_pmap);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>creates<sp/>compact<sp/>metric<sp/>approximation<sp/>algorithm<sp/>instance</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Approximation<sp/>approx(mesh,<sp/>vpmap,<sp/>error_metric);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>approximates<sp/>via<sp/>200<sp/>proxies<sp/>and<sp/>30<sp/>iterations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.initialize_seeds(CGAL::parameters::seeding_method(VSA::HIERARCHICAL)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>.max_number_of_proxies(200));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>approx.run(30);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1sma_perf">
+<title>Performances</title>
+<para>We provide some performance comparisons with the free function API <computeroutput><ref refid="group__PkgTSMARef_1ga4bd463b1bad91654f253895861d37dbd" kindref="member">CGAL::Surface_mesh_approximation::approximate_triangle_mesh</ref></computeroutput>. Timings are recorded on a PC running Windows10 X64 with an Intel Xeon E5-1620 clocked at 3.70 GHz with 32GB of RAM. The program has been optimized with the O2 option with Visual Studio 2015. By default the kernel used is <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_inexact_constructions_kernel</ref></computeroutput> (<computeroutput>EPICK</computeroutput>).</para>
+<para>Runtime in seconds with target number of proxies of different seeding method:</para>
+<para><center> <table rows="4" cols="6"><row>
+<entry thead="yes" align='right'><para>Model   </para>
+</entry><entry thead="yes" align='right'><para>#Triangles   </para>
+</entry><entry thead="yes" align='right'><para>#Proxies   </para>
+</entry><entry thead="yes" align='right'><para>Random   </para>
+</entry><entry thead="yes" align='right'><para>Incremental   </para>
+</entry><entry thead="yes" align='right'><para>Hierarchical    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>plane-sphere   </para>
+</entry><entry thead="no" align='right'><para>6,826   </para>
+</entry><entry thead="no" align='right'><para>20   </para>
+</entry><entry thead="no" align='right'><para>0   </para>
+</entry><entry thead="no" align='right'><para>0.87   </para>
+</entry><entry thead="no" align='right'><para>0.17    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>bear   </para>
+</entry><entry thead="no" align='right'><para>20,188   </para>
+</entry><entry thead="no" align='right'><para>200   </para>
+</entry><entry thead="no" align='right'><para>0   </para>
+</entry><entry thead="no" align='right'><para>36.749   </para>
+</entry><entry thead="no" align='right'><para>1.194    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>masque   </para>
+</entry><entry thead="no" align='right'><para>62,467   </para>
+</entry><entry thead="no" align='right'><para>200   </para>
+</entry><entry thead="no" align='right'><para>0.002   </para>
+</entry><entry thead="no" align='right'><para>133.901   </para>
+</entry><entry thead="no" align='right'><para>4.308   </para>
+</entry></row>
+</table>
+</center></para>
+<para>Runtime in seconds with target error drop of different seeding method. The benchmark is running on the bear model with 20,188 faces. Each column records the time and the resulting number of proxies:</para>
+<para><center> <table rows="4" cols="4"><row>
+<entry thead="yes" align='right'><para>Target Error Drop   </para>
+</entry><entry thead="yes" align='right'><para>Random   </para>
+</entry><entry thead="yes" align='right'><para>Incremental   </para>
+</entry><entry thead="yes" align='right'><para>Hierarchical    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>0.06   </para>
+</entry><entry thead="no" align='right'><para>1.03/64   </para>
+</entry><entry thead="no" align='right'><para>9.053/53   </para>
+</entry><entry thead="no" align='right'><para>1.017/64    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>0.04   </para>
+</entry><entry thead="no" align='right'><para>1.207/128   </para>
+</entry><entry thead="no" align='right'><para>15.422/88   </para>
+</entry><entry thead="no" align='right'><para>1.2/128    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>0.02   </para>
+</entry><entry thead="no" align='right'><para>1.415/256   </para>
+</entry><entry thead="no" align='right'><para>35.171/192   </para>
+</entry><entry thead="no" align='right'><para>1.428/256   </para>
+</entry></row>
+</table>
+</center></para>
+<para>Runtime of the 3 phases of the algorithm in seconds: seeding, clustering iteration and meshing. The seeding method is hierarchical with target number of proxies.</para>
+<para><center> <table rows="4" cols="8"><row>
+<entry thead="yes" align='right'><para>Model   </para>
+</entry><entry thead="yes" align='right'><para>#Triangles   </para>
+</entry><entry thead="yes" align='right'><para>#Proxies   </para>
+</entry><entry thead="yes" align='right'><para>#Iterations   </para>
+</entry><entry thead="yes" align='right'><para>Seeding   </para>
+</entry><entry thead="yes" align='right'><para>Clustering   </para>
+</entry><entry thead="yes" align='right'><para>Meshing   </para>
+</entry><entry thead="yes" align='right'><para>Total    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>plane-sphere   </para>
+</entry><entry thead="no" align='right'><para>6,826   </para>
+</entry><entry thead="no" align='right'><para>20   </para>
+</entry><entry thead="no" align='right'><para>20   </para>
+</entry><entry thead="no" align='right'><para>0.17   </para>
+</entry><entry thead="no" align='right'><para>0.228   </para>
+</entry><entry thead="no" align='right'><para>0.044   </para>
+</entry><entry thead="no" align='right'><para>0.442    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>bear   </para>
+</entry><entry thead="no" align='right'><para>20,188   </para>
+</entry><entry thead="no" align='right'><para>200   </para>
+</entry><entry thead="no" align='right'><para>20   </para>
+</entry><entry thead="no" align='right'><para>1.194   </para>
+</entry><entry thead="no" align='right'><para>0.784   </para>
+</entry><entry thead="no" align='right'><para>0.128   </para>
+</entry><entry thead="no" align='right'><para>2.006    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>masque   </para>
+</entry><entry thead="no" align='right'><para>62,467   </para>
+</entry><entry thead="no" align='right'><para>200   </para>
+</entry><entry thead="no" align='right'><para>20   </para>
+</entry><entry thead="no" align='right'><para>4.308   </para>
+</entry><entry thead="no" align='right'><para>2.974   </para>
+</entry><entry thead="no" align='right'><para>0.349   </para>
+</entry><entry thead="no" align='right'><para>7.631   </para>
+</entry></row>
+</table>
+</center></para>
+</sect1>
+<sect1 id="index_1sma_background">
+<title>Background</title>
+<para>The VSA method has two key geometric concepts:</para>
+<para><itemizedlist>
+<listitem><para><bold>Proxy</bold> <formula id="28">$ P $</formula>. The parameterized best-fit surrogate of a piece of surface geometry.</para>
+</listitem><listitem><para><bold>Error metric</bold> <formula id="29">$ E $</formula>. To measure how well a proxy approximates the corresponding geometry.</para>
+</listitem></itemizedlist>
+</para>
+<para>Given an error metric <formula id="29">$ E $</formula>, a desired number of <formula id="30">$ k $</formula> proxies, and an input surface <formula id="31">$ S $</formula>, we denote by <emphasis>optimal shape proxies</emphasis> a set <formula id="28">$ P $</formula> of proxies <formula id="26">$ P_i $</formula> associated to the regions <formula id="32">$ R_i$</formula> of a partition <formula id="33">$ \mathcal{R} $</formula> of <formula id="31">$ S $</formula> that minimizes the total fitting error <ref refid="citelist_1CITEREF_cgal:cad-vsa-04" kindref="member">[1]</ref> :</para>
+<para><formula id="34">\[ E(\mathcal{R}, P) = \sum_{i = 1..k} E(\mathcal{R}_i, P_i). \]</formula></para>
+<para>By casting the approximation problem into an optimal discrete clustering one, the algorithm leverages the effective Lloyd algorithm <ref refid="citelist_1CITEREF_cgal:cad-vsa-04" kindref="member">[1]</ref> to drive the total error down iteratively. More specifically, during each iteration two different steps are conducted, for the <formula id="35">$ m $</formula>th iteration:<itemizedlist>
+<listitem><para><bold>Partition process</bold>. Firstly, all triangle faces are partitioned into <formula id="30">$ k $</formula> connected regions <formula id="36">$ \{ R^{m}_1, \cdots, R^{m}_k \} $</formula> by assigning each face to its nearest proxy <formula id="37">$ P^{m-1}_i $</formula>.</para>
+</listitem><listitem><para><bold>Fitting process</bold>. Then, the algorithm fits a proxy and update the parameters <formula id="38">$ P^{m}_i $</formula> from the corresponding region <formula id="39">$ R^{m}_i $</formula>.</para>
+</listitem></itemizedlist>
+</para>
+<para>For a sequence of iterations with the fitting error <formula id="40">$ \{ E^1, \cdots, E^m \} $</formula>, the iteration is repeated until one of the stopping criteria is met:<itemizedlist>
+<listitem><para>The maximum number of iterations is reached: <formula id="41">$ m &gt;= max\_iterations $</formula>.</para>
+</listitem><listitem><para>No significant error change between two iterations: <formula id="42">$ (E^{m-1} - E^{m}) / E^{m-1} &lt; converge\_threshold $</formula>.</para>
+</listitem></itemizedlist>
+</para>
+<para>Intuitively, each region <formula id="43">$ \mathcal{R}_i $</formula> of a partition <formula id="33">$ \mathcal{R} $</formula> can be summarily represented to first order as an &quot;average&quot; point <formula id="44">$ X_i $</formula> and an &quot;average&quot; normal <formula id="45">$ N_i $</formula>. We denote such local representative pair <formula id="46">$ P_i = (X_i, N_i) $</formula>, a <emphasis>planar proxy</emphasis> of the associated region.</para>
+<para>Defining an appropriate error metric is the key ingredient for the algorithm. The <formula id="0">$ \mathcal{L}^2 $</formula> metric is defined as: <formula id="47">\[ \mathcal{L}^2(\mathcal{R}_i, P_i) = \iint_{x \in \mathcal{R}_i}\Vert x - \Pi_i(x)\Vert^2 dx. \]</formula> where <formula id="48">$ \Pi_i(\cdot) $</formula> denotes the orthogonal projection of the argument onto the proxy plane passing through <formula id="44">$ X_i $</formula> and normal to <formula id="45">$ N_i $</formula>. The <formula id="0">$ \mathcal{L}^2 $</formula> metric tries to match the input shape through approximation of the geometric position.</para>
+<para>In the original paper <ref refid="citelist_1CITEREF_cgal:cad-vsa-04" kindref="member">[1]</ref> the author proposed the <formula id="1">$ \mathcal{L}^{2,1} $</formula> metrics, arguing that the normals are important to the visual interpretation of the shape. The <formula id="1">$ \mathcal{L}^{2,1} $</formula> is defined as: <formula id="49">\[ \mathcal{L}^{2,1}(\mathcal{R}_i, P_i) = \iint_{x \in \mathcal{R}_i}\Vert \mathbf{n}(x) - \mathbf{n}_i\Vert^2 dx. \]</formula></para>
+<para>The <formula id="1">$ \mathcal{L}^{2,1} $</formula> is numerically superior to <formula id="0">$ \mathcal{L}^2 $</formula> in several ways:<itemizedlist>
+<listitem><para>The anisotropy of the surface is better captured.</para>
+</listitem><listitem><para>Finding the best normal proxy is as simple as averaging the normals.</para>
+</listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1sma_history">
+<title>Design and Implementation History</title>
+<para>This package is the result of the work of Lingjie Zhu during the 2017 season of the Google Summer of Code, mentored by Pierre Alliez. The code is based on an initial research code written by Pierre Alliez at Inria in 2003, for a paper published at the ACM SIGGRAPH conference in 2004, co-authored by David Cohen-Steiner, Pierre Alliez and Mathieu Desbrun <ref refid="citelist_1CITEREF_cgal:cad-vsa-04" kindref="member">[1]</ref>. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Surface_mesh_approximation.txt"/>
+  </compounddef>
+</doxygen>

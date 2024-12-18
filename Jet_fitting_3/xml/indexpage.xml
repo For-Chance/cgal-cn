@@ -1,0 +1,347 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Estimation_of_Local_Differential_Properties_of_Point-Sampled_Surfaces"/><anchor id="index_1chapJetfitting3"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Marc Pouget and Fr<eacute/>d<eacute/>ric Cazals</para>
+</simplesect>
+<anchor id="index_1fig__figjet3figdavid"/> <image type="html" name="david-dirmaxkmin-white-back.jpg"></image>
+ <image type="latex" name="david-dirmaxkmin-white-back.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figjet3figdavid" kindref="member">fig__figjet3figdavid</ref> Principal directions associated with <formula id="10">$k_{max}$</formula> scaled by <formula id="11">$ k_{min}$</formula>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>This package allows the estimation of local differential quantities of a surface from a point sample, given either as a mesh or as point cloud.</para>
+<para>Note that this package needs the third party library <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen</ref> to be installed to compile the example code..</para>
+<sect1 id="index_1secintro">
+<title>Introduction</title>
+<sect2 id="index_1Jet_fitting_3Overview">
+<title>Overview</title>
+<para>Consider a sampled smooth surface, and assume we are given a collection of points <formula id="12">$ P$</formula> about a given sample <formula id="13">$ p$</formula>. We aim at estimating the differential properties up to any fixed order of the surface at point <formula id="13">$ p$</formula> from the point set <formula id="14">$ P^+ = P\cup \{ p\}$</formula> - we denote <formula id="15">$ N=\mid P^+\mid$</formula>. More precisely, first order properties correspond to the normal or the tangent plane; second order properties provide the principal curvatures and directions, third order properties provide the directional derivatives of the principal curvatures along the curvature lines, etc. Most of the time, estimating first and second order differential quantities is sufficient. However, some applications involving shape analysis require estimating third and fourth order differential quantities. Many different estimators have been proposed in the vast literature of applied geometry <ref refid="citelist_1CITEREF_cgal:p-smrqt-01" kindref="member">[4]</ref> (section 3, page 7), and all of them need to define a neighborhood around the point at which the estimation is computed. Our method relies on smooth differential geometry calculations, carried out on smooth objects <emphasis>fitted</emphasis> from the sample points. Datasets amenable to such a processing are naturally unstructured point clouds, as well as meshes - whose topological information may be discarded.</para>
+<para>Estimating differential properties from discrete date always raises a philosophical issue. On one hand, estimating differential quantities subsumes a smooth surface does exist. In this spirit one wishes to recover its differential properties, so that any estimation method must come with an asymptotic convergence analysis of the results returned. For the method developed in this CGAL package, the interested will find such an analysis in <ref refid="citelist_1CITEREF_cgal:cp-edqpf-05" kindref="member">[1]</ref>, (Theorem 3) - it should be stressed the error bounds proved therein are optimal.</para>
+<para>On the other hand, any estimation method may be applied to arbitrarily data - surface unknown, surface piecewise smooth etc. In such a case, no analysis can be carried out, and it is up to the users to check the results match their needs.</para>
+<para>Unlike most of the CGAL packages, this package uses approximation methods and is not intended to provide an exact canonical result in any sense. This is why internal computations are performed with a number type possibly different from that of the input data, even if for convenience the results are returned with this original number type. A reasonable choice for this internal number type is for example the <computeroutput>double</computeroutput> type.</para>
+</sect2>
+<sect2 id="index_1Jet_fitting_3SmoothSurfacesdJetsandtheMonge">
+<title>Smooth Surfaces, d-Jets and the Monge Form</title>
+<para>To present the method, we shall need the following notions. Consider a smooth surface. About one of its points, consider a coordinate system whose <formula id="16">$ z$</formula>-axis does not belong to the tangent space. In such a frame, the surface can locally be written as the graph of a bivariate function. Letting <formula id="17">$ h.o.t.$</formula> stand for <emphasis>higher order terms</emphasis>, one has :</para>
+<para><formula id="18">\begin{equation}
+z(x,y)=J_{B,d}(x,y) + h.o.t. \ ; \quad
+J_{B,d}(x,y)=\ccSum{k=0}{d}{(\ccSum{i=0}{i}{
+\frac{B_{k-i,i}x^{k-i}y^{i}}{i!(k-i)!}})}.
+\end{equation}</formula></para>
+<para>The degree <formula id="19">$ d$</formula> polynomial <formula id="20">$ J_{B,d}$</formula> is the Taylor expansion of the function <formula id="16">$ z$</formula>, and is called its <emphasis> <formula id="19">$ d$</formula>-jet</emphasis>. Notice that a <formula id="19">$ d$</formula>-jet contains <formula id="21">$ N_d=(d+1)(d+2)/2$</formula> coefficients.</para>
+<para>Recall that an umbilical point of a surface - or umbilic for short, is a point where both principal curvatures are identical. At any point of the surface which is not an umbilic, principal directions <formula id="22">$ d_1, d_2$</formula> are well defined, and these (non oriented) directions together with the normal vector <formula id="23">$ n$</formula> define two direct orthonormal frames. If <formula id="24">$ v_1$</formula> is a unit vector of direction <formula id="25">$ d_1$</formula>, there exists a unique unit vector <formula id="26">$ v_2$</formula> so that <formula id="27">$ (v_1,v_2,n)$</formula> is direct; and the other possible frame is <formula id="28">$ (-v_1,-v_2,n)$</formula>. Both these coordinate systems are known as the <emphasis>Monge coordinate systems</emphasis>. In both these systems, the surface is said to be given in the Monge form and its jet has the following canonical form :</para>
+<para><formula id="29">\begin{eqnarray}
+z(x,y) =  &amp; \frac{1}{2}(k_1x^2 + k_2y^2)+
+        \frac{1}{6}(b_0x^3+3b_1x^2y+3b_2xy^2+b_3y^3) \\
+  &amp;  +\frac{1}{24}(c_0x^4+4c_1x^3y+6c_2x^2y^2+4c_3xy^3+c_4y^4) + h.o.t.
+\end{eqnarray}</formula></para>
+<para>The coefficients <formula id="30">$ k_1, k_2$</formula> are the principal curvatures, <formula id="31">$ b_0,b_3$</formula> are the directional derivatives of <formula id="32">$ k_1,k_2$</formula> along their respective curvature line, while <formula id="33">$ b_1,b_2$</formula> are the directional derivatives of <formula id="32">$ k_1,k_2$</formula> along the other curvature lines.</para>
+<para>The Monge coordinate system can be computed from any <formula id="19">$ d$</formula>-jet ( <formula id="34">$ d\geq
+2$</formula>), and so are the Monge coefficients. These information characterize the local geometry of the surface in a canonical way, and are the quantities returned by our algorithm.</para>
+</sect2>
+<sect2 id="index_1Jet_fitting_3Algorithm">
+<title>Algorithm</title>
+<para>Based on the above concepts, the algorithm consists of 4 steps. <orderedlist>
+<listitem>
+<para>We perform a Principal Component Analysis (PCA) on <formula id="35">$ P^+$</formula>. This analysis outputs three orthonormal eigenvectors and the associated eigenvalues. The fitting basis consists of these three vectors so that the vector associated to the smallest eigenvalue is the last vector of the basis. (Indeed, if the surface is well sampled, one expects the PCA to provide one small and two large eigenvalues, the eigenvector associated to the small one approximating the normal vector.) </para>
+</listitem>
+<listitem>
+<para>We perform a change of coordinates to move the samples into the coordinate system of the fitting basis and with origin the point <formula id="13">$ p$</formula> at which the estimation is sought. We then resort to polynomial fitting, so as to either interpolate or approximate the <formula id="19">$ d$</formula>-jet of the surface in this coordinate system. This bivariate polynomial approximation reduces to linear algebra operations. </para>
+</listitem>
+<listitem>
+<para>From the fitted <formula id="19">$ d$</formula>-jet, we compute the Monge basis <formula id="36">$ (d_1,d_2,n)$</formula>. </para>
+</listitem>
+<listitem>
+<para>Finally, we compute the Monge coefficients : <formula id="37">$ k_i, b_i, c_i$</formula>. </para>
+</listitem>
+</orderedlist>
+</para>
+<para>Further details can be found in section <ref refid="index_1Jet_fitting_3Mathematical" kindref="member">Mathematical and Algorithmic Details</ref> and in <ref refid="citelist_1CITEREF_cgal:cp-edqpf-05" kindref="member">[1]</ref> (section 6).</para>
+</sect2>
+<sect2 id="index_1secdegcases">
+<title>Degenerate Cases</title>
+<para>As usual, the fitting procedure may run into (almost) degenerate cases: <itemizedlist>
+<listitem>
+<para>Due to poor sampling, the PCA used to determine a rough normal vector may not be good. The nearer this direction to the tangent plane the worse the estimation.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>As observed in <ref refid="citelist_1CITEREF_cgal:cp-edqpf-05" kindref="member">[1]</ref> (section 3.1), the interpolating problem is not well posed if the points project, into the fitting frame, onto an algebraic curve of degree <formula id="19">$ d$</formula>. More generally, the problem is ill posed if the condition number is too large. </para>
+</listitem>
+</itemizedlist>
+In these cases, even if a result is provided, the estimation may not be relevant. To inform the user of these issues, we provide the PCA results and the condition number of the fitting. In any case, it is up to the user to judge if the result meets its need.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Jet_fitting_3Software">
+<title>Software Design</title>
+<sect2 id="index_1Jet_fitting_3OptionsandInterfaceSpecifications">
+<title>Options and Interface Specifications</title>
+<para>The fitting strategy performed by the class <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">Monge_via_jet_fitting</ref></computeroutput> requires the following parameters: <itemizedlist>
+<listitem>
+<para>the degree <formula id="19">$ d$</formula> of the fitted polynomial ( <formula id="38">$ d \geq 1$</formula>), </para>
+</listitem>
+<listitem>
+<para>the degree <formula id="39">$ d&apos;$</formula> of the Monge coefficients sought, with <formula id="40">$ 1 \leq d&apos; \leq
+\min(d,4) $</formula>, </para>
+</listitem>
+<listitem>
+<para>a range of <formula id="0">$ N$</formula> input points on the surface, with the precondition that <formula id="41">$ N \geq N_d = (d+1)(d+2)/2$</formula>. Note that if <formula id="42">$ N=N_d$</formula>, interpolation is performed; and if <formula id="43">$ N &gt;N_d$</formula>, approximation is used. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1Jet_fitting_3Output">
+<title>Output</title>
+<para>As explained in Section <ref refid="index_1secintro" kindref="member">Introduction</ref> , the output consists of a coordinate system, the Monge basis, together with the Monge coefficients which are stored in the <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting_1_1Monge__form" kindref="compound">CGAL::Monge_via_jet_fitting::Monge_form</ref></computeroutput> class. In addition, more information on the computational issues are stored in the <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">Monge_via_jet_fitting</ref></computeroutput> class.</para>
+<para>The <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting_1_1Monge__form" kindref="compound">CGAL::Monge_via_jet_fitting::Monge_form</ref></computeroutput> class provides the following information.</para>
+<para><itemizedlist>
+<listitem>
+<para>Origin. This is the point on the fitted polynomial surface where the differential quantities have been computed. In the approximation case, it differs from the input point <formula id="13">$ p$</formula> : it is the projection of <formula id="13">$ p$</formula> onto the fitted surface following the <formula id="16">$ z$</formula>-direction of the fitting basis.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Monge Basis. The Monge basis <formula id="36">$ (d_1,d_2,n)$</formula> is orthonormal direct, and the maximal, minimal curvatures are defined wrt this basis. If the user has a predefined normal <formula id="44">$ n_0$</formula> (e.g. the sample points come from an oriented mesh) then if <formula id="45">$ n_0 . n &gt;0$</formula> then max-min is correct; if not, i.e. <formula id="46">$ n_0 . n &lt;0$</formula>, the user should switch to the orthonormal direct basis <formula id="47">$ (d_1&apos;,d_2&apos;,n&apos;)=(d_2,d_1,-n)$</formula> with the maximal curvature <formula id="48">$ k_1&apos;=-k_2$</formula> and the minimal curvature <formula id="49">$ k_2&apos;=-k_1$</formula>. If <formula id="50">$ n_0 . n =0$</formula> or is small, the orientation of the surface is clearly ill-defined, and the user may proof-check the samples used to comply with its predefined normal.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Monge Coefficients. The coefficient of the Monge form is <formula id="51">$ (k_1, k_2 (\leq k_1),
+b_0, b_1, b_2, b_3, c_0, c_1, c_2, c_3, c_4)$</formula> for <formula id="52">$ d&apos; = 4$</formula>.</para>
+<para></para>
+</listitem>
+</itemizedlist>
+</para>
+<para>In addition, the class <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">Monge_via_jet_fitting</ref></computeroutput> stores <itemizedlist>
+<listitem>
+<para>the condition number of the fitting system, </para>
+</listitem>
+<listitem>
+<para>the coordinate system of the PCA (in which the fitting is performed). </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1Jet_fitting_3TemplateParameters">
+<title>Template Parameters</title>
+<sect3 id="index_1Jet_fitting_3TemplateparameterDataKernel">
+<title>Template parameter DataKernel</title>
+<para>This concept provides the types for the input sample points, together with <formula id="53">$ 3d$</formula> vectors and a number type. It is used as template for the class <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">Monge_via_jet_fitting</ref>&lt;<ref refid="classDataKernel" kindref="compound">DataKernel</ref>, <ref refid="classLocalKernel" kindref="compound">LocalKernel</ref>, <ref refid="classSvdTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">SvdTraits</ref>&gt;</computeroutput>. Typically, one can use <computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref>&lt; double &gt;</computeroutput>.</para>
+</sect3>
+<sect3 id="index_1Jet_fitting_3TemplateparameterLocalKernel">
+<title>Template parameter LocalKernel</title>
+<para>This is a parameter of the class <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">Monge_via_jet_fitting</ref>&lt;<ref refid="classDataKernel" kindref="compound">DataKernel</ref>, <ref refid="classLocalKernel" kindref="compound">LocalKernel</ref>, <ref refid="classSvdTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">SvdTraits</ref>&gt;</computeroutput>. This concept defines the vector and number types used for local computations and to store the PCA basis data.</para>
+<para>Input points of type <computeroutput><ref refid="classDataKernel" kindref="compound">DataKernel</ref>::Point_3</computeroutput> are converted to <computeroutput><ref refid="classLocalKernel" kindref="compound">LocalKernel</ref>::Point_3</computeroutput>. For output of the <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting_1_1Monge__form" kindref="compound">CGAL::Monge_via_jet_fitting::Monge_form</ref></computeroutput> class, these types are converted back to <computeroutput><ref refid="classDataKernel" kindref="compound">DataKernel</ref></computeroutput> ones. Typically, one can use <computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref>&lt; double &gt;</computeroutput> which is the default.</para>
+</sect3>
+<sect3 id="index_1Jet_fitting_3TemplateparameterSvdTraits">
+<title>Template parameter SvdTraits</title>
+<para>This concept provides the number, vector and matrix types for algebra operations required by the fitting method in <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">Monge_via_jet_fitting</ref>&lt;<ref refid="classDataKernel" kindref="compound">DataKernel</ref>, <ref refid="classLocalKernel" kindref="compound">LocalKernel</ref>, <ref refid="classSvdTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">SvdTraits</ref>&gt;</computeroutput> . The main method is a linear solver using a singular value decomposition.</para>
+</sect3>
+<sect3 id="index_1Jet_fitting_3CompatibilityRequirements">
+<title>Compatibility Requirements</title>
+<para>To solve the fitting problem, the sample points are first converted from the <computeroutput><ref refid="classDataKernel" kindref="compound">DataKernel</ref></computeroutput> to the <computeroutput><ref refid="classLocalKernel" kindref="compound">LocalKernel</ref></computeroutput> (this is done using the <computeroutput><ref refid="classCGAL_1_1Cartesian__converter" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian_converter</ref></computeroutput>). Then change of coordinate systems and linear algebra operations are performed with this kernel. This implies that the number types <computeroutput><ref refid="classLocalKernel" kindref="compound">LocalKernel</ref>::FT</computeroutput> and <computeroutput><ref refid="classSvdTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">SvdTraits</ref>::FT</computeroutput> must be identical. Second the Monge basis and coefficients, computed with the <computeroutput><ref refid="classLocalKernel" kindref="compound">LocalKernel</ref></computeroutput>, are converted back to the <computeroutput><ref refid="classDataKernel" kindref="compound">DataKernel</ref></computeroutput> (this is done using the <computeroutput><ref refid="classCGAL_1_1Cartesian__converter" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian_converter</ref></computeroutput> and the <computeroutput><ref refid="structCGAL_1_1NT__converter" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">NT_converter</ref></computeroutput>).</para>
+</sect3>
+</sect2>
+</sect1>
+<sect1 id="index_1Jet_fitting_3Examples">
+<title>Examples</title>
+<sect2 id="index_1Jet_fitting_3SingleEstimationaboutaPoint">
+<title>Single Estimation about a Point of a Point Cloud</title>
+<para>The first example illustrates the computation of the local differential quantities from a set of points given in a text file as input. The first point of the list is the one at which the computation is performed. The user has to specify a file for the input points and the degrees <formula id="19">$ d$</formula> and <formula id="39">$ d&apos;$</formula>. <linebreak/>
+<bold>File</bold> <ref refid="Jet_fitting_3_2Single_estimation_8cpp-example" kindref="compound">Jet_fitting_3/Single_estimation.cpp</ref> <programlisting filename="Jet_fitting_3/Single_estimation.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Monge_via_jet_fitting.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DFT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;DFT&gt;</ref><sp/><sp/><sp/><sp/><sp/>Data_Kernel;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Data_Kernel::Point_3<sp/><sp/><sp/><sp/><sp/>DPoint;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">CGAL::Monge_via_jet_fitting&lt;Data_Kernel&gt;</ref><sp/>My_Monge_via_jet_fitting;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>My_Monge_via_jet_fitting::Monge_form<sp/><sp/><sp/><sp/><sp/>My_Monge_form;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>d_fitting<sp/>=<sp/>4;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>d_monge<sp/>=<sp/>4;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>name_file_in<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;data/in_points_d4.txt&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//check<sp/>command<sp/>line</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc&lt;4)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Usage<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>argv[0]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&lt;inputPoints.txt&gt;<sp/>&lt;d_fitting&gt;<sp/>&lt;d_monge&gt;&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;test<sp/>with<sp/>default<sp/>arguments&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>name_file_in<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d_fitting<sp/>=<sp/>std::atoi(argv[2]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d_monge<sp/>=<sp/>std::atoi(argv[3]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//open<sp/>the<sp/>input<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>inFile(name_file_in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!inFile<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;cannot<sp/>open<sp/>file<sp/>for<sp/>input\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>exit(-1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//initialize<sp/>the<sp/>in_points<sp/>container</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>x,<sp/>y,<sp/>z;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;DPoint&gt;<sp/>in_points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(inFile<sp/>&gt;&gt;<sp/>x)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>inFile<sp/>&gt;&gt;<sp/>y<sp/>&gt;&gt;<sp/>z;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>DPoint<sp/>p(x,y,z);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>in_points.push_back(p);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>inFile.close();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>fct<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>My_Monge_form<sp/>monge_form;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>My_Monge_via_jet_fitting<sp/>monge_fit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>monge_form<sp/>=<sp/>monge_fit(in_points.begin(),<sp/>in_points.end(),<sp/>d_fitting,<sp/>d_monge);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//OUTPUT<sp/>on<sp/>std::cout</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga2cbb865dd83eedd780f4a452635b1d28" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::set_pretty_mode</ref>(std::cout);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;vertex<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>in_points[0]<sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;number<sp/>of<sp/>points<sp/>used<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>in_points.size()<sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>monge_form;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;condition_number<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>monge_fit.condition_number()<sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;pca_eigen_vals<sp/>and<sp/>associated<sp/>pca_eigen_vecs<sp/>:&quot;</highlight><highlight class="normal"><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i&lt;3;<sp/>i++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>monge_fit.pca_basis(i).first<sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>monge_fit.pca_basis(i).second<sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Jet_fitting_3OnaMesh">
+<title>On a Mesh</title>
+<para>The second example (cf Mesh_estimation.cpp in the example directory) illustrates the computation of local differential quantities for all vertices of a given mesh. The neighborhood of a given vertex is computed using rings on the triangulation. Results are twofold: <itemizedlist>
+<listitem>
+<para>a human readable text file featuring the <computeroutput><ref refid="classCGAL_1_1Monge__via__jet__fitting_1_1Monge__form" kindref="compound">CGAL::Monge_via_jet_fitting::Monge_form</ref></computeroutput> and numerical information on the computation: condition number and the PCA basis; </para>
+</listitem>
+<listitem>
+<para>another text file that records raw data (better for a visualization post-processing). </para>
+</listitem>
+</itemizedlist>
+</para>
+<para><ref refid="index_1fig__figjet3figdavid" kindref="member">fig__figjet3figdavid</ref> and <ref refid="index_1fig__figjet3figellipticparaboloid" kindref="member">fig__figjet3figellipticparaboloid</ref> provide illustrations of principal directions of curvature.</para>
+<para><anchor id="index_1fig__figjet3figellipticparaboloid"/> <image type="html" name="ppal_curv_poly2x2+y2.jpg"></image>
+ <image type="latex" name="ppal_curv_poly2x2+y2.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figjet3figellipticparaboloid" kindref="member">fig__figjet3figellipticparaboloid</ref> Principal directions of curvature and normals at vertices of a mesh of the graph of the function <formula id="54">$ f(x,y)=2x^2+y^2$</formula>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Jet_fitting_3Mathematical">
+<title>Mathematical and Algorithmic Details</title>
+<para><anchor id="index_1secdetails"/>In this Section, we detail the mathematics involved, in order to justify the design choices made. To begin with, observe the fitting problem involves three relevant direct orthonormal basis: the world-basis <formula id="55">$ (w_x,w_y,w_z)$</formula>, the fitting-basis <formula id="56">$ (f_x,f_y,f_z)$</formula>, the Monge basis <formula id="36">$ (d_1,d_2,n)$</formula>.</para>
+<para><anchor id="index_1fig__figjet_fitting_basis"/> <image type="html" name="jet_fitting_basis.png"></image>
+ <image type="latex" name="jet_fitting_basis.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figjet_fitting_basis" kindref="member">fig__figjet_fitting_basis</ref> The three bases involved in the estimation. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1Jet_fitting_3ComputingaBasisfortheFitting">
+<title>Computing a Basis for the Fitting</title>
+<para><bold>Input: samples Output: fitting-basis</bold></para>
+<para>Performing a PCA requires diagonalizing a symmetric matrix. This analysis gives an orthonormal basis whose <formula id="16">$ z$</formula>-axis is provided by the eigenvector associated to the smallest eigenvalue.Another possibility is to choose as z-axis the axis of the world-basis with the least angle with the axis determined with the PCA. Then the change of basis reduces to a permutation of axis. Note one may have to swap the orientation of a vector to get a direct basis.</para>
+<para>Let us denote <formula id="57">$ P_{W\rightarrow F}$</formula> the matrix that changes coordinates from the world-basis <formula id="55">$ (w_x,w_y,w_z)$</formula> to the fitting-basis <formula id="56">$ (f_x,f_y,f_z)$</formula>. The rows of <formula id="57">$ P_{W\rightarrow F}$</formula> are the coordinates of the vectors <formula id="56">$ (f_x,f_y,f_z)$</formula> in the world-basis. This matrix represents a orthogonal transformation hence its inverse is its transpose. To obtain the coordinates of a point in the fitting-basis from the coordinates in the world-basis, one has to multiply by <formula id="57">$ P_{W\rightarrow F}$</formula>.</para>
+<para>As mentioned above, the eigenvalues are returned, from which the sampling quality can be assessed. For a good sampling, the eigenvector associated to the smallest eigenvalue should roughly give the normal direction.</para>
+</sect2>
+<sect2 id="index_1secsolving">
+<title>Solving the Interpolation / Approximation Problem</title>
+<para><bold>Input: samples, fitting-basis Output: coefficients <formula id="58">$ A_{i,j}$</formula> of the bivariate fitted polynomial in the fitting-basis </bold></para>
+<para>Computations are done in the fitting-basis and the origin is the point <formula id="13">$ p$</formula>. First, one has to transform coordinates of sample points with a translation ( <formula id="59">$ -p$</formula>) and multiplication by <formula id="57">$ P_{W\rightarrow F}$</formula>.</para>
+<para>The fitting process consists of finding the coefficients <formula id="58">$ A_{i,j}$</formula> of the degree <formula id="19">$ d$</formula> polynomial</para>
+<para><anchor id="index_1eqanswer"/> <formula id="60">\begin{equation}
+J_{A,d}= \ccSum{k=0}{d}{(\ccSum{i=0}{k}{
+\frac{A_{k-i,i}x^{k-i}y^{i}}{i!(k-i)!}})}.
+\end{equation}</formula></para>
+<para>Denote <formula id="61">$ p_i=(x_i,y_i,z_i), \ i=1,\ldots , N$</formula> the coordinates of the sample points of <formula id="35">$ P^+$</formula>. For interpolation the linear equations to solve are <formula id="62">$ A(x_i,y_i)=z_i \
+i=1,\ldots,N$</formula>, and for approximation one has to minimize <formula id="63">$ \sum_{i=1}^N
+(A(x_i,y_i)-z_i)^2$</formula>. The linear algebra formulation of the problem is given by</para>
+<para><anchor id="index_1eqfitlinalg"/> <formula id="64">\begin{eqnarray}
+ A =  &amp; (A_{0,0}, A_{1,0},A_{0,1}, \ldots , A_{0,d})^T \\
+ Z=  &amp;(z_1, z_2,\ldots , z_N)^T \\
+ M=  &amp;(1,x_i,\ y_i,\ \frac{x_i^2}{2},\ldots ,
+\ \frac{x_iy_i^{d-1}}{(d-1)!},\ \frac{y_i^d}{d!})_{i=1,...,N}
+\end{eqnarray}</formula></para>
+<para>The equations for interpolation become <formula id="65">$ MA=Z$</formula>. For approximation, the system <formula id="65">$ MA=Z$</formula> is solved in the least square sense, i.e. one seeks the vector <formula id="66">$ A$</formula> such that <formula id="67">$ A = \arg \min_A ||MA-Z||_2$</formula>.</para>
+<para>In any case, there is a preconditioning of the matrix <formula id="68">$ M$</formula> so as to improve the condition number. Assuming the <formula id="69">$ \{x_i\}$</formula>, <formula id="70">$ \{y_i\}$</formula> are of order <formula id="71">$ h$</formula>, the pre-conditioning consists of performing a column scaling by dividing each monomial <formula id="72">$ x_i^ky_i^l$</formula> by <formula id="73">$ h^{k+l}$</formula> - refer to Eq. ( <ref refid="index_1eqfitlinalg" kindref="member">eqfitlinalg</ref> ). Practically, the parameter <formula id="71">$ h$</formula> is chosen as the mean value of the <formula id="69">$ \{x_i\}$</formula> and <formula id="70">$ \{y_i\}$</formula>. In other words, the new system is <formula id="74">$ M&apos;Y=(MD^{-1})(DA)=Z$</formula> with <formula id="75">$ D$</formula> the diagonal matrix <formula id="76">$ D=(1,h,h,h^2,\ldots,h^d,h^d)$</formula>, so that the solution <formula id="66">$ A$</formula> of the original system is <formula id="77">$ A=D^{-1}Y$</formula>.</para>
+<para>There is always a single solution since for under constrained systems we also minimize <formula id="78">$ ||A||_2$</formula>. The method uses a singular value decomposition of the <formula id="79">$ N\times N_d$</formula> matrix <formula id="80">$ M= U S V^T$</formula>, where <formula id="81">$ U$</formula> is a <formula id="82">$ N \times N$</formula> orthogonal matrix, <formula id="83">$ V$</formula> is a <formula id="84">$ N_d \times N_d$</formula> orthogonal matrix and <formula id="85">$ S$</formula> is a <formula id="79">$ N\times N_d$</formula> matrix with the singular values on its diagonal. Denote <formula id="86">$ r$</formula> the rank of <formula id="68">$ M$</formula>, we can decompose  <formula id="87">$ S= \left( \begin{array}{cc}
+D_r &amp; 0_{r,\ N_d-r}\\
+0_{N-r,\ r} &amp; 0_{N-r,\ N_d-r}
+\end{array}
+\right).
+$</formula> The number <formula id="86">$ r$</formula>, which is the number of non zero singular values, is strictly lower than <formula id="88">$ N_d$</formula> if the system is under constrained. In any case, the unique solution which minimize <formula id="78">$ ||A||_2$</formula> is given by:</para>
+<para><formula id="89">\begin{equation}
+A= V
+\left( \begin{array}{cc}
+D_r^{-1} &amp; 0_{N_d-r,\ r}\\
+0_{r,\ N-r} &amp; 0_{N_d-r,\ N-r}
+\end{array}
+\right)
+ U^TZ.
+\end{equation}</formula></para>
+<para>One can provide the condition number of the matrix <formula id="68">$ M$</formula> (after preconditioning) which is the ratio of the maximal and the minimal singular values. It is infinite if the system is under constrained, that is the smallest singular value is zero.</para>
+<para><bold>Implementation details.</bold></para>
+<para>We assume a <computeroutput>solve</computeroutput> function is provided by the traits <computeroutput><ref refid="classSvdTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">SvdTraits</ref></computeroutput>. This function solves the system MX=B (in the least square sense if M is not square) using a Singular Value Decomposition and gives the condition number of M.<linebreak/>
+</para>
+<para><linebreak/>
+</para>
+<para>Remark: as an alternative, other methods may be used to solve the system. A <formula id="90">$ QR$</formula> decomposition can be substituted to the <formula id="91">$ SVD$</formula>. One can also use the normal equation <formula id="92">$ M^TMX=MTB$</formula> and apply methods for square systems such as <formula id="93">$ LU$</formula>, <formula id="90">$ QR$</formula> or Cholesky since <formula id="94">$ M^TM$</formula> is symmetric definite positive when <formula id="68">$ M$</formula> has full rank. The advantages of the <formula id="91">$ SVD$</formula> is that it works directly on the rectangular system and gives the condition number of the system. For more on these alternatives, see <ref refid="citelist_1CITEREF_gl-mc-83" kindref="member">[3]</ref> (Chap. 5).</para>
+</sect2>
+<sect2 id="index_1Jet_fitting_3PrincipalCurvatureDirections">
+<title>Principal Curvature / Directions</title>
+<para><bold>Input: coefficients of the fit <formula id="58">$ A_{i,j}$</formula>, fitting-basis</bold></para>
+<para><bold>Output: Monge basis wrt fitting-basis and world-basis </bold></para>
+<para>In the fitting basis, we have determined a height function expressed by Eq. ( <ref refid="index_1eqanswer" kindref="member">eqanswer</ref> ). Computations are done in the fitting-basis. The partial derivatives, evaluated at <formula id="95">$ (x,y)=(0,0)$</formula>, of the fitted polynomial <formula id="96">$ J_{A,d}(x,y)$</formula> are <formula id="97">$ A_{i,j}=\frac{\partial^{i+j}J_{A,d}}{\partial^ix \partial^jy}$</formula> Expanding Eq. ( <ref refid="index_1eqanswer" kindref="member">eqanswer</ref> ) yields:</para>
+<para><formula id="98">\begin{eqnarray}
+J_{A,d}(x,y)&amp;=
+A_{0,0}+A_{1,0}x+A_{0,1}y+\frac{1}{2}(A_{2,0}x^2+2A_{1,1}xy+A_{0,2}y^2)
++ \frac{1}{6}(A_{3,0}x^3+3A_{2,1}x^2y+\ldots )+ \ldots
+\end{eqnarray}</formula></para>
+<para><itemizedlist>
+<listitem>
+<para>The origin, that is the point of the fitted surface where the estimation is performed, is <formula id="99">$ (0,0,A_{0,0})$</formula>. </para>
+</listitem>
+<listitem>
+<para>The normal is <formula id="100">$ n=(-A_{1,0},-A_{0,1},1)/\sqrt{A_{1,0}^2+A_{0,1}^2+1}$</formula>. </para>
+</listitem>
+<listitem>
+<para>Curvature related properties are retrieved resorting to standard differential calculus <ref refid="citelist_1CITEREF_c-dgcs-76" kindref="member">[2]</ref> (Chap. 3). More precisely, the Weingarten operator <formula id="101">$ W=-I^{-1}II$</formula> is first computed in the basis of the tangent plane <formula id="102">$ \{ (1,0,A_{1,0}), (0,1,A_{0,1}) \}$</formula>. We compute an orthonormal basis of the tangent plane using the Gram-Schmidt algorithm, and then we compute Weingarten in this basis (applying a change of basis with the matrix <formula id="103">$ W&apos;=P^{-1}WP$</formula>). In this orthonormal basis, the matrix of the Weingarten map is symmetric and we diagonalize it. One finally gets the principal curvatures which are the eigenvalues of <formula id="104">$ W$</formula>, and the associated principal directions. This gives an orthonormal direct basis <formula id="36">$ (d_1,d_2,n)$</formula>. Let us denote <formula id="105">$ P_{F \rightarrow M}$</formula> the matrix to change coordinates from the fitting-basis to the Monge basis. Its rows are the coordinates of the vectors <formula id="36">$ (d_1,d_2,n)$</formula> in the fitting-basis. It is an orthogonal matrix <formula id="106">$ P_{F \rightarrow
+M}^{-1}=P_{F \rightarrow M}^T$</formula>. The Monge basis expressed in the world-basis is obtained by multiplying the coordinates of <formula id="36">$ (d_1,d_2,n)$</formula> in the fitting-basis by <formula id="107">$ P_{W\rightarrow F}^{-1}$</formula>, (the same holds for the origin point which has in addition to be translated by <formula id="13">$ p$</formula>, i.e. the coordinates of the origin point are <formula id="108">$ P_{W\rightarrow F}^{-1} (0,0,A_{0,0}) +p$</formula>. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1Jet_fitting_3ComputingHigherOrderMongeCoefficients">
+<title>Computing Higher Order Monge Coefficients</title>
+<para><bold>Input: coefficients of the fit, Monge basis wrt fitting-basis ( <formula id="109">$ P_{F
+\rightarrow M}$</formula>)</bold></para>
+<para><bold>Output: third and fourth order coefficients of Monge</bold></para>
+<para>We use explicit formula. The implicit equation of the fitted polynomial surface in the fitting-basis with origin the point <formula id="99">$ (0,0,A_{0,0})$</formula> is <formula id="110">$ Q=0$</formula> with</para>
+<para><formula id="111">\begin{equation}
+Q=-w-A_{0,0}  +\ccSum{i,j}{}{\frac{A_{i,j}u^iv^j}{i!j!}}.
+\end{equation}</formula></para>
+<para>The equation in the Monge basis is obtained by substituting <formula id="112">$ (u,v,w)$</formula> by <formula id="113">$ P^T_{F\rightarrow M}(x,y,z)$</formula>. Denote <formula id="114">$ f(x,y,z)=0$</formula> this implicit equation. By definition of the Monge basis, we have locally (at <formula id="115">$ (0,0,0)$</formula>)</para>
+<para><formula id="116">\begin{equation}
+f(x,y,z)=0 \Leftrightarrow z=g(x,y)
+\end{equation}</formula></para>
+<para>and the Taylor expansion of <formula id="117">$ g$</formula> at <formula id="118">$ (0,0)$</formula> are the Monge coefficients sought. Let us denote the partial derivatives evaluated at the origin of <formula id="119">$ f$</formula> and <formula id="117">$ g$</formula> by <formula id="120">$ f_{i,j,k}=\frac{\partial^{i+j+k}f}{\partial^ix
+\partial^jy \partial^kz}$</formula> and <formula id="121">$ g_{i,j}=\frac{\partial^{i+j}g}{\partial^ix
+\partial^jy}$</formula>. One has <formula id="122">$ f_{1,0,0}=f_{0,1,0}=f_{1,1,0}=0$</formula>, <formula id="123">$ g_{0,0}=g_{1,0}=g_{0,1}=g_{1,1}=0$</formula> and <formula id="124">$ g_{2,0}=k_1$</formula>, <formula id="125">$ g_{0,2}=k_2$</formula>. The partial derivative of order <formula id="23">$ n$</formula> of <formula id="119">$ f$</formula> depends on the matrix <formula id="126">$ P_{F\rightarrow M}$</formula> and the partial derivatives of order at most <formula id="23">$ n$</formula> of <formula id="127">$ J_{A,d}$</formula>. The third and fourth order coefficients of are computed with the implicit function theorem. For instance:</para>
+<para><formula id="128">\begin{eqnarray*}
+&amp;b_0=g_{3,0}=-{\frac { f_{3,0,0} f_{0,0,1} -3\, f_{1,0,1} f_{2,0,0} }{
+f_{0,0,1} ^{2}}}
+\\
+&amp;b_1=g_{2,1}=-{\frac {-  f_{0,1,1}      f_{2,0,0}    +  f_{2,1,0}    f_{0,0,1}  }{  f_{0,0,1}    ^{2}}}
+\\
+&amp; ....
+\end{eqnarray*}</formula> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Jet_fitting_3.txt"/>
+  </compounddef>
+</doxygen>

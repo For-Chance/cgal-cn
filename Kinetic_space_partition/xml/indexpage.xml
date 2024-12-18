@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Kinetic_Space_Partition"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Sven Oesau and Florent Lafarge</para>
+</simplesect>
+</para>
+<sect1 id="index_1Ksp_introduction">
+<title>Introduction</title>
+<para>This CGAL component implements the kinetic space partition proposed by Bauchet et. al <ref refid="citelist_1CITEREF_bauchet2020kinetic" kindref="member">[1]</ref>. It takes as input a set of non-coplanar convex polygons and partitions the bounding box of the input into polyhedra, where each polyhedron and its facets are convex. Each facet of the partition is part of the input polygons or an extension of them.</para>
+<para>The kinetic partition homogeneously expands each input polygon along its support plane until collisions occur between them. At each collision, their expansion may stop, they may restrict the propagation along an intersection line between two support planes or they may continue beyond the intersection line. The polygons are split at the beginning of the kinetic simulation and at each collision along the intersection line to be intersection-free.</para>
+<para>Whether a polygon is expanded beyond an intersection with another polygon, depends on the user specified <computeroutput>k</computeroutput> parameter. Choosing <computeroutput>k = 1</computeroutput> will cause the expansion of polygons to locally stop at the first intersection with another polygon and choosing <computeroutput>k</computeroutput> equal to the number of input polygons will lead to a full expansion of each polygon to the bounding box.</para>
+</sect1>
+<sect1 id="index_1Ksp_algorithm">
+<title>Algorithm</title>
+<para>The first step of the method creates a plane arrangement between the support planes of the input polygons. The computation of a plane arrangement has <formula id="0">$O(n^3)$</formula>. To speed up the computation the input data can be decomposed into separate kinetic partitions using an octree. The decomposition limits the expansion of an input polygon to octree nodes it initially intersects. The usage of an octree significantly speeds up the creation of the kinetic partition. However, it adds facets to the partition which originate from the octree and do not belong to an input polygon. The plane arrangement contains all points and lines of the intersections between the support planes and the bounding box. For each support plane, all intersections with the bounding box and other support planes are given by lines, edges and vertices of the arrangement. The kinetic partition created in the second step is a subset of faces of the arrangement depending on the <computeroutput>k</computeroutput> parameter.</para>
+<para><anchor id="index_1fig__Ksp_introductionfig"/> <image type="html" name="intersection_graph.png"></image>
+ <image type="latex" name="intersection_graph.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Ksp_introductionfig" kindref="member">fig__Ksp_introductionfig</ref> Plane arrangement.<linebreak/>
+Left: 4 convex polygons as input. Right: plane arrangement and bounding box together with input. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The kinetic partition for a chosen <computeroutput>k</computeroutput> is obtained by propagating each polygon within its support plane. As intersections with other polygons can only occur at the known edges in the plane arrangement, the 3D collision problem can be solved as separate 2D polygon edge collisions.</para>
+<para><anchor id="index_1fig__Ksp_algorithmfig"/> <image type="html" name="k_variation.png"></image>
+ <image type="latex" name="k_variation.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Ksp_algorithmfig" kindref="member">fig__Ksp_algorithmfig</ref> Impact of <computeroutput>k</computeroutput> parameter on partition.<linebreak/>
+Left: Arrangement with 4 input polygons. Right: three columns with propagated polygons on top and volumes of kinetic partition on bottom for <computeroutput>k</computeroutput> = 1, <computeroutput>k</computeroutput> = 2 and <computeroutput>k</computeroutput> = 3 from left to right with 5, 8 and 12 created volumes respectively. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1Ksp_parameters">
+<title>Parameters</title>
+<para>The algorithm has five parameters:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput>k</computeroutput>: unsigned int<linebreak/>
+The main parameter of this method is <computeroutput>k</computeroutput>, the maximum number of intersections that can occur for a polygon before its expansion stops. The initial intersections of the original input polygons are not considered. Thus increasing the <computeroutput>k</computeroutput> leads to a higher complexity of the partitioning, i.e., a higher number of facets and a higher number of volumes. For a certain <computeroutput>k</computeroutput> the partition can be considered to be complete and an increase in <computeroutput>k</computeroutput> will not further increase the complexity of the partition. A typical choice of <computeroutput>k</computeroutput> is in the range of 1 to 3.</para>
+</listitem><listitem><para><computeroutput>reorient_bbox</computeroutput>: boolean<linebreak/>
+The default bounding box of the partition is axis-aligned. Setting <computeroutput>reorient_bbox</computeroutput> to true aligns the x-axis of the bounding box with the direction of the largest variation in horizontal direction of the input data while maintaining the z-axis.</para>
+</listitem><listitem><para><computeroutput>bbox_dilation_ratio</computeroutput>: FT<linebreak/>
+By default the size bounding box of the input data is increased by 10% to avoid that input polygons are coplanar with the sides of the bounding box.</para>
+</listitem><listitem><para><computeroutput>max_octree_node_size</computeroutput>: unsigned int<linebreak/>
+A kinetic partition is split into 8 subpartitions using an octree if the number of intersecting polygons is larger than specified. The default value is 40 polygons.</para>
+</listitem><listitem><para><computeroutput>max_octree_depth</computeroutput>: unsigned int<linebreak/>
+Limits the maximum depth of the octree decomposition. A limitation is necessary as arbitrary dense polygon configurations exist, e.g., a star. The default value is set to 3.</para>
+</listitem></itemizedlist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Ksp_result">
+<title>Result</title>
+<para>The kinetic partition can be accessed as a <computeroutput><ref refid="classLinearCellComplex" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Linear_cell_complex.tag">LinearCellComplex</ref></computeroutput> via <computeroutput><ref refid="classCGAL_1_1Kinetic__space__partition__3_1a61dfef0d7c87229338aa00b7c3f7d69a" kindref="member">CGAL::Kinetic_space_partition_3::get_linear_cell_complex()</ref></computeroutput>.</para>
+<sect2 id="index_1Ksp_examples">
+<title>Examples</title>
+<para>The following example reads a set of polygons from a file and creates a kinetic partition. Increasing the <computeroutput>k</computeroutput> parameter to 2 or 3 leads to a more detailed kinetic partition.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Kinetic_space_partition_2kinetic_partition_8cpp-example" kindref="compound">Kinetic_space_partition/kinetic_partition.cpp</ref> <programlisting filename="Kinetic_space_partition/kinetic_partition.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Kinetic_space_partition_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Real_timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/polygon_soup_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">EPICK<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">EPECK<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/><sp/><sp/>=<sp/>EPICK;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref><sp/>=<sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">KSP<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Kinetic__space__partition__3" kindref="compound">CGAL::Kinetic_space_partition_3&lt;EPICK&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Timer<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>CGAL::Real_timer;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Reading<sp/>polygons<sp/>from<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>input_filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1<sp/>?<sp/>argv[1]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;data/test-4-rnd-polygons-4-6.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input_file(input_filename);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>input_vertices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::vector&lt;std::size_t&gt;<sp/>&gt;<sp/>input_faces;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(CGAL::IO::read_polygon_soup(input_filename,<sp/>input_vertices,<sp/>input_faces))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>reading<sp/>the<sp/>file:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>input_filename<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>input_file.close();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;ERROR:<sp/>can&apos;t<sp/>read<sp/>the<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>input_filename<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;---<sp/>INPUT<sp/>STATS:<sp/>\n*<sp/>number<sp/>of<sp/>polygons:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>input_faces.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Parameters.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>k<sp/>=<sp/>(argc<sp/>&gt;<sp/>2<sp/>?<sp/>std::atoi(argv[2])<sp/>:<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Initialization<sp/>of<sp/>Kinetic_space_partition_3<sp/>object.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>&apos;debug&apos;<sp/>set<sp/>to<sp/>true<sp/>exports<sp/>intermediate<sp/>results<sp/>into<sp/>files<sp/>in<sp/>the<sp/>working<sp/>directory.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>resulting<sp/>volumes<sp/>are<sp/>exported<sp/>into<sp/>a<sp/>volumes<sp/>folder,<sp/>if<sp/>the<sp/>folder<sp/>already<sp/>exists.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>KSP<sp/>ksp(CGAL::parameters::verbose(</highlight><highlight class="keyword">true</highlight><highlight class="normal">).debug(</highlight><highlight class="keyword">false</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Providing<sp/>input<sp/>polygons.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ksp.insert(input_vertices,<sp/>input_faces);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Timer<sp/>timer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.start();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>&apos;initialize&apos;<sp/>creates<sp/>the<sp/>intersection<sp/>graph<sp/>that<sp/>is<sp/>used<sp/>for<sp/>the<sp/>partition.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ksp.initialize(CGAL::parameters::bbox_dilation_ratio(1.1).reorient_bbox(</highlight><highlight class="keyword">false</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Creating<sp/>the<sp/>partition<sp/>with<sp/>allowing<sp/>up<sp/>to<sp/>&apos;k&apos;<sp/>intersections<sp/>for<sp/>each<sp/>kinetic<sp/>polygon.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ksp.partition(k);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>time<sp/>=<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">FT</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(timer.time());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Access<sp/>the<sp/>kinetic<sp/>partition<sp/>via<sp/>linear<sp/>cell<sp/>complex.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Linear__cell__complex__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Linear_cell_complex.tag">CGAL::Linear_cell_complex_traits&lt;3, EPECK&gt;</ref><sp/>LCC_Traits;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Linear__cell__complex__for__combinatorial__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Linear_cell_complex.tag">CGAL::Linear_cell_complex_for_combinatorial_map&lt;3, 3, LCC_Traits, typename KSP::Linear_cell_complex_min_items&gt;</ref><sp/>lcc;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ksp.get_linear_cell_complex(lcc);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;unsigned<sp/>int&gt;<sp/>cells<sp/>=<sp/>{<sp/>0,<sp/>2,<sp/>3<sp/>},<sp/>count;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>count<sp/>=<sp/>lcc.count_cells(cells);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;For<sp/>k<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>k<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>count[0]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>faces:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>count[2]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>volumes:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>count[3]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n3D<sp/>kinetic<sp/>partition<sp/>created<sp/>in<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>time<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Ksp_history">
+<title>Design and Implementation History</title>
+<para>This package is an implementation of Bauchet et. al <ref refid="citelist_1CITEREF_bauchet2020kinetic" kindref="member">[1]</ref> with an octree replacing the grid subdivision. A proof of concept of the kinetic partition was developed by Simon Giraudot and Dmitry Anisimov. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Kinetic_space_partition.txt"/>
+  </compounddef>
+</doxygen>

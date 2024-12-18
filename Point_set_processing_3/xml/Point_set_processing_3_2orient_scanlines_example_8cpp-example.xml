@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Point_set_processing_3_2orient_scanlines_example_8cpp-example" kind="example">
+    <compoundname>Point_set_processing_3/orient_scanlines_example.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Point_set_processing_3/orient_scanlines_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/read_las_points.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/write_ply_points.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/jet_estimate_normals.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/scanline_orient_normals.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref><sp/>=<sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_with_info<sp/>=<sp/>std::tuple&lt;Point_3,<sp/>Vector_3,<sp/>float,<sp/>unsigned<sp/>char&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/><ref refid="structCGAL_1_1Nth__of__tuple__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">CGAL::Nth_of_tuple_property_map&lt;0, Point_with_info&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Normal_map<sp/>=<sp/><ref refid="structCGAL_1_1Nth__of__tuple__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">CGAL::Nth_of_tuple_property_map&lt;1, Point_with_info&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Scan_angle_map<sp/>=<sp/><ref refid="structCGAL_1_1Nth__of__tuple__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">CGAL::Nth_of_tuple_property_map&lt;2, Point_with_info&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Scanline_id_map<sp/>=<sp/><ref refid="structCGAL_1_1Nth__of__tuple__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">CGAL::Nth_of_tuple_property_map&lt;3, Point_with_info&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>dump<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>filename,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;Point_with_info&gt;&amp;<sp/>points)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>ofile<sp/>(filename,<sp/>std::ios::binary);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga7eb5683e79d8aa69059a453dc44cbaa7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::set_binary_mode</ref>(ofile);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsPLY_1ga62510f84cfdb4ba91996702fc4b1d3ac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_PLY</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(ofile,<sp/>points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map<sp/>(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>normal_map<sp/>(Normal_map()));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>fname<sp/>(argc<sp/>&gt;<sp/>1<sp/>?<sp/>argv[1]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;data/urban.las&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_with_info&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Reading<sp/>input<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>fname<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>ifile<sp/>(fname,<sp/>std::ios::binary);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!ifile<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgPointSetProcessing3IOLas_1ga5187fc18430a5e3c811f75da57a057ad" kindref="member">CGAL::IO::read_LAS_with_properties</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(ifile,<sp/>std::back_inserter<sp/>(points),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgPointSetProcessing3IOLas_1ga912d110b39abc211a85240def2ca2317" kindref="member">CGAL::IO::make_las_point_reader</ref><sp/>(Point_map()),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::make_pair<sp/>(Scan_angle_map(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::IO::LAS_property::Scan_angle()),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::make_pair<sp/>(Scanline_id_map(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::IO::LAS_property::Scan_direction_flag())))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Can&apos;t<sp/>read<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>fname<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Estimating<sp/>normals&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::jet_estimate_normals&lt;CGAL::Parallel_if_available_tag&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(points,<sp/>12,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map<sp/>(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>normal_map<sp/>(Normal_map()));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Orienting<sp/>normals<sp/>using<sp/>scan<sp/>angle<sp/>and<sp/>direction<sp/>flag&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPointSetProcessing3Algorithms_1gafc3627234666e1fb458e9387e9d5f3c6" kindref="member">CGAL::scanline_orient_normals</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map<sp/>(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>normal_map<sp/>(Normal_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>scan_angle_map<sp/>(Scan_angle_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>scanline_id_map<sp/>(Scanline_id_map()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dump(</highlight><highlight class="stringliteral">&quot;out_angle_and_flag.ply&quot;</highlight><highlight class="normal">,<sp/>points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Orienting<sp/>normals<sp/>using<sp/>scan<sp/>direction<sp/>flag<sp/>only&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPointSetProcessing3Algorithms_1gafc3627234666e1fb458e9387e9d5f3c6" kindref="member">CGAL::scanline_orient_normals</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map<sp/>(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>normal_map<sp/>(Normal_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>scanline_id_map<sp/>(Scanline_id_map()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dump(</highlight><highlight class="stringliteral">&quot;out_flag.ply&quot;</highlight><highlight class="normal">,<sp/>points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Orienting<sp/>normals<sp/>using<sp/>scan<sp/>angle<sp/>only&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPointSetProcessing3Algorithms_1gafc3627234666e1fb458e9387e9d5f3c6" kindref="member">CGAL::scanline_orient_normals</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map<sp/>(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>normal_map<sp/>(Normal_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>scan_angle_map<sp/>(Scan_angle_map()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dump(</highlight><highlight class="stringliteral">&quot;out_angle.ply&quot;</highlight><highlight class="normal">,<sp/>points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Orienting<sp/>normals<sp/>using<sp/>no<sp/>additional<sp/>info&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPointSetProcessing3Algorithms_1gafc3627234666e1fb458e9387e9d5f3c6" kindref="member">CGAL::scanline_orient_normals</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map<sp/>(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>normal_map<sp/>(Normal_map()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dump(</highlight><highlight class="stringliteral">&quot;out_nothing.ply&quot;</highlight><highlight class="normal">,<sp/>points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

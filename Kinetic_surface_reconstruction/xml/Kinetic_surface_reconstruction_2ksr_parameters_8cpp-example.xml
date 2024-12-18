@@ -1,0 +1,257 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Kinetic_surface_reconstruction_2ksr_parameters_8cpp-example" kind="example">
+    <compoundname>Kinetic_surface_reconstruction/ksr_parameters.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Kinetic_surface_reconstruction/ksr_parameters.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Kinetic_surface_reconstruction_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Real_timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/PLY.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/polygon_soup_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/pca_estimate_normals.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/mst_orient_normals.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/bounding_box.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;sstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Parameters.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Terminal_parser.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1a55e83f5a9f8ca43588b02ae8256a8fbd" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::FT</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classKernel_1_1Segment__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/>CGAL::Point_set_3&lt;Point_3&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_set::Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Normal_map<sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_set::Vector_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">KSR<sp/>=<sp/><ref refid="classCGAL_1_1Kinetic__surface__reconstruction__3" kindref="compound">CGAL::Kinetic_surface_reconstruction_3&lt;Kernel, Point_set, Point_map, Normal_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Parameters<sp/>=<sp/>CGAL::KSR::All_parameters&lt;FT&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Terminal_parser<sp/>=<sp/>CGAL::KSR::Terminal_parser&lt;FT&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Timer<sp/>=<sp/>CGAL::Real_timer;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline><highlight class="normal">std::string<sp/>to_stringp(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T<sp/>a_value,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>n<sp/>=<sp/>6)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ostringstream<sp/>out;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out.precision(n);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out<sp/>&lt;&lt;<sp/>std::fixed<sp/>&lt;&lt;<sp/>a_value;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>out.str();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>parse_terminal(Terminal_parser&amp;<sp/>parser,<sp/>Parameters&amp;<sp/>parameters)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Set<sp/>all<sp/>parameters<sp/>that<sp/>can<sp/>be<sp/>loaded<sp/>from<sp/>the<sp/>terminal.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>add_str_parameter<sp/><sp/>-<sp/>adds<sp/>a<sp/>string-type<sp/>parameter</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>add_val_parameter<sp/><sp/>-<sp/>adds<sp/>a<sp/>scalar-type<sp/>parameter</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>add_bool_parameter<sp/>-<sp/>adds<sp/>a<sp/>boolean<sp/>parameter</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;---<sp/>INPUT<sp/>PARAMETERS:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_str_parameter(</highlight><highlight class="stringliteral">&quot;-data&quot;</highlight><highlight class="normal">,<sp/>parameters.data);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Shape<sp/>detection.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-kn&quot;</highlight><highlight class="normal">,<sp/>parameters.k_neighbors);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-dist&quot;</highlight><highlight class="normal">,<sp/>parameters.maximum_distance);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-angle&quot;</highlight><highlight class="normal">,<sp/>parameters.maximum_angle);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-minp&quot;</highlight><highlight class="normal">,<sp/>parameters.min_region_size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Shape<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_bool_parameter(</highlight><highlight class="stringliteral">&quot;-regparallel&quot;</highlight><highlight class="normal">,<sp/>parameters.regparallel);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_bool_parameter(</highlight><highlight class="stringliteral">&quot;-regcoplanar&quot;</highlight><highlight class="normal">,<sp/>parameters.regcoplanar);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_bool_parameter(</highlight><highlight class="stringliteral">&quot;-regorthogonal&quot;</highlight><highlight class="normal">,<sp/>parameters.regorthogonal);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_bool_parameter(</highlight><highlight class="stringliteral">&quot;-regsymmetric&quot;</highlight><highlight class="normal">,<sp/>parameters.regsymmetric);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-regoff&quot;</highlight><highlight class="normal">,<sp/>parameters.maximum_offset);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-regangle&quot;</highlight><highlight class="normal">,<sp/>parameters.angle_tolerance);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Shape<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_bool_parameter(</highlight><highlight class="stringliteral">&quot;-reorient&quot;</highlight><highlight class="normal">,<sp/>parameters.reorient);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Partitioning.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-k&quot;</highlight><highlight class="normal">,<sp/>parameters.k_intersections);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-odepth&quot;</highlight><highlight class="normal">,<sp/>parameters.max_octree_depth);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-osize&quot;</highlight><highlight class="normal">,<sp/>parameters.max_octree_node_size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Reconstruction.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-lambda&quot;</highlight><highlight class="normal">,<sp/>parameters.graphcut_lambda);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_val_parameter(</highlight><highlight class="stringliteral">&quot;-ground&quot;</highlight><highlight class="normal">,<sp/>parameters.use_ground);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Debug.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_bool_parameter(</highlight><highlight class="stringliteral">&quot;-debug&quot;</highlight><highlight class="normal">,<sp/>parameters.debug);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Verbose.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parser.add_bool_parameter(</highlight><highlight class="stringliteral">&quot;-verbose&quot;</highlight><highlight class="normal">,<sp/>parameters.verbose);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Parameters.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.precision(20);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;---<sp/>PARSING<sp/>INPUT:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>kernel_name<sp/>=<sp/>boost::typeindex::type_id&lt;Kernel&gt;().pretty_name();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>used<sp/>kernel:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>kernel_name<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>path_to_save<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Terminal_parser<sp/>parser(argc,<sp/>argv,<sp/>path_to_save);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Parameters<sp/>parameters;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parse_terminal(parser,<sp/>parameters);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>no<sp/>input<sp/>data<sp/>is<sp/>provided,<sp/>use<sp/>input<sp/>from<sp/>data<sp/>directory.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(parameters.data.empty())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>parameters.data<sp/>=<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/building.ply&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Input.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set(parameters.with_normals);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::IO::read_point_set(parameters.data,<sp/>point_set);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(point_set.size()<sp/>==<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;input<sp/>file<sp/>not<sp/>found<sp/>or<sp/>empty!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!point_set.has_normal_map())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>point_set.add_normal_map();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::pca_estimate_normals&lt;CGAL::Parallel_if_available_tag&gt;(point_set,<sp/>9);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::mst_orient_normals(point_set,<sp/>9);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>point_set.size();<sp/>i++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref><sp/>n<sp/>=<sp/>point_set.normal(i);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(abs(n<sp/>*<sp/>n)<sp/>&lt;<sp/>0.05)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;point<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>i<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>does<sp/>not<sp/>have<sp/>a<sp/>proper<sp/>normal&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(parameters.maximum_distance<sp/>==<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Bbox__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Bbox_3</ref><sp/><ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref><sp/>=<sp/>CGAL::bbox_3(CGAL::make_transform_iterator_from_property_map(point_set.begin(),<sp/>point_set.point_map()),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::make_transform_iterator_from_property_map(point_set.end(),<sp/>point_set.point_map()));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FT<sp/>d<sp/>=<sp/>CGAL::approximate_sqrt</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>((<ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a3f5e323700e1509624a02d151237cc4c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">xmax</ref>()<sp/>-<sp/><ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1aab574470a2591f187553ca1166e682e1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">xmin</ref>())<sp/>*<sp/>(<ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a3f5e323700e1509624a02d151237cc4c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">xmax</ref>()<sp/>-<sp/><ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1aab574470a2591f187553ca1166e682e1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">xmin</ref>())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>+<sp/>(<ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a9d06f61bd89faa841e011ff53edf745f" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">ymax</ref>()<sp/>-<sp/><ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a2088e16a1f0a20e011e5b94c2e9c222a" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">ymin</ref>())<sp/>*<sp/>(<ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a9d06f61bd89faa841e011ff53edf745f" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">ymax</ref>()<sp/>-<sp/><ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a2088e16a1f0a20e011e5b94c2e9c222a" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">ymin</ref>())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>+<sp/>(<ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a98def8b9515f31ded759d781969ddaf6" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">zmax</ref>()<sp/>-<sp/><ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a6c55430abc7fda54571cf1075c7f2f8b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">zmin</ref>())<sp/>*<sp/>(<ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a98def8b9515f31ded759d781969ddaf6" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">zmax</ref>()<sp/>-<sp/><ref refid="group__PkgPolygonMeshProcessingRef_1gaf633ec6397f5f065b01462fe42235d56" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">bbox</ref>.<ref refid="classCGAL_1_1Bbox__3_1a6c55430abc7fda54571cf1075c7f2f8b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">zmin</ref>()));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>parameters.maximum_distance<sp/>=<sp/>d<sp/>*<sp/>0.03;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(parameters.min_region_size<sp/>==<sp/>0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>parameters.min_region_size<sp/>=<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">std::atomic_size_t</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(point_set.size()<sp/>*<sp/>0.01);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;---<sp/>INPUT<sp/>STATS:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>points:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>point_set.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;verbose<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>parameters.verbose<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;maximum_distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>parameters.maximum_distance<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;maximum_angle<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>parameters.maximum_angle<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;min_region_size<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>parameters.min_region_size<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;k<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>parameters.k_intersections<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;graphcut_lambda<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>parameters.graphcut_lambda<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>param<sp/>=<sp/>CGAL::parameters::maximum_distance(parameters.maximum_distance)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.maximum_angle(parameters.maximum_angle)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.k_neighbors(parameters.k_neighbors)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.minimum_region_size(parameters.min_region_size)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.debug(parameters.debug)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.verbose(parameters.verbose)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.max_octree_depth(parameters.max_octree_depth)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.max_octree_node_size(parameters.max_octree_node_size)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.reorient_bbox(parameters.reorient)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.regularize_parallelism(parameters.regparallel)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.regularize_coplanarity(parameters.regcoplanar)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.regularize_orthogonality(parameters.regorthogonal)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.regularize_axis_symmetry(parameters.regsymmetric)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.angle_tolerance(parameters.angle_tolerance)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.maximum_offset(parameters.maximum_offset);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Algorithm.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>KSR<sp/>ksr(point_set,<sp/>param);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>max_d,<sp/>max_dev;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>num;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ksr.estimate_detection_parameters(max_d,<sp/>max_dev,<sp/>num);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;d:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>max_d<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;dev:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>max_dev<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;num:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>num<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Timer<sp/>timer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>num_shapes<sp/>=<sp/>ksr.detect_planar_shapes(param);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>num_shapes<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>detected<sp/>planar<sp/>shapes&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>after_shape_detection<sp/>=<sp/>timer.time();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ksr.initialize_partition(param);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>after_init<sp/>=<sp/>timer.time();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ksr.partition(parameters.k_intersections);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>after_partition<sp/>=<sp/>timer.time();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>vtx;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::vector&lt;std::size_t&gt;<sp/>&gt;<sp/>polylist;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;typename<sp/>KSR::KSP::Face_support,<sp/>bool&gt;<sp/>external_nodes;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(parameters.use_ground)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>external_nodes[KSR::KSP::Face_support::ZMIN]<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ksr.reconstruct_with_ground(parameters.graphcut_lambda,<sp/>std::back_inserter(vtx),<sp/>std::back_inserter(polylist));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ksr.reconstruct(parameters.graphcut_lambda,<sp/>external_nodes,<sp/>std::back_inserter(vtx),<sp/>std::back_inserter(polylist));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>after_reconstruction<sp/>=<sp/>timer.time();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(polylist.size()<sp/>&gt;<sp/>0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::IO::write_polygon_soup(</highlight><highlight class="stringliteral">&quot;building_c_&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::to_string(parameters.graphcut_lambda)<sp/>+<sp/>(parameters.use_ground<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;_g&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;_&quot;</highlight><highlight class="normal">)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;.off&quot;</highlight><highlight class="normal">,<sp/>vtx,<sp/>polylist);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>time<sp/>=<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">FT</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(timer.time());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;FT&gt;<sp/>lambdas{<sp/>0.3,<sp/>0.5,<sp/>0.6,<sp/>0.7,<sp/>0.73,<sp/>0.75,<sp/>0.77,<sp/>0.8,<sp/>0.9,<sp/>0.95,<sp/>0.99<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>non_empty<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(FT<sp/>l<sp/>:<sp/>lambdas)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(l<sp/>==<sp/>parameters.graphcut_lambda)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">continue</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vtx.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polylist.clear();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(parameters.use_ground)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ksr.reconstruct_with_ground(l,<sp/>std::back_inserter(vtx),<sp/>std::back_inserter(polylist));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ksr.reconstruct(l,<sp/>external_nodes,<sp/>std::back_inserter(vtx),<sp/>std::back_inserter(polylist));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(polylist.size()<sp/>&gt;<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>non_empty<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::IO::write_polygon_soup(</highlight><highlight class="stringliteral">&quot;building_c_&quot;</highlight><highlight class="normal"><sp/>+<sp/>std::to_string(l)<sp/>+<sp/>(parameters.use_ground<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;_g&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;_&quot;</highlight><highlight class="normal">)<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;.off&quot;</highlight><highlight class="normal">,<sp/>vtx,<sp/>polylist);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Shape<sp/>detection:<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>after_shape_detection<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Kinetic<sp/>partition:<sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(after_partition<sp/>-<sp/>after_shape_detection)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>initialization:<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(after_init<sp/>-<sp/>after_shape_detection)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>partition:<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(after_partition<sp/>-<sp/>after_init)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Kinetic<sp/>reconstruction:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(after_reconstruction<sp/>-<sp/>after_partition)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Total<sp/>time:<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>time<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(non_empty)<sp/>?<sp/>EXIT_SUCCESS<sp/>:<sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

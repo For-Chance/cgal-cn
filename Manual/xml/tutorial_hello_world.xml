@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="tutorial_hello_world" kind="page">
+    <compoundname>tutorial_hello_world</compoundname>
+    <title>Hello World</title>
+    <briefdescription>
+<para><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> </para>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>CGAL编辑委员会</para>
+</simplesect>
+本教程面向了解C++并具备基本几何算法知识的CGAL新手。第一部分展示如何定义点和线段类，以及如何对它们应用几何谓词。该部分还会提醒读者在使用浮点数作为坐标时存在的严重问题。第二部分将介绍一个典型的CGAL函数，用于计算二维凸包。第三部分解释我们所说的特征类（Traits class）的含义，第四部分则阐述概念（concept）和模型（model）的概念。</para>
+<sect1 id="tutorial_hello_world_1intro_Three">
+<title>三个点和一条线段</title>
+<para>在这个第一个示例中，我们将演示如何构造一些点和线段，并对它们执行一些基本操作。</para>
+<para>所有CGAL头文件都位于<computeroutput>include/CGAL</computeroutput>子目录中。所有CGAL类和函数都在<computeroutput><ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref></computeroutput>命名空间中。类名以大写字母开头，全局函数以小写字母开头，常量则全部大写。对象的维度通过后缀表示。</para>
+<para>几何基元（如点类型）在核（kernel）中定义。在这个第一个示例中，我们选择的核使用双精度浮点数来表示点的笛卡尔坐标。</para>
+<para>除了类型之外，我们还会看到谓词（predicates），如三点方向测试，以及构造（constructions），如距离和中点计算。谓词具有有限的可能结果集，而构造则产生数值或其他几何实体。</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Kernel_23_2points_and_segment_8cpp-example" kindref="compound">Kernel_23/points_and_segment.cpp</ref> <programlisting filename="Kernel_23/points_and_segment.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p(1,1),<sp/>q(10,10);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;p<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;q<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>q.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>q.y()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;sqdist(p,q)<sp/>=<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(p,q)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref><sp/>s(p,q);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>m(5,<sp/>9);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;m<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>m<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;sqdist(Segment_2(p,q),<sp/>m)<sp/>=<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(s,m)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;p,<sp/>q,<sp/>and<sp/>m<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">switch</highlight><highlight class="normal"><sp/>(<ref refid="group__orientation__grp_1ga91d9866cfde916ba70e5dbc596176d9e" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::orientation</ref>(p,q,m)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/><ref refid="group__kernel__enums_1ga84f760a315c4f27cb4059db8a3a1159e" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::COLLINEAR</ref>:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;are<sp/>collinear\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/><ref refid="group__kernel__enums_1ga803e5969acd01d45aec5acaee6f82883" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::LEFT_TURN</ref>:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;make<sp/>a<sp/>left<sp/>turn\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/><ref refid="group__kernel__enums_1ga1f9d8cac74201e22d484b10384fe3bf9" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::RIGHT_TURN</ref>:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;make<sp/>a<sp/>right<sp/>turn\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>midpoint(p,q)<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="group__midpoint__grp_1ga6b971827bb460dd0611c932a7dd287f2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::midpoint</ref>(p,q)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>使用浮点数进行几何计算可能会带来意外结果，如下例所示。</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Kernel_23_2surprising_8cpp-example" kindref="compound">Kernel_23/surprising.cpp</ref> <programlisting filename="Kernel_23/surprising.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p(0,<sp/>0.3),<sp/>q(1,<sp/>0.6),<sp/>r(2,<sp/>0.9);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(<ref refid="group__collinear__grp_1gadaa777c7b2f72b4321fe1ac3893efc3b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::collinear</ref>(p,q,r)<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;collinear\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>collinear\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point_2<sp/>p(0,<sp/>1.0/3.0),<sp/>q(1,<sp/>2.0/3.0),<sp/>r(2,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(<ref refid="group__collinear__grp_1gadaa777c7b2f72b4321fe1ac3893efc3b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::collinear</ref>(p,q,r)<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;collinear\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>collinear\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point_2<sp/>p(0,0),<sp/>q(1,<sp/>1),<sp/>r(2,<sp/>2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(<ref refid="group__collinear__grp_1gadaa777c7b2f72b4321fe1ac3893efc3b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::collinear</ref>(p,q,r)<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;collinear\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>collinear\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>阅读代码时，我们可能会认为它会打印三次&quot;collinear&quot;（共线）。然而，实际输出如下：</para>
+<para><verbatim>not collinear
+not collinear
+collinear
+</verbatim></para>
+<para>这是因为这些分数无法用双精度数精确表示，共线性测试在内部会计算一个3x3矩阵的行列式，其结果接近但不等于零，因此前两次测试显示非共线。</para>
+<para>类似的情况也可能发生在执行左转的点上，由于行列式计算过程中的舍入误差，这些点可能看起来是共线的，或者执行右转。</para>
+<para>如果你需要确保数字以其完整精度进行解释，可以使用执行精确谓词和精确构造的CGAL核。</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Kernel_23_2exact_8cpp-example" kindref="compound">Kernel_23/exact.cpp</ref> <programlisting filename="Kernel_23/exact.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;sstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p(0,<sp/>0.3),<sp/>q,<sp/>r(2,<sp/>0.9);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>q<sp/><sp/>=<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,<sp/>0.6);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(<ref refid="group__collinear__grp_1gadaa777c7b2f72b4321fe1ac3893efc3b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::collinear</ref>(p,q,r)<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;collinear\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>collinear\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::istringstream<sp/>input(</highlight><highlight class="stringliteral">&quot;0<sp/>0.3<sp/><sp/><sp/>1<sp/>0.6<sp/><sp/><sp/>2<sp/>0.9&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>input<sp/>&gt;&gt;<sp/>p<sp/>&gt;&gt;<sp/>q<sp/>&gt;&gt;<sp/>r;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(<ref refid="group__collinear__grp_1gadaa777c7b2f72b4321fe1ac3893efc3b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::collinear</ref>(p,q,r)<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;collinear\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>collinear\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>q<sp/>=<sp/><ref refid="group__midpoint__grp_1ga6b971827bb460dd0611c932a7dd287f2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::midpoint</ref>(p,r);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(<ref refid="group__collinear__grp_1gadaa777c7b2f72b4321fe1ac3893efc3b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::collinear</ref>(p,q,r)<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;collinear\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>collinear\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>以下是输出结果，可能仍会让你感到惊讶：</para>
+<para><verbatim>not collinear
+collinear
+collinear
+</verbatim></para>
+<para>在第一个代码块中，点仍然不共线，原因很简单：你看到的文本坐标首先被转换为浮点数。当它们随后被转换为任意精度有理数时，它们精确表示了浮点数，而不是原始文本！</para>
+<para>第二个代码块则不同，它对应于从文件读取数字。任意精度有理数直接从字符串构造，因此它们精确表示了文本。</para>
+<para>在第三个代码块中，你可以看到构造操作（如中点构造）是精确的，正如核类型的名称所暗示的那样。</para>
+<para>在许多情况下，你会遇到&quot;精确&quot;的浮点数，它们是由某些应用程序计算得出或从传感器获取的。它们不是字符串&quot;0.1&quot;或通过&quot;1.0/10.0&quot;即时计算的，而是完整精度的浮点数。如果它们作为输入提供给不进行构造的算法，你可以使用提供精确谓词但不精确构造的核。凸包算法就是一个这样的例子，我们将在下一节中看到。输出是输入的子集，算法只比较坐标和执行方向测试。</para>
+<para>乍看之下，执行精确谓词和构造的核似乎是完美的选择，但性能要求或有限的内存资源使其并非如此。此外，对许多算法来说，执行精确构造并不重要。例如，通过将边折叠到边的中点来迭代收缩边的表面网格简化算法。</para>
+<para>大多数CGAL包都会说明应该使用或支持哪种类型的核。</para>
+</sect1>
+<sect1 id="tutorial_hello_world_1intro_convex_hull">
+<title>点序列的凸包</title>
+<para>本节的所有示例都计算点集的二维凸包。我们将展示算法如何通过表示点范围的起始/结束迭代器对获取输入，并将结果（在示例中是凸包上的点）写入输出迭代器。</para>
+<sect2 id="tutorial_hello_world_1intro_array">
+<title>内置数组中点的凸包</title>
+<para>在第一个示例中，输入是一个包含五个点的数组。由于这些点的凸包是输入的子集，因此提供相同大小的数组来存储结果是安全的。</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Convex_hull_2_2array_convex_hull_2_8cpp-example" kindref="compound">Convex_hull_2/array_convex_hull_2.cpp</ref> <programlisting filename="Convex_hull_2/array_convex_hull_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/convex_hull_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>points[5]<sp/>=<sp/>{<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(10,0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(10,10),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(6,5),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(4,1)<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_2<sp/>result[5];</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_2<sp/>*ptr<sp/>=<sp/><ref refid="group__PkgConvexHull2Functions_1ga8241d43969ff61cb9be46811c2e9e176" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">CGAL::convex_hull_2</ref>(<sp/>points,<sp/>points+5,<sp/>result<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><sp/>ptr<sp/>-<sp/>result<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points<sp/>on<sp/>the<sp/>convex<sp/>hull:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>ptr<sp/>-<sp/>result;<sp/>i++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>result[i]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>我们在上一节中看到CGAL提供了几种核。由于凸包算法只进行坐标比较和输入点的方向测试，我们可以选择提供精确谓词但不提供精确几何构造的核。</para>
+<para>凸包函数接受三个参数：输入的起始和结束指针，以及结果数组的起始指针。该函数返回结果数组中最后一个凸包点之后的指针，因此指针差可以告诉我们凸包上有多少个点。</para>
+</sect2>
+<sect2 id="tutorial_hello_world_1intro_vector">
+<title>Vector中点的凸包</title>
+<para>在第二个示例中，我们用标准模板库的<computeroutput>std::vector</computeroutput>替换内置数组。</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Convex_hull_2_2vector_convex_hull_2_8cpp-example" kindref="compound">Convex_hull_2/vector_convex_hull_2.cpp</ref> <programlisting filename="Convex_hull_2/vector_convex_hull_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/convex_hull_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;Point_2&gt;<sp/>Points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Points<sp/>points,<sp/>result;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(10,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(10,10));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(6,5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(4,1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgConvexHull2Functions_1ga8241d43969ff61cb9be46811c2e9e176" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">CGAL::convex_hull_2</ref>(<sp/>points.begin(),<sp/>points.end(),<sp/>std::back_inserter(result)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>result.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points<sp/>on<sp/>the<sp/>convex<sp/>hull&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>我们通过调用<computeroutput>std::vector</computeroutput>类的<computeroutput>push_back()</computeroutput>方法将一些点放入向量中。</para>
+<para>然后我们调用凸包函数。前两个参数<computeroutput>points.begin()</computeroutput>和<computeroutput>points.end()</computeroutput>是迭代器，它们是指针的泛化：可以解引用和递增。凸包函数是泛型的，意味着它可以接受任何可以解引用和递增的输入。</para>
+<para>第三个参数是结果写入的位置。在前一个示例中，我们提供了指向已分配内存的指针。这种指针的泛化是输出迭代器，它允许递增和为解引用的迭代器赋值。在这个示例中，我们从一个空向量开始，它会根据需要增长。因此，我们不能简单地传递<computeroutput>result.begin()</computeroutput>，而是要使用辅助函数<computeroutput>std::back_inserter(result)</computeroutput>生成的输出迭代器。这个输出迭代器在递增时不执行任何操作，在赋值时调用<computeroutput>result.push_back(..)</computeroutput>。</para>
+<para>如果你了解STL（标准模板库），上述内容完全合理，因为这就是STL将算法与容器解耦的方式。如果你不了解STL，最好先熟悉其基本概念。</para>
+</sect2>
+</sect1>
+<sect1 id="tutorial_hello_world_1intro_traits">
+<title>关于核和特征类</title>
+<para>在本节中，我们将说明如何表达使用任意点类型的<computeroutput><ref refid="group__PkgConvexHull2Functions_1ga8241d43969ff61cb9be46811c2e9e176" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">convex_hull_2()</ref></computeroutput>函数所必须满足的要求。</para>
+<para>如果你查看<computeroutput><ref refid="group__PkgConvexHull2Functions_1ga8241d43969ff61cb9be46811c2e9e176" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">convex_hull_2()</ref></computeroutput>函数和其他二维凸包算法的手册页，你会看到它们有两个版本。在我们之前看到的示例中，函数接受输入点范围的两个迭代器和用于写入结果的输出迭代器。第二个版本有一个额外的模板参数<computeroutput>Traits</computeroutput>和该类型的额外参数。</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>InputIterator<sp/>,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>OutputIterator<sp/>,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Traits<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref></highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgConvexHull2Functions_1ga8241d43969ff61cb9be46811c2e9e176" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">convex_hull_2</ref>(<ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/>first,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/>beyond,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref><sp/>result,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Traits<sp/>&amp;<sp/>ch_traits)</highlight></codeline>
+</programlisting></para>
+<para>典型的凸包算法使用哪些几何基元？当然，这取决于算法，让我们考虑可能是最简单的高效算法，即所谓的&quot;Graham/Andrew扫描&quot;。该算法首先将点从左到右排序，然后通过从排序列表中一个接一个地添加点来增量构建凸包。为此，它至少必须知道某种点类型，应该知道如何对这些点进行排序，并且必须能够评估三个点的方向。</para>
+<para>这就是模板参数<computeroutput>Traits</computeroutput>发挥作用的地方。对于<computeroutput><ref refid="group__PkgConvexHull2Functions_1gaeccc6dda2f9d3096c94a7ff84cc91a85" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ch_graham_andrew()</ref></computeroutput>，它必须提供以下嵌套类型：</para>
+<para><itemizedlist>
+<listitem><para><computeroutput>Traits::Point_2</computeroutput></para>
+</listitem><listitem><para><computeroutput>Traits::Less_xy_2</computeroutput></para>
+</listitem><listitem><para><computeroutput>Traits::Left_turn_2</computeroutput></para>
+</listitem><listitem><para><computeroutput>Traits::Equal_2</computeroutput></para>
+</listitem></itemizedlist>
+</para>
+<para>正如你所猜测的，<computeroutput>Left_turn_2</computeroutput>负责方向测试，而<computeroutput>Less_xy_2</computeroutput>用于排序点。这些类型必须满足的要求在<computeroutput><ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref></computeroutput>概念中有完整的文档说明。</para>
+<para>这些类型被重新组织是有原因的。替代方案将是一个相当长的函数模板，以及更长的函数调用。</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>InputIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>OutputIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">_2,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Less_xy_2,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Left_turn_2,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Equal_2&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref></highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgConvexHull2Functions_1gaeccc6dda2f9d3096c94a7ff84cc91a85" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ch_graham_andrew</ref>(<sp/><ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/><sp/>first,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/><sp/>beyond,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref><sp/>result);</highlight></codeline>
+</programlisting></para>
+<para>这里有两个明显的问题：什么可以用作这个模板参数的参数？为什么我们要使用模板参数？</para>
+<para>回答第一个问题，CGAL概念<computeroutput><ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref></computeroutput>的任何模型都提供了<computeroutput><ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref></computeroutput>概念所要求的内容。</para>
+<para>至于第二个问题，想象一个需要计算三维点投影到<computeroutput>yz</computeroutput>平面的凸包的应用。使用<computeroutput><ref refid="classCGAL_1_1Projection__traits__yz__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Projection_traits_yz_3</ref></computeroutput>类，这只是前一个示例的小修改。</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Convex_hull_2_2convex_hull_yz_8cpp-example" kindref="compound">Convex_hull_2/convex_hull_yz.cpp</ref> <programlisting filename="Convex_hull_2/convex_hull_yz.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Projection_traits_yz_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/convex_hull_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Projection__traits__yz__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Projection_traits_yz_3&lt;K3&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;<sp/>Point_2<sp/>&gt;<sp/><sp/>input_begin(<sp/>std::cin<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;<sp/>Point_2<sp/>&gt;<sp/><sp/>input_end;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ostream_iterator&lt;<sp/>Point_2<sp/>&gt;<sp/><sp/>output(<sp/>std::cout,<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal"><sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgConvexHull2Functions_1ga8241d43969ff61cb9be46811c2e9e176" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">CGAL::convex_hull_2</ref>(<sp/>input_begin,<sp/>input_end,<sp/>output,<sp/>K()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>另一个例子是关于用户定义的点类型，或来自CGAL以外的第三方库的点类型。将点类型与该点类型所需的谓词放在一个类的作用域中，你就可以用这些点运行<computeroutput><ref refid="group__PkgConvexHull2Functions_1ga8241d43969ff61cb9be46811c2e9e176" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">convex_hull_2()</ref></computeroutput>。</para>
+<para>最后，让我们解释为什么要传递特征对象给凸包函数？它允许使用更通用的投影特征对象来存储状态，例如，如果投影平面由一个方向给出，这在类<computeroutput><ref refid="classCGAL_1_1Projection__traits__yz__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Projection_traits_yz_3</ref></computeroutput>中是硬编码的。</para>
+</sect1>
+<sect1 id="tutorial_hello_world_1intro_concept">
+<title>概念和模型</title>
+<para>在上一节中，我们写道：CGAL概念<computeroutput><ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref></computeroutput>的任何模型都提供了概念<computeroutput><ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref></computeroutput>所要求的内容。</para>
+<para>概念（concept）是对类型的一组要求，即它必须具有某些嵌套类型、某些成员函数，或者带有以该类型为参数的某些自由函数。概念的模型（model）是满足概念要求的类。</para>
+<para>让我们看看下面的函数。</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline><highlight class="normal">T</highlight></codeline>
+<codeline><highlight class="normal">duplicate(T<sp/>t)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>t;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>如果你想用类<computeroutput>C</computeroutput>实例化这个函数，这个类必须至少提供一个复制构造函数，我们说类<computeroutput>C</computeroutput>必须是<computeroutput><ref refid="classCopyConstructible" kindref="compound">CopyConstructible</ref></computeroutput>的模型。单例类就不满足这个要求。</para>
+<para>另一个例子是函数：</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline><highlight class="normal">T&amp;<sp/>std::min(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T&amp;<sp/>a,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T&amp;<sp/>b)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(a&lt;b)?a:b;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>只有当用作<computeroutput>T</computeroutput>的类型定义了<computeroutput>operator&lt;(..)</computeroutput>时，这个函数才能编译，我们说该类型必须是<computeroutput><ref refid="classLessThanComparable" kindref="compound">LessThanComparable</ref></computeroutput>的模型。</para>
+<para>需要自由函数的概念的一个例子是CGAL包PkgBGL中的`HalfedgeListGraph`。为了成为`HalfedgeListGraph`的模型，类`G`必须有一个全局函数`halfedges(const G&amp;)`等。</para>
+<para>需要特征类的概念的一个例子是<computeroutput><ref refid="classInputIterator" kindref="compound">InputIterator</ref></computeroutput>。对于<computeroutput><ref refid="classInputIterator" kindref="compound">InputIterator</ref></computeroutput>的模型，必须存在类 <ulink url="https://en.cppreference.com/w/cpp/iterator/iterator_traits"><computeroutput>std::iterator_traits</computeroutput></ulink> 的特化（或者通用模板必须适用）。</para>
+</sect1>
+<sect1 id="tutorial_hello_world_1intro_further">
+<title>进一步阅读</title>
+<para>我们还推荐Addison-Wesley出版的Nicolai M. Josuttis的&quot;The C++ Standard Library, A Tutorial and Reference&quot;，或Matthew H. Austern的&quot;Generic Programming and the STL&quot;，这些书籍介绍了STL及其概念和模型的概念。</para>
+<para>CGAL的其他资源包括其余的<ref refid="tutorials" kindref="compound">教程</ref>和https://www.cgal.org/上的用户支持页面。 </para>
+</sect1>
+    </detaileddescription>
+    <location file="Tutorials/Tutorial_hello_world.txt"/>
+  </compounddef>
+</doxygen>

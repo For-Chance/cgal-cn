@@ -1,0 +1,586 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Spatial_Sorting"/><anchor id="index_1chapspatial_sorting"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Christophe Delage and Olivier Devillers</para>
+</simplesect>
+</para>
+<sect1 id="index_1Spatial_sortingIntroduction">
+<title>Introduction</title>
+<para>Many geometric algorithms implemented in CGAL are incremental, and thus their speed is dependent on the order of insertion. This package provides sorting algorithms that may considerably improve running times of such algorithms.</para>
+<para>The rationale is to sort objects along a space-filling curve so that two objects close geometrically will be close in the insertion order with high probability. That way, parts of a data structure that will be looked at during an insertion will probably have been looked at in a recent insertion, and thus probably will be in cache memory instead of main memory. As another side-effect, these sorting functions usually improve memory locality of the data structures produced by incremental algorithms, sometimes leading to speed ups in other algorithm using these data structures.</para>
+<para>Some algorithms have a good complexity under randomized hypotheses which contradicts the idea of sorting the input using any sorting criterion. In such a case, it is possible to introduce just a bit of randomness to be able to combine the good randomized complexity and the good effects of locality <ref refid="citelist_1CITEREF_acr-icb-03" kindref="member">[1]</ref>.</para>
+<para>The predicates used by this package are comparisons between coordinates, thus there is no robustness issue involved here, for example to choose the arithmetic of the kernel.</para>
+</sect1>
+<sect1 id="index_1sechilbert_sorting">
+<title>Hilbert Sorting</title>
+<para>In 2D, one can construct a space filling curve, that is a mapping <formula id="19">$ f$</formula> of <formula id="20">$ [0,1]$</formula> to the unit square <formula id="21">$ [0,1]^2$</formula>, such that <formula id="22">$ f(0)=(0,0)$</formula> and <formula id="23">$ f(1)=(1,0)$</formula> in the following way: the unit square is subdivided in four such that</para>
+<para><simplesect kind="par"><title></title><para><formula id="24">$ f([0,\frac{1}{4}])=[0,\frac{1}{2}]^2$</formula>, <formula id="25">$ f([\frac{1}{4},\frac{1}{2}])=[0,\frac{1}{2}]\times[\frac{1}{2},1]$</formula>, <formula id="26">$ f([\frac{1}{2},\frac{3}{4}])=[\frac{1}{2},1]^2$</formula>, and <formula id="27">$ f([\frac{3}{4},1])=[\frac{1}{2},1]\times[0,\frac{1}{2}].$</formula> <linebreak/>
+ <formula id="28">$ f(\frac{1}{4})=(0,\frac{1}{2})$</formula>, <formula id="29">$ f(\frac{1}{2})=(\frac{1}{2},\frac{1}{2})$</formula>, and <formula id="30">$ f(\frac{3}{4})=(1,\frac{1}{2})$</formula>.</para>
+</simplesect>
+Then each square is subdivided in the same way recursively. <ref refid="index_1fig__Spatial_sorting_fig_Hilbert8" kindref="member">fig__Spatial_sorting_fig_Hilbert8</ref> illustrates this process.</para>
+<para><anchor id="index_1fig__Spatial_sorting_fig_Hilbert8"/> <image type="html" name="Hilbert8.png"></image>
+ <image type="latex" name="Hilbert8.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Spatial_sorting_fig_Hilbert8" kindref="member">fig__Spatial_sorting_fig_Hilbert8</ref> Hilbert mapping <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Now given a set of 2D points, they can be sorted in the order they have on such a space filling curve. Note that at each step, we split a square exactly at its center; we call this subdivision policy: <emphasis>middle</emphasis> policy (see <ref refid="index_1fig__Spatial_sorting_fig_Hilbert_middle" kindref="member">fig__Spatial_sorting_fig_Hilbert_middle</ref>).</para>
+<para><anchor id="index_1fig__Spatial_sorting_fig_Hilbert_middle"/> <image type="html" name="Hilbert-middle.png"></image>
+ <image type="latex" name="Hilbert-middle.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Spatial_sorting_fig_Hilbert_middle" kindref="member">fig__Spatial_sorting_fig_Hilbert_middle</ref> Hilbert sort with middle policy <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>If instead of subdividing the square in a fixed way at its center, as above, we subdivide it by splitting at the median point (in <formula id="1">$ x$</formula> or <formula id="2">$ y$</formula> directions alternating), we construct a 2-d tree adapted to the point set. This tree can be visited in a similar manner and we get also a suitable ordering of the points; we call this subdivision policy: <emphasis>median</emphasis> policy (see <ref refid="index_1fig__Spatial_sorting_fig_Hilbert_median" kindref="member">fig__Spatial_sorting_fig_Hilbert_median</ref>).</para>
+<para><anchor id="index_1fig__Spatial_sorting_fig_Hilbert_median"/> <image type="html" name="Hilbert-median.png"></image>
+ <image type="latex" name="Hilbert-median.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Spatial_sorting_fig_Hilbert_median" kindref="member">fig__Spatial_sorting_fig_Hilbert_median</ref> Hilbert sort with median policy <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The middle policy is easier to analyze, and is interesting in practice for well distributed set of points in small dimension (if the number of points is really larger than <formula id="31">$ 2^d$</formula>). The median policy should be preferred for high dimension or if the point set distribution is not regular (or unknown). Since the median policy cannot be much worse than the middle policy, while the converse can happen, the median policy is the default behavior. Most theoretical results are using the middle policy <ref refid="citelist_1CITEREF_acr-icb-03" kindref="member">[1]</ref>, <ref refid="citelist_1CITEREF_bg-sfche-89" kindref="member">[2]</ref>, <ref refid="citelist_1CITEREF_b-aahsf-71" kindref="member">[3]</ref>, <ref refid="citelist_1CITEREF_pb-scpts-89" kindref="member">[4]</ref>.</para>
+<para>CGAL provides Hilbert sorting for points in 2D, 3D and higher dimensions, in the middle and the median policies.</para>
+<para>We also consider space filling curves on a given sphere. The method is described for the unit sphere below; it works on any sphere by an affine transformation. The points to be sorted are supposed to be close to the sphere.</para>
+<para>Actually, we approximate a space filling curve on the unit sphere by a space filling curve on a cube (with facets at <formula id="32">$x, y, z = \pm 1/\sqrt{3}$</formula>). Roughly speaking, we split the original set of points in six subsets corresponding to the six facets of the cube. The subset corresponding to a facet <formula id="33">$f$</formula> is the set of points that lie in the half-space defined by the supporting plane of <formula id="33">$f$</formula> that does not contain the origin. And then we basically use the 2D Hilbert sort with its corresponding policy, as explained above for the projection of the points in each subset on its corresponding facet of the cube. The axes orientation on each facet is chosen so that the space filling curve covers the whole cube without any jump; see <ref refid="index_1fig__Spatial_sorting_fig_Faces_orientations" kindref="member">fig__Spatial_sorting_fig_Faces_orientations</ref>. A point can lie in more than one such half-plane, so, we give a priority for each facet of the cube. The priority order is: first, the facet of the cube at <formula id="34">$x = 1/\sqrt{3}$</formula>; second, the facet of the cube at <formula id="35">$y = 1/\sqrt{3}$</formula>; third, the facet of the cube at <formula id="36">$ x = -1/\sqrt{3}$</formula>; fourth, the facet of the cube at <formula id="37">$ z = 1/\sqrt{3}$</formula>; fifth, the facet of the cube at <formula id="38">$ y = -1/\sqrt{3}$</formula>; and, sixth, the facet of the cube at <formula id="39">$ z = -1/\sqrt{3}$</formula>.</para>
+<para>If points are not close to the sphere, they are still sorted the same way, however there is no guarantee that such an order is good anymore.</para>
+<para><anchor id="index_1fig__Spatial_sorting_fig_Faces_orientations"/> <image type="html" name="HilbertOnSphere.png"></image>
+ <image type="latex" name="HilbertOnSphere.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Spatial_sorting_fig_Faces_orientations" kindref="member">fig__Spatial_sorting_fig_Faces_orientations</ref> A 2D Hilbert sort for each facet of the cube <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Points sorted on the sphere according to the description above are depicted in <ref refid="index_1fig__Spatial_sorting_fig_Hilbert_on_sphere" kindref="member">fig__Spatial_sorting_fig_Hilbert_on_sphere</ref>.</para>
+<para><anchor id="index_1fig__Spatial_sorting_fig_Hilbert_on_sphere"/> <image type="html" name="HilbertOnSphereIllustration.png"></image>
+ <image type="latex" name="HilbertOnSphereIllustration.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Spatial_sorting_fig_Hilbert_on_sphere" kindref="member">fig__Spatial_sorting_fig_Hilbert_on_sphere</ref> Hilbert sort on the sphere <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1Spatial_sortingExamples">
+<title>Examples</title>
+<para>The code to use Hilbert sort is as simple as the following example:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2hilbert_8cpp-example" kindref="compound">Spatial_sorting/hilbert.cpp</ref> <programlisting filename="Spatial_sorting/hilbert.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/hilbert_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Creator__uniform__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Creator_uniform_2&lt;double,Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Creator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>size<sp/>=<sp/>16;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>v;<sp/>v.reserve(size);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::points_on_square_grid_2(3.0,<sp/>size,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>generate<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(v),<sp/>Creator());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga9da67204747ac19dff65f9c9ff2fca9e" kindref="member">CGAL::hilbert_sort</ref><sp/>(v.begin(),<sp/>v.end());<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;size;<sp/>++i)std::cout&lt;&lt;v[i]&lt;&lt;std::endl;</highlight><highlight class="comment">//output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The following example shows how to perform a Hilbert sort on a sphere.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2hilbert_sort_on_sphere_8cpp-example" kindref="compound">Spatial_sorting/hilbert_sort_on_sphere.cpp</ref> <programlisting filename="Spatial_sorting/hilbert_sort_on_sphere.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/hilbert_sort_on_sphere.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Sphere_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Sphere;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Creator__uniform__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Creator_uniform_3&lt;double,Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Creator__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Creator_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>size<sp/>=<sp/>32;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>random<sp/>(42);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>v;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>unit<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;UNIT<sp/>SPHERE:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.reserve(size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_on_sphere_3&lt;Point&gt;<sp/>unit_sphere(1.0,<sp/>random);<sp/><sp/></highlight><highlight class="comment">//<sp/>generate<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>size;<sp/>++i)<sp/>v.push_back(*unit_sphere++);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1gac49755d15b5ae3141a90b827780f4f91" kindref="member">CGAL::hilbert_sort_on_sphere</ref>(v.begin(),<sp/>v.end());<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;size;<sp/>++i)<sp/>std::cout<sp/>&lt;&lt;<sp/>v[i]<sp/>&lt;&lt;<sp/>std::endl;<sp/></highlight><highlight class="comment">//output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.clear();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>given<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;GIVEN<sp/>SPHERE:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.reserve(size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vector<sp/>trans<sp/>=<sp/>Vector(3,4,5);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Sphere<sp/>sphere<sp/>=<sp/>Sphere(<ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref><sp/>+<sp/>trans,<sp/>4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_on_sphere_3&lt;Point&gt;<sp/>given_sphere(2.0,<sp/>random);<sp/><sp/></highlight><highlight class="comment">//<sp/>generate<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>size;<sp/>++i)<sp/>v.push_back(*given_sphere++<sp/>+<sp/>trans);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1gac49755d15b5ae3141a90b827780f4f91" kindref="member">CGAL::hilbert_sort_on_sphere</ref>(v.begin(),<sp/>v.end(),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sphere.squared_radius(),<sp/>sphere.center());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;size;<sp/>++i)<sp/>std::cout<sp/>&lt;&lt;<sp/>v[i]<sp/>&lt;&lt;<sp/>std::endl;<sp/></highlight><highlight class="comment">//output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>This other example illustrates the use of the two different policies</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2hilbert_policies_8cpp-example" kindref="compound">Spatial_sorting/hilbert_policies.cpp</ref> <programlisting filename="Spatial_sorting/hilbert_policies.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/hilbert_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>v;<sp/>v.reserve(4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.push_back(<sp/>Point(0.0,0.0))<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.push_back(<sp/>Point(1.0,1.0))<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.push_back(<sp/>Point(0.1,0.1))<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.push_back(<sp/>Point(0.2,0.8))<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Hilbert<sp/>sort<sp/>(middle<sp/>policy).&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga9da67204747ac19dff65f9c9ff2fca9e" kindref="member">CGAL::hilbert_sort</ref><sp/>(v.begin(),<sp/>v.end(),<sp/>K(),<sp/><ref refid="structCGAL_1_1Hilbert__policy" kindref="compound">CGAL::Hilbert_sort_middle_policy</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout&lt;&lt;v[0]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;v[1]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;v[2]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;v[3]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Hilbert<sp/>sort<sp/>(median<sp/>policy).&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga9da67204747ac19dff65f9c9ff2fca9e" kindref="member">CGAL::hilbert_sort</ref><sp/>(v.begin(),<sp/>v.end(),<sp/>K(),<sp/><ref refid="structCGAL_1_1Hilbert__policy" kindref="compound">CGAL::Hilbert_sort_median_policy</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout&lt;&lt;v[0]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;v[1]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;v[2]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;v[3]&lt;&lt;</highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1secspatial_sorting">
+<title>Spatial Sorting</title>
+<para>Hilbert sort cannot be used directly before feeding a randomized algorithm. Thus, the trick is to organize the point set in random buckets of increasing sizes, Hilbert sort being used only inside a bucket.</para>
+<para>It has been proved, in the context of Delaunay triangulation, that such an order provides enough randomness to combine the advantages of a random order and a space filling curve order <ref refid="citelist_1CITEREF_acr-icb-03" kindref="member">[1]</ref>.</para>
+<para>CGAL provides spatial sorting for points in 2D, 3D and higher dimensions, with the middle and the median policies for Hilbert sort in the buckets.</para>
+<sect2 id="index_1Spatial_sortingBasicExample">
+<title>Basic Example</title>
+<para>The following example shows that, on particular input, spatial sort runs much faster than a bad order or than Hilbert sort (below results with release mode compilation on a 1.8GHz processor). <programlisting filename=".sh"><codeline><highlight class="normal">$<sp/>./small_example_delaunay_2</highlight></codeline>
+<codeline><highlight class="normal">10000<sp/>points<sp/>on<sp/>a<sp/>parabola</highlight></codeline>
+<codeline><highlight class="normal">Delaunay<sp/>without<sp/>spatial<sp/>sort...<sp/>done<sp/>in<sp/>6.33443<sp/>seconds.</highlight></codeline>
+<codeline><highlight class="normal">Delaunay<sp/>with<sp/>median<sp/>hilbert<sp/>sort...<sp/>done<sp/>in<sp/>0.822975<sp/>seconds.</highlight></codeline>
+<codeline><highlight class="normal">Delaunay<sp/>with<sp/>median<sp/>spatial<sp/>sort...<sp/>done<sp/>in<sp/>0.022415<sp/>seconds.</highlight></codeline>
+</programlisting></para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2small_example_delaunay_2_8cpp-example" kindref="compound">Spatial_sorting/small_example_delaunay_2.cpp</ref> <programlisting filename="Spatial_sorting/small_example_delaunay_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/spatial_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Delaunay_triangulation_2&lt;K&gt;<sp/>DT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>compute_delaunay(std::vector&lt;K::Point_2&gt;::iterator<sp/>it,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::vector&lt;K::Point_2&gt;::iterator<sp/>e){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>DT<sp/>dt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>DT::Face_handle<sp/>hint;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>;it!=e;<sp/>++it)<sp/><sp/>hint<sp/>=<sp/>dt.insert(*it,<sp/>hint)-&gt;face();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{<sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>size<sp/>=<sp/>1000;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;K::Point_2&gt;<sp/>v;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>v.reserve(size);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::Timer<sp/>cost;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;size&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points<sp/>on<sp/>a<sp/>parabola&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i&lt;<sp/>size;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>x=<sp/>-size<sp/>+i;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>v.push_back(<sp/>K::Point_2(<sp/>x,<sp/>x*x<sp/>));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cost.reset();cost.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>Delaunay<sp/>without<sp/>spatial<sp/>sort...<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;<sp/>std::flush;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>compute_delaunay(v.begin(),v.end());cost.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done<sp/>in<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;cost.time()&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/>seconds.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cost.reset();cost.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>Delaunay<sp/>with<sp/>Hilbert<sp/>sort...<sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::flush;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga9da67204747ac19dff65f9c9ff2fca9e" kindref="member">CGAL::hilbert_sort</ref>(v.begin(),v.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>compute_delaunay(v.begin(),v.end());cost.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done<sp/>in<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;cost.time()&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/>seconds.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cost.reset();cost.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>Delaunay<sp/>with<sp/>spatial<sp/>sort...<sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::flush;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(v.begin(),v.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>compute_delaunay(v.begin(),v.end());cost.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done<sp/>in<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;cost.time()&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/>seconds.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Spatial sort can be performed on the sphere as well, as shown in the following example.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2spatial_sort_on_sphere_8cpp-example" kindref="compound">Spatial_sorting/spatial_sort_on_sphere.cpp</ref> <programlisting filename="Spatial_sorting/spatial_sort_on_sphere.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/spatial_sort_on_sphere.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Sphere_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Sphere;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Creator__uniform__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Creator_uniform_3&lt;double,Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Creator__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Creator_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>size<sp/>=<sp/>32;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>random<sp/>(42);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>v;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>unit<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;UNIT<sp/>SPHERE:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.reserve(size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_on_sphere_3&lt;Point&gt;<sp/>unit_sphere(1.0,<sp/>random);<sp/><sp/></highlight><highlight class="comment">//<sp/>generate<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>size;<sp/>++i)<sp/>v.push_back(*unit_sphere++);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga521df3e9f10c07ea128e292401233bcc" kindref="member">CGAL::spatial_sort_on_sphere</ref>(v.begin(),<sp/>v.end());<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;size;<sp/>++i)<sp/>std::cout<sp/>&lt;&lt;<sp/>v[i]<sp/>&lt;&lt;<sp/>std::endl;<sp/></highlight><highlight class="comment">//output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.clear();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>given<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;GIVEN<sp/>SPHERE:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v.reserve(size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vector<sp/>trans<sp/>=<sp/>Vector(3,4,5);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Sphere<sp/>sphere<sp/>=<sp/>Sphere(<ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref><sp/>+<sp/>trans,<sp/>4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_on_sphere_3&lt;Point&gt;<sp/>given_sphere(2.0,<sp/>random);<sp/><sp/></highlight><highlight class="comment">//<sp/>generate<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>size;<sp/>++i)<sp/>v.push_back(*given_sphere++<sp/>+<sp/>trans);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga521df3e9f10c07ea128e292401233bcc" kindref="member">CGAL::spatial_sort_on_sphere</ref>(v.begin(),<sp/>v.end(),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sphere.squared_radius(),<sp/>sphere.center());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;size;<sp/>++i)<sp/>std::cout<sp/>&lt;&lt;<sp/>v[i]<sp/>&lt;&lt;<sp/>std::endl;<sp/></highlight><highlight class="comment">//output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Spatial_sortingUsingYourOwnPointType">
+<title>Using Your Own Point Type</title>
+<para>If you want to sort points of your own point type, you only have to provide functors that compare the <computeroutput>x</computeroutput> and <computeroutput>y</computeroutput> coordinates of your points. Note that in case you simply want to associate an extra information to your point you might consider the example of Section <ref refid="index_1secsort_any_type_2" kindref="member">Sorting Using Pairs of Points and Integers</ref> as an alternative.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2myPoint_8cpp-example" kindref="compound">Spatial_sorting/myPoint.cpp</ref> <programlisting filename="Spatial_sorting/myPoint.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/spatial_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">MyPoint<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>x,y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>color;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>MyPoint()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>x(0),<sp/>y(0),color(0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>MyPoint(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>x,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>y,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>color=0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>x(x),<sp/>y(y),<sp/>color(color)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">MyLessX<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>MyPoint&amp;<sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>MyPoint&amp;<sp/>q)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>p.x<sp/>&lt;<sp/>q.x;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">MyLessY<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>MyPoint&amp;<sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>MyPoint&amp;<sp/>q)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>p.y<sp/>&lt;<sp/>q.y;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">MySpatialSortingTraits<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>MyPoint<sp/>Point_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>MyLessX<sp/>Less_x_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>MyLessY<sp/>Less_y_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Less_x_2<sp/>less_x_2_object()</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Less_x_2();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Less_y_2<sp/>less_y_2_object()</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Less_y_2();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;<sp/>MyPoint<sp/>&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(MyPoint(14,12,<sp/>3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(MyPoint(1,2<sp/><sp/>,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(MyPoint(414,2,<sp/>5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(MyPoint(4,21<sp/>,<sp/>1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(MyPoint(7,74<sp/>,<sp/>2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(MyPoint(74,4<sp/>,<sp/>4));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>MySpatialSortingTraits<sp/>sst;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(points.begin(),<sp/>points.end(),<sp/>sst);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::vector&lt;<sp/>MyPoint<sp/>&gt;::iterator<sp/>it=points.begin();it!=points.end();++it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>it-&gt;color<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1secsort_any_type">
+<title>Sorting Arbitrary Types</title>
+<para>The spatial sorting traits class provides a point type and functors for comparing, for example, the <computeroutput>x</computeroutput>-coordinates of two points. If you want to sort something else than just points, for example a sequence of tuples containing a point, or a sequence of indices in a vector of points, you need another level of indirection. We provide the spatial sorting traits class adapters which are templated by another spatial sorting traits class, and a <ulink url="https://www.boost.org/doc/libs/release/libs/property_map/index.html">property map</ulink>. which allows to obtain a point from whatever you want to sort.</para>
+<para>The following examples illustrate the usage of these traits class adapters.</para>
+</sect2>
+<sect2 id="index_1secsort_any_type_2">
+<title>Sorting Using Pairs of Points and Integers</title>
+<para>In this example program, the sorted sequence of points is retrieved using a vector of pairs of points and integers. <linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2sp_sort_using_property_map_2_8cpp-example" kindref="compound">Spatial_sorting/sp_sort_using_property_map_2.cpp</ref> <programlisting filename="Spatial_sorting/sp_sort_using_property_map_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/spatial_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Spatial_sort_traits_adapter_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;Point_2,int&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_with_info;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;<sp/>Point_with_info<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/>Data_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Spatial__sort__traits__adapter__2" kindref="compound">CGAL::Spatial_sort_traits_adapter_2</ref>&lt;<ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::First_of_pair_property_map&lt;Point_with_info&gt;</highlight></codeline>
+<codeline><highlight class="normal">&gt;<sp/>Search_traits_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Data_vector<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(14,12)<sp/>,<sp/>3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,2)<sp/><sp/><sp/>,<sp/>0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(414,2)<sp/>,<sp/>5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(4,21)<sp/><sp/>,<sp/>1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(7,74)<sp/><sp/>,<sp/>2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(74,4)<sp/><sp/>,<sp/>4));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Search_traits_2<sp/>traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Order<sp/>using<sp/>default<sp/>policy<sp/>(median)\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(points.begin(),<sp/>points.end(),<sp/>traits);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Data_vector::iterator<sp/>it=points.begin();it!=points.end();++it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>it-&gt;second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Order<sp/>using<sp/>middle<sp/>policy\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(points.begin(),<sp/>points.end(),<sp/>traits,<sp/><ref refid="structCGAL_1_1Hilbert__policy" kindref="compound">CGAL::Hilbert_sort_middle_policy</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Data_vector::iterator<sp/>it=points.begin();it!=points.end();++it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>it-&gt;second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Spatial_sortingSortingUsingIndicesofPoints">
+<title>Sorting Using Indices of Points</title>
+<para>In this example program, the sorted sequence of points is retrieved using the indices of the points in a vector of points. <linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2sp_sort_using_property_map_3_8cpp-example" kindref="compound">Spatial_sorting/sp_sort_using_property_map_3.cpp</ref> <programlisting filename="Spatial_sorting/sp_sort_using_property_map_3.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/spatial_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Spatial_sort_traits_adapter_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/iterator/counting_iterator.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Spatial__sort__traits__adapter__3" kindref="compound">CGAL::Spatial_sort_traits_adapter_3</ref>&lt;<ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::Pointer_property_map&lt;Point_3&gt;::type<sp/>&gt;<sp/>Search_traits_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(1,3,11));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(14,34,46));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(414,34,4));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(4,2,56));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(744,4154,43));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(74,44,1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::size_t&gt;<sp/>indices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>indices.reserve(points.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy(boost::counting_iterator&lt;std::size_t&gt;(0),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::counting_iterator&lt;std::size_t&gt;(points.size()),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(indices));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Order<sp/>using<sp/>default<sp/>policy<sp/>(median)\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(<sp/>indices.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>indices.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Search_traits_3(CGAL::make_property_map(points))<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>:<sp/>indices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points[i]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Order<sp/>using<sp/>middle<sp/>policy\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(<sp/>indices.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>indices.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Search_traits_3(CGAL::make_property_map(points)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structCGAL_1_1Hilbert__policy" kindref="compound">CGAL::Hilbert_sort_middle_policy</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>:<sp/>indices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points[i]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Spatial_sortingSortingUsingIndicesofPairs">
+<title>Sorting Using Indices of Pairs of Points and Integers</title>
+<para>In this example program, the sorted sequence of points is retrieved using the indices of the points in a vector of pairs of points and integers. <linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2sp_sort_using_property_map_d_8cpp-example" kindref="compound">Spatial_sorting/sp_sort_using_property_map_d.cpp</ref> <programlisting filename="Spatial_sorting/sp_sort_using_property_map_d.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/spatial_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Spatial_sort_traits_adapter_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/iterator/counting_iterator.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Cartesian_d&lt;double&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::Point_d<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;Point_d,int&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_with_info;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;<sp/>Point_with_info<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/>Data_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//property<sp/>map<sp/>and<sp/>get<sp/>as<sp/>friend</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>to<sp/>be<sp/>allowed<sp/>to<sp/>use<sp/>private<sp/>member</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Vect_ppmap{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Data_vector&amp;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//classical<sp/>typedefs</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Data_vector::size_type<sp/>key_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Point_d<sp/>value_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>value_type&amp;<sp/>reference;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::readable_property_map_tag<sp/>category;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vect_ppmap(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Data_vector&amp;<sp/>points_):points(points_){}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">friend</highlight><highlight class="normal"><sp/>reference<sp/>get(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Vect_ppmap&amp;<sp/>vmap,<sp/>key_type<sp/>i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>vmap.points[i].first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Spatial__sort__traits__adapter__d" kindref="compound">CGAL::Spatial_sort_traits_adapter_d&lt;Kernel,Vect_ppmap&gt;</ref><sp/><sp/><sp/>Search_traits_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>coords[]<sp/>={<sp/>1.0,<sp/>1.0,<sp/>1.0,<sp/>1.0,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>2.0,<sp/>2.0,<sp/>2.0,<sp/>2.0<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Data_vector<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(Point_d(4,coords<sp/><sp/>,coords+4)<sp/>,<sp/>1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(std::make_pair(Point_d(4,coords+4,coords+8)<sp/>,<sp/>2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Vect_ppmap::key_type&gt;<sp/>indices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>indices.reserve(points.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::counting_iterator&lt;Vect_ppmap::key_type&gt;(0),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::counting_iterator&lt;Vect_ppmap::key_type&gt;(points.size()),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::back_inserter(indices)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Order<sp/>using<sp/>default<sp/>policy<sp/>(median)\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>indices.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>indices.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Search_traits_d(Vect_ppmap(points))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>i<sp/>:<sp/>indices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points[i].second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Order<sp/>using<sp/>middle<sp/>policy\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>indices.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>indices.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Search_traits_d(Vect_ppmap(points)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="structCGAL_1_1Hilbert__policy" kindref="compound">CGAL::Hilbert_sort_middle_policy</ref>()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>i<sp/>:<sp/>indices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points[i].second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Spatial_sortingParallel">
+<title>Parallel Spatial Sorting</title>
+<para>In 2D (3D), Hilbert or spatial sorting recursively subdivides the input range in four (eight) subranges. Therefore, a natural way to parallelize the sorting algorithm is to split the initial range in four (eight) subranges, and let a single thread handle any further subdivision and sorting for a given subrange. This parallel algorithm is only available when the median strategy policy is being used (this is the case by default), as this policy ensures balance between all subranges. This is not necessarily the case with the middle strategy, where the subrange sizes can greatly vary.</para>
+<para>The parallel version of the algorithm is enabled by specifying the template parameter <computeroutput><ref refid="structCGAL_1_1Parallel__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Parallel_tag</ref></computeroutput>. In case it is not sure whether TBB is available and linked with CGAL, <computeroutput><ref refid="structCGAL_1_1Parallel__if__available__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Parallel_if_available_tag</ref></computeroutput> can be used. By default, the sequential version is used.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Spatial_sorting_2parallel_spatial_sort_3_8cpp-example" kindref="compound">Spatial_sorting/parallel_spatial_sort_3.cpp</ref> <programlisting filename="Spatial_sorting/parallel_spatial_sort_3.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/spatial_sort.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Creator__uniform__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Creator_uniform_3&lt;double,Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Creator__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Creator_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>pt_nb<sp/>=<sp/>10000;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.reserve(pt_nb);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_in_cube_3&lt;Point_3&gt;<sp/>gen(1.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;pt_nb;<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back(*gen++);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>By<sp/>default<sp/>sequential</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSpatialSortingFunctions_1ga7c597c11a3b3859234ff68526cead84d" kindref="member">CGAL::spatial_sort</ref>(points.begin(),points.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>the<sp/>template<sp/>argument<sp/>to<sp/>switch<sp/>on<sp/>parallelism<sp/>if<sp/>available</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>You<sp/>can<sp/>also<sp/>use<sp/>Parallel_tag<sp/>if<sp/>you<sp/>know<sp/>that<sp/>TBB<sp/>is<sp/>enabled</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::spatial_sort&lt;CGAL::Parallel_if_available_tag&gt;(points.begin(),<sp/>points.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1Spatial_sortingDesign">
+<title>Design and Implementation History</title>
+<para>The first implementation of Hilbert and spatial sorting (2D and 3D) in CGAL was done by Cristophe Delage. Olivier Devillers improved its design, and implemented its multidimensional version.</para>
+<para>Pedro Machado Manhaes de Castro and Olivier Devillers added Hilbert sorting on the sphere.</para>
+<para>Andreas Fabri added a parallel version of Hilbert and spatial sorting. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Spatial_sorting.txt"/>
+  </compounddef>
+</doxygen>

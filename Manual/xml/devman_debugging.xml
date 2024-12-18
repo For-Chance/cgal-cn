@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_debugging" kind="page">
+    <compoundname>devman_debugging</compoundname>
+    <title>Debugging Tips</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>Oren Nechushtan (<computeroutput><ulink url="mailto:theoren@math.tau.ac.il">theoren@math.tau.ac.il</ulink> </computeroutput>)</para>
+</simplesect>
+Efficient debugging techniques can become an asset when writing geometric libraries such as CGAL. This chapter discusses debugging-related issues, like how to use the demo as a powerful debugger (Section <ref refid="devman_debugging_1secgraphical_debugging" kindref="member">Graphical debugging</ref> ), why and how to check your geometric predicates (Section <ref refid="devman_debugging_1secdebugging_cross_checker" kindref="member">Cross-checkers</ref> ), and what to do in order to evaluate handles and iterators during the debugging phase (Section <ref refid="devman_debugging_1secdebugging_handles_and_it" kindref="member">Examining the values of variables</ref> ).</para>
+<sect1 id="devman_debugging_1secgraphical_debugging">
+<title>Graphical debugging</title>
+<para>CGAL packages usually provide a graphical demo that demonstrates the functionality in the package. Many times this demo is simply a fancier version of a program that was used in the early stages of development as a (graphical) debugging tool. In many cases, the output of a geometric algorithm is much easier to interpret in graphical form than numeric form. Thus you should use the powerful graphical output capabilities of CGAL (see the <ref refid="packages_1PartSupportLibrary" kindref="member">Support Library documentation </ref>) to develop <itemizedlist>
+<listitem>
+<para>programs that can be used for debugging the internal workings of your package (<emphasis>i.e.</emphasis>, things a user may not have access to) </para>
+</listitem>
+<listitem>
+<para>interesting and informative demos that highlight the features and, at the same time, the absence or presence of bugs in your package. Other demo/debugging programs can be found in the <computeroutput>demo</computeroutput> directory of every internal release and CGAL installation. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+<sect1 id="devman_debugging_1secdebugging_cross_checker">
+<title>Cross-checkers</title>
+<para>A cross-checker is a powerful means to allow for efficient maintenance of your code. A cross-checker for a given concept is a model of that concept that is constructed from another model or models (one of which is the one you wish to check). In order to implement the functionality required by the concept, the cross-checker will use functions from the models upon which it is built and perform tests for validity, etc. on them. If the tests succeed, the cross-checker returns the expected result. Otherwise, the cross-checker can generate an assertion violation or a warning, depending on the severity of the offense.</para>
+<para>For example, if you have a version of an algorithm, traits class, or kernel that you know works, you can easily use this as an oracle for another version of the algorithm, traits class, or kernel that you wish to test. This is easily done because the code in CGAL is highly templatized. The cross-checker would simply plug in the two different versions of, say, your traits class, as the relevant template parameters for two different instantiations of a class, say, and then compare the results from using the two different instantiations.</para>
+<sect2 id="devman_debugging_1Developer_manualAnexampleTraitsclassbinary">
+<title>An example: Traits class binary cross-checker</title>
+<para>As a more concrete example, assume that you have a traits class concept that requires a nested type <computeroutput>X_curve</computeroutput> and a function</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>curve_is_vertical(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>X_curve<sp/>&amp;<sp/>cv)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+</programlisting></para>
+<para>A binary cross-checker for this concept might look like <programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Traits1,</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Traits2,</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Adapter&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Binary_traits_checker{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Traits1<sp/>tr1;</highlight></codeline>
+<codeline><highlight class="normal">Traits1<sp/>tr2;</highlight></codeline>
+<codeline><highlight class="normal">Adapter<sp/>P;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Traits1::X_curve<sp/>X_curve;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Traits_binary_checker(Traits1<sp/>tr1_,Traits2<sp/>tr2_,Adapter<sp/>P_)<sp/>:</highlight></codeline>
+<codeline><highlight class="normal">tr1(tr1_),tr2(tr2_),P(P_){};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>curve_is_vertical(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>X_curve<sp/>&amp;<sp/>cv)<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>and possibly be implemented as</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>curve_is_vertical(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>X_curve<sp/>&amp;<sp/>cv)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL_assertion(tr1.curve_is_vertical(cv)==tr2.curve_is_vertical(P(cv)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>tr1.curve_is_vertical(cv);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Notice that the class <computeroutput>Binary_traits_checker</computeroutput> has template parameters named <computeroutput>Traits1</computeroutput> and <computeroutput>Traits2</computeroutput>, and a third parameter named <computeroutput>Adapter</computeroutput>. One of the traits classes is the one to be tested and the other is (presumably) a traits class that always gives the right answer. The <computeroutput>Adapter</computeroutput> is needed since the <computeroutput>X_curve</computeroutput> types for <computeroutput>Traits1</computeroutput> and <computeroutput>Traits2</computeroutput> might be different. This cross-checker does nothing other than asserting that the two traits classes return the same values by calling the the counterparts in the member traits classes (<computeroutput>tr1</computeroutput>,<computeroutput>tr2</computeroutput>) and comparing the results.</para>
+</sect2>
+</sect1>
+<sect1 id="devman_debugging_1secdebugging_handles_and_it">
+<title>Examining the values of variables</title>
+<para>When using an interactive debugger, one often wishes to see the value of a variable, such as the <formula id="1">$ y$</formula>-value of a segment&apos;s source point. Thus one would naturally issue a command such as <programlisting filename=".cpp"><codeline><highlight class="normal">print<sp/>segment.source().y()</highlight></codeline>
+</programlisting> This most often produces disappointingly unrevealing results, <emphasis>e.g.</emphasis>, an error message saying the value cannot be evaluated because functions may be inlined.</para>
+<para>We recommend the following approaches to work around (or avoid) this and similar problems: <itemizedlist>
+<listitem>
+<para>Use the <computeroutput>Simple_cartesian</computeroutput> kernel</para>
+<para>(Chapter <ref refid="devman_kernels" kindref="compound">Geometry Kernels</ref> ), which does not do reference counting and uses no handles so data member values can be inspected directly.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Print the values by following the pointers in the handles used to represent objects. For example, for the segment above, the statement <programlisting filename=".cpp"><codeline><highlight class="normal">print<sp/>s.ptr-&gt;start-&gt;ptr-&gt;e1</highlight></codeline>
+</programlisting> is likely to work. This technique can also work for non-kernel handles, such as <computeroutput>Halfedge_handle</computeroutput> and <computeroutput>Vertex_handle</computeroutput>. One must know, of course, the right names for the data members, but this you can find out by printing the things that pointers point to. For example, <programlisting filename=".cpp"><codeline><highlight class="normal">print<sp/>*s.ptr</highlight></codeline>
+</programlisting> In the case of the planar map package, these handles are actually polyhedron iterators. If <formula id="2">$ h$</formula> is a halfedge of a planar map and you want to know the curve associated with it, then if <programlisting filename=".cpp"><codeline><highlight class="normal">print<sp/>h-&gt;curve()</highlight></codeline>
+</programlisting> fails, try using <programlisting filename=".cpp"><codeline><highlight class="normal">print<sp/>h.nt.node-&gt;cv</highlight></codeline>
+</programlisting> instead.</para>
+<para>For a vertex <formula id="3">$ v$</formula> of a planar map, if <programlisting filename=".cpp"><codeline><highlight class="normal">print<sp/>v-&gt;point()</highlight></codeline>
+</programlisting> fails, use <programlisting filename=".cpp"><codeline><highlight class="normal">print<sp/>v.nt.node-&gt;p</highlight></codeline>
+</programlisting> instead. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Note: You can also use watches to continuously examine such values during execution. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_debugging.txt"/>
+  </compounddef>
+</doxygen>

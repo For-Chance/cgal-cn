@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Convex_Decomposition_of_Polyhedra"/><anchor id="index_1chapterConvexDecomposition3"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Peter Hachenberger</para>
+</simplesect>
+</para>
+<sect1 id="index_1Convex_decomposition_3Introduction">
+<title>Introduction</title>
+<para>For many applications on non-convex polyhedra, there are efficient solutions that first decompose the polyhedron into convex pieces. As an example, the Minkowski sum of two polyhedra can be computed by decomposing both polyhedra into convex pieces, compute pair-wise Minkowski sums of the convex pieces, and unite the pair-wise sums.</para>
+<para>While it is desirable to have a decomposition into a minimum number of pieces, this problem is known to be NP-hard <ref refid="citelist_1CITEREF_c-cpplb-84" kindref="member">[1]</ref>. Our implementation decomposes a Nef polyhedron <formula id="0">$ N$</formula> into <formula id="1">$O(r^2)$</formula> convex pieces, where <formula id="2">$ r$</formula> is the number of edges that have two adjacent facets that span an angle of more than 180 degrees with respect to the interior of the polyhedron. Those edges are also called reflex edges. The bound of <formula id="1">$O(r^2)$</formula> convex pieces is worst-case optimal <ref refid="citelist_1CITEREF_c-cpplb-84" kindref="member">[1]</ref>.</para>
+<para><anchor id="index_1fig__figverticalDecomposition"/> <image type="html" name="two_cubes_all_in_one.png"></image>
+ <image type="latex" name="two_cubes_all_in_one.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figverticalDecomposition" kindref="member">fig__figverticalDecomposition</ref> Vertical decomposition based on the insertion of vertical facets (viewed from the top). Left: Non-convex polyhedron. Middle: Non-vertical reflex edges have been resolved. Right: Vertical reflex edges have been resolved. The sub-volumes are convex. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Our decomposition runs in two steps. In the first step, each non-vertical reflex edge <formula id="3">$ e$</formula> is resolved by insertion of vertical facets through <formula id="3">$ e$</formula>. In the second step, we do the same with the vertical reflex edges. <ref refid="index_1fig__figverticalDecomposition" kindref="member">fig__figverticalDecomposition</ref> illustrates the two steps.</para>
+<para>At the moment our implementation is restricted to the decomposition of bounded polyhedra. An extension to unbounded polyhedra is planned.</para>
+</sect1>
+<sect1 id="index_1Convex_decomposition_3InterfaceandUsage">
+<title>Interface and Usage</title>
+<para>An instance of <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> represents a subdivision of the three-dimensional space into vertices, edges, facets, and volumes. Some of these items form the polyhedron (selected), while others represent the outer volume or holes within the polyhedron (unselected). As an example, the unit cube is the point set <formula id="4">$ [0,1]^3$</formula>. The smallest subdivision that represents the unit cube has 8 vertices, 12 edges, 6 facets, and 2 volumes. The volumes enclosed by the vertices, edges, and facets is the interior of the cube and therefore selected. The volume outside the cube does not belong to it and is therefore unselected. The vertices, edges, and facets - also denoted as boundary items - are needed to separate the two volumes, but are also useful for representing topological properties. In case of the (closed) unit cube the boundary items are part of the polyhedron and therefore selected, but in case of the open unit cube <formula id="5">$ [0,1)^3$</formula> they are unselected. Each item has its own selection mark, which allows the correct representation of Nef polyhedra, which are closed under Boolean and topological operations. Details can be found in Chapter <ref refid="index_1chapterNef3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">3D Boolean Operations on Nef Polyhedra</ref>.</para>
+<para>Usually, an instance of <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> does not contain any redundant items. However, the function <computeroutput><ref refid="group__PkgConvexDecomposition3Ref_1ga052b6dc92de74f6c273532c0c42fbff6" kindref="member">convex_decomposition_3()</ref></computeroutput> subdivides selected volumes of a given <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> by selected facets. These additional facets are therefore redundant, i.e., their insertion alters the representation of the polyhedron, but not the polyhedron itself.</para>
+<para>When <computeroutput><ref refid="group__PkgConvexDecomposition3Ref_1ga052b6dc92de74f6c273532c0c42fbff6" kindref="member">convex_decomposition_3()</ref></computeroutput> resolved all reflex edges, the selected sub-volumes have become convex. Each of them is represented by a separate volume item and can therefore be traversed separately as described in Section <ref refid="index_1subsectionNef_3ShellExploration" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Exploring Shells</ref>. Another possibility of accessing the convex pieces is to convert them into separate Nef polyhedra, as illustrated by the example code given below.</para>
+<para>Note that due to the restriction to bounded polyhedra, the use of extended kernels is unnecessary and expensive. We therefore do not support the use of extended kernels in the convex decomposition.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Convex_decomposition_3_2list_of_convex_parts_8cpp-example" kindref="compound">Convex_decomposition_3/list_of_convex_parts.cpp</ref> <programlisting filename="Convex_decomposition_3/list_of_convex_parts.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Nef_polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/Nef_polyhedron_iostream_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Nef_3/SNC_indexed_items.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/convex_decomposition_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Polyhedron_3&lt;Kernel&gt;<sp/>Polyhedron_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">CGAL::Nef_polyhedron_3&lt;Kernel, CGAL::SNC_indexed_items&gt;</ref><sp/><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Nef_polyhedron_3::Volume_const_iterator</ref><sp/>Volume_const_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref><sp/>N;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cin<sp/>&gt;&gt;<sp/>N;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgConvexDecomposition3Ref_1ga052b6dc92de74f6c273532c0c42fbff6" kindref="member">CGAL::convex_decomposition_3</ref>(N);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Polyhedron_3&gt;<sp/>convex_parts;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>first<sp/>volume<sp/>is<sp/>the<sp/>outer<sp/>volume,<sp/>which<sp/>is</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>ignored<sp/>in<sp/>the<sp/>decomposition</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Volume_const_iterator<sp/>ci<sp/>=<sp/>++N.<ref refid="classCGAL_1_1Nef__polyhedron__3_1a0f8071a73a8c388bc0e7037352f3cbee" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">volumes_begin</ref>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>;<sp/>ci<sp/>!=<sp/>N.<ref refid="classCGAL_1_1Nef__polyhedron__3_1a3a3f072c23d909244da523659d0aaab9" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">volumes_end</ref>();<sp/>++ci)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(ci-&gt;mark())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron_3<sp/>P;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>N.convert_inner_shell_to_polyhedron(ci-&gt;shells_begin(),<sp/>P);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>convex_parts.push_back(P);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;decomposition<sp/>into<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>convex_parts.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>convex<sp/>parts<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect1>
+    </detaileddescription>
+    <location file="Convex_decomposition_3.txt"/>
+  </compounddef>
+</doxygen>

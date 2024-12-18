@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_reference_counting" kind="page">
+    <compoundname>devman_reference_counting</compoundname>
+    <title>Reference Counting and Handle Types</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>Stefan Schirra (<computeroutput><ulink url="mailto:stschirr@mpi-sb.mpg.de">stschirr@mpi-sb.mpg.de</ulink></computeroutput>)</para>
+</simplesect>
+</para>
+<sect1 id="devman_reference_counting_1Developer_manualReferencecounting">
+<title>Reference counting</title>
+<para>As of release 2.1, a reference counting scheme is used for the kernel objects in the kernels <computeroutput>Cartesian</computeroutput> and <computeroutput>Homogeneous</computeroutput>. All copies of an object share a common representation object storing the data associated with a kernel object; see <ref refid="devman_reference_counting_1fig__figrefcounted" kindref="member">fig__figrefcounted</ref>.</para>
+<para>The motivation is to save space by avoiding storing the same data more than once and to save time in the copying procedure. Of course, whether we actually save time and space depends on the size of the data that we would have to copy without sharing representations. The drawback is an indirection in accessing the data. Such an indirection is bad in terms of cache efficiency. Thus there are also non-reference-counting kernels available <computeroutput>Simple_cartesian</computeroutput> and <computeroutput>Simple_homogeneous</computeroutput>.</para>
+<para><anchor id="devman_reference_counting_1fig__figrefcounted"/> <image type="html" name="reference_counting.png"></image>
+ <image type="latex" name="reference_counting.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="devman_reference_counting_1fig__figrefcounted" kindref="member">fig__figrefcounted</ref> Objects using reference counting (bottom) share common representation; copying creates a new handle (drawn at the right) pointing to the same representation as the object copied. Without reference counting (top) all data are copied to the new object (drawn at the right); <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The reference counting in the kernel objects is not visible to a user and does not affect the interface of the objects. The representation object is often called the <emphasis>body</emphasis>. The object possibly sharing its representation with others is called a <emphasis>handle</emphasis>, because its data consists of a pointer to its representation object only. If the implementation of the member functions is located with the representation object and the functions in the handle just forward calls to the body, the scheme implements the <emphasis>bridge</emphasis> design pattern, which is used to separate an interface from its implementation. The intent of this design pattern is to allow for exchanging implementations of member functions hidden to the user, especially at runtime.</para>
+</sect1>
+<sect1 id="devman_reference_counting_1Developer_manualHandleRep">
+<title>Handle &amp; Rep</title>
+<para>The two classes <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> and <computeroutput>Rep</computeroutput> provide reference counting functionality; see <ref refid="devman_reference_counting_1fig__figHandleRep" kindref="member">fig__figHandleRep</ref> . By deriving from these classes, the reference counting functionality is inherited. The class <computeroutput>Rep</computeroutput> provides a counter; representation classes derive from this class. The class <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> takes care of all the reference-counting related stuff. In particular, it provides appropriate implementations of copy constructor, copy assignment, and destructor. These functions take care of the counter in the common representation. Classes sharing reference-counted representation objects (of a class derived from <computeroutput>Rep</computeroutput>) do not have to worry about the reference counting, with the exception of non-copy-constructors.</para>
+<para>There a new representation object must be created and the pointer to the representation object must be set.</para>
+<para>If <computeroutput>CGAL_USE_LEDA</computeroutput> is defined and <computeroutput>CGAL_NO_LEDA_HANDLE</computeroutput> is not defined, the types <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> and <computeroutput>Rep</computeroutput> are set to the LEDA types <computeroutput>handle_base</computeroutput> and <computeroutput>handle_rep</computeroutput>, respectively (yes, without a <computeroutput>leda_</computeroutput>-prefix). Use of the LEDA class <computeroutput>handle_rep</computeroutput> implies that LEDA memory management is used for the representation types.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>handle_base<sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>handle_rep<sp/><sp/><sp/><sp/><sp/><sp/><sp/>Rep;</highlight></codeline>
+</programlisting></para>
+<para>Scavenging LEDA, we provide the identical functionality in the CGAL classes <computeroutput>Leda_like_handle</computeroutput> and <computeroutput>Leda_like_rep</computeroutput>. If LEDA is not available or <computeroutput>CGAL_NO_LEDA_HANDLE</computeroutput> is set, <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> and <computeroutput>Rep</computeroutput> correspond to these types.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Leda_like_handle<sp/><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Leda_like_rep<sp/><sp/><sp/><sp/>Rep;</highlight></codeline>
+</programlisting></para>
+<para><anchor id="devman_reference_counting_1fig__figHandleRep"/> <image type="html" name="handle_rep.png"></image>
+ <image type="latex" name="handle_rep.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="devman_reference_counting_1fig__figHandleRep" kindref="member">fig__figHandleRep</ref> UML class diagram for <ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref> &amp; Rep scheme. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="devman_reference_counting_1Developer_manualUsingHandleRep">
+<title>Using Handle &amp; Rep</title>
+<para>In order to make use of the reference counting provided by the classes <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> and <computeroutput>Rep</computeroutput>, your interface class (the class providing the interface of the geometric object) must be derived from <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> and your representation class (the class containing the data to be shared) must be derived from <computeroutput>Rep</computeroutput>:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">class<sp/></highlight><highlight class="normal">My_rep<sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>Rep<sp/>{<sp/></highlight><highlight class="comment">/*...*/</highlight><highlight class="normal"><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">My_geo_object<sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>My_geo_object(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>My_geo_object&amp;<sp/>m);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>My_geo_object(Arg1,<sp/>Arg2);</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting></para>
+<para>The class <computeroutput>My_geo_object</computeroutput> is responsible for allocating and constructing the <computeroutput>My_rep</computeroutput> object &quot;on the heap&quot;. Typically, a constructor call is forwarded to a corresponding constructor of <computeroutput>My_rep</computeroutput>. The address of the new <computeroutput>My_rep</computeroutput> is assigned to <computeroutput>PTR</computeroutput> inherited from <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput>, e.g.:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">My_geo_object::My_geo_object(Arg1<sp/>a1,<sp/>Arg2<sp/>a2)</highlight></codeline>
+<codeline><highlight class="normal">{<sp/>PTR<sp/>=<sp/></highlight><highlight class="keyword">new</highlight><highlight class="normal"><sp/>My_rep(a1,<sp/>a2);<sp/>}</highlight></codeline>
+</programlisting></para>
+<para>The default constructor of <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> is called automatically by the compiler and the reference counting is initialized. You always have to define a copy constructor for <computeroutput>My_geo_object</computeroutput></para>
+<para>and to call the copy constructor of <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> there:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">My_geo_object::My_geo_object(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>My_geo_object&amp;<sp/>m)</highlight></codeline>
+<codeline><highlight class="normal"><sp/>:<sp/><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref>(<sp/>m)</highlight></codeline>
+<codeline><highlight class="normal">{}</highlight></codeline>
+</programlisting></para>
+<para>That&apos;s it! There is no need to define a copy assignment operator nor is there a need to define a destructor for the derived class <computeroutput>My_geo_object</computeroutput>! <ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref> &amp; Rep does the rest for you! You get this functionality by including <computeroutput>CGAL/Handle.h</computeroutput></para>
+<para>It is common practice to add a (protected) member function <computeroutput>ptr()</computeroutput> to the class <computeroutput>My_geo_object</computeroutput>, which casts the <computeroutput>PTR</computeroutput> pointer from <computeroutput>Rep*</computeroutput> to the actual type <computeroutput>My_rep*</computeroutput>.</para>
+<para>Note that this scheme is meant for non-modifiable types. You are not allowed to modify data in the representation object, because the data are possibly shared with other <computeroutput>My_geo_object</computeroutput> objects.</para>
+</sect1>
+<sect1 id="devman_reference_counting_1Developer_manualTemplatedhandles">
+<title>Templated handles</title>
+<para>Factoring out the common functionality in base classes enables reuse of the code, but there is also a major drawback. The <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> class does not know the type of the representation object. It maintains a <computeroutput>Rep*</computeroutput> pointer. Therefore, this pointer must be cast to a pointer to the actual type in the classes derived from <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput>. Moreover, since the <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> calls the destructor for the representation through a <computeroutput>Rep*</computeroutput>, the destructor of <computeroutput>Rep</computeroutput> must be virtual. Finally, debugging is difficult, again, because the <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> class does not know the type of the representation object. Making the actual type of the representation object a template parameter of the handle solves these problems. This is implemented in class template <computeroutput>Handle_for</computeroutput>. This class assumes that the reference-counted class provides the following member functions to manage its internal reference counting:</para>
+<para><itemizedlist>
+<listitem>
+<para><computeroutput>add_reference</computeroutput></para>
+<para></para>
+</listitem>
+<listitem>
+<para><computeroutput>remove_reference</computeroutput></para>
+<para></para>
+</listitem>
+<listitem>
+<para><computeroutput>bool is_referenced</computeroutput></para>
+<para></para>
+</listitem>
+<listitem>
+<para><computeroutput>bool is_shared</computeroutput></para>
+<para></para>
+</listitem>
+</itemizedlist>
+See the UML class diagram in <ref refid="devman_reference_counting_1fig__figHandleFor" kindref="member">fig__figHandleFor</ref>. The reference counting functionality and the required interface can be inherited from class <computeroutput>Ref_counted</computeroutput>.</para>
+<para><anchor id="devman_reference_counting_1fig__figHandleFor"/> <image type="html" name="handle_allocate.png"></image>
+ <image type="latex" name="handle_allocate.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="devman_reference_counting_1fig__figHandleFor" kindref="member">fig__figHandleFor</ref> UML diagram for templated handles. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref> objects have used such a handle/rep scheme since release 2.2.</para>
+</sect1>
+<sect1 id="devman_reference_counting_1Developer_manualUsingtemplatedhandles">
+<title>Using templated handles</title>
+<para>In order to make use of the reference counting provided by the classes <computeroutput>Handle_for</computeroutput> and <computeroutput>Ref_counted</computeroutput>, your representation class, let&apos;s say <computeroutput>My_rep</computeroutput> (the class containing the data to be shared), must provide the interface described above (<emphasis>e.g.</emphasis>, by deriving from <computeroutput>Ref_counted</computeroutput>), and your interface class (the class providing the interface of the geometric object) must be derived from <computeroutput>Handle_for&lt;My_rep&gt;</computeroutput>. It is assumed that the default constructor of <computeroutput>My_rep</computeroutput> sets the counter to 1 (the default constructor of <computeroutput>Ref_counted</computeroutput> does this, of course):</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">class<sp/></highlight><highlight class="normal">My_rep<sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>Ref_counted<sp/>{<sp/></highlight><highlight class="comment">/*...*/</highlight><highlight class="normal"><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">My_geo_object<sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>Handle_for&lt;My_rep&gt;</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>My_geo_object(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>My_geo_object&amp;<sp/>m);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>My_geo_object(Arg1,<sp/>Arg2);</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting></para>
+<para>You should also define a copy constructor for <computeroutput>My_rep</computeroutput> as this may be used in in-place creation in the allocator scheme. The constructors of class <computeroutput>My_geo_object</computeroutput> are responsible for constructing the <computeroutput>My_rep</computeroutput> object. Typically, a corresponding constructor call of <computeroutput>My_rep</computeroutput> is forwarded to <computeroutput>Handle_for</computeroutput>.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">My_geo_object::My_geo_object(Arg1<sp/>a1,<sp/>Arg2<sp/>a2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/>:<sp/>Handle_for&lt;My_rep&gt;(<sp/>My_rep(a1,<sp/>a2))<sp/>{}</highlight></codeline>
+</programlisting></para>
+<para>Sometimes, you have to do some calculation first before you can create a representation object in a constructor of <computeroutput>My_rep</computeroutput>.</para>
+<para>Then you can use the <computeroutput>initialize_with()</computeroutput> member function of <computeroutput>Handle_for</computeroutput>.</para>
+<para>In both cases, <computeroutput>Handle_for</computeroutput> takes care of allocating space for the new object.</para>
+<para>If you define a copy constructor for <computeroutput>My_geo_object</computeroutput> you have to call the copy constructor of <computeroutput>Handle_for</computeroutput> there:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">My_geo_object::My_geo_object(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>My_geo_object&amp;<sp/>m)</highlight></codeline>
+<codeline><highlight class="normal"><sp/>:<sp/>Handle_for&lt;My_rep&gt;(<sp/>m)</highlight></codeline>
+<codeline><highlight class="normal">{}</highlight></codeline>
+</programlisting></para>
+<para>That&apos;s it! Again, there is no need to define a copy assignment operator nor is there a need to define a destructor for the derived class <computeroutput>My_geo_object</computeroutput>! <computeroutput>Handle_for</computeroutput> does the rest for you!</para>
+<para><computeroutput>Handle_for</computeroutput> provides you with an option to modify the data. There is a <computeroutput>copy_on_write()</computeroutput></para>
+<para>that should be called right before every modification of the data. It ensures that only your data are overwritten:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keywordtype">void</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">My_geo_object::set_x(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>d)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>copy_on_write();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ptr-&gt;x<sp/>=<sp/>d;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> You get this functionality by including <computeroutput>CGAL/Handle_for.h</computeroutput></para>
+</sect1>
+<sect1 id="devman_reference_counting_1Developer_manualAllocation">
+<title>Allocation</title>
+<para>Class <computeroutput>Handle_for</computeroutput> has two template parameters. Besides the type of the stored object, there is also a parameter specifying an allocator. Any concrete argument must be a model for the <computeroutput>Allocator</computeroutput> concept defined in the C++ standard. There is a default value for the second parameter defined as <computeroutput><ref refid="group__PkgSTLExtensionRef_1ga859086d0e8d189c8c967229e024e5e82" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL_ALLOCATOR(T)</ref></computeroutput>. But you can also choose your own, for example</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">class<sp/></highlight><highlight class="normal">My_geo_object<sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>Handle_for&lt;My_rep,<sp/>leda_allocator&lt;My_rep&gt;<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal">{<sp/></highlight><highlight class="comment">/*<sp/>...<sp/>*/</highlight><highlight class="normal"><sp/>};</highlight></codeline>
+</programlisting></para>
+<para>The default allocator is defined in <computeroutput>CGAL/memory.h</computeroutput></para>
+<para>See Chapter <ref refid="devman_memory_management" kindref="compound">Memory Management</ref> for more information. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_handles.txt"/>
+  </compounddef>
+</doxygen>

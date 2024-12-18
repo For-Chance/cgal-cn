@@ -1,0 +1,439 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Optimal_Transportation_Curve_Reconstruction"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Pierre Alliez, David Cohen-Steiner, Fernando de Goes, Clément Jamin and Ivo Vigan</para>
+</simplesect>
+</para>
+<sect1 id="index_1Optimal_transportation_reconstruction_2Introduction">
+<title>Introduction</title>
+<para>This package implements a method to reconstruct and simplify 2D point sets <ref refid="citelist_1CITEREF_degoes:hal-00758019" kindref="member">[1]</ref>. The input is a set of 2D points with mass attributes, possibly hampered by noise and outliers. The output is a set of <emphasis>line segments</emphasis> and <emphasis>isolated points</emphasis> which approximate the input points, as illustrated in <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_summary" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_summary</ref>. The mass attribute relates to the importance given to each point for approximation.</para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_summary"/> <image type="html" name="summary.png"></image>
+ <image type="latex" name="summary.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_summary" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_summary</ref> Left: input point set hampered by noise. Right: The corresponding reconstructed shape consisting of line segments. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Internally, the algorithm constructs an initial 2D Delaunay triangulation from all the input points, then simplifies the triangulation so that a subset of the edges and vertices of the triangulation approximate well the input points. Approximate herein refers to a robust distance based on <emphasis>optimal transportation</emphasis> (see section <ref refid="index_1Optimal_transportation_reconstruction_2HowDoesItWork" kindref="member">How Does It Work?</ref> for more details). The triangulation is simplified using a combination of <emphasis>half edge collapse</emphasis>, <emphasis>edge flips</emphasis> and <emphasis>vertex relocation</emphasis> operators. The triangulation remains valid during simplification, i.e., with neither overlaps nor fold-overs.</para>
+<para>The output of the reconstruction algorithm is a subset of edges and vertices of the triangulation. <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_algorithm" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_algorithm</ref> depicts an example where the output is composed of green edges and one isolated vertex. The green edges are considered relevant as they approximate well many of the input points. The edges depicted in grey, referred to as <emphasis>ghost edges</emphasis> and discarded, approximate none of the input points. The edges depicted in red, referred to as irrelevant and also discarded, approximate some of the input points but not enough to be considered relevant.</para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_algorithm"/> <image type="html" name="algorithm.png"></image>
+ <image type="latex" name="algorithm.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_algorithm" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_algorithm</ref> (a) Input points. (b) Delaunay triangulation of the input points. (c) After simplification, with ghost edges in grey, relevant edges in green, and irrelevant edges in red. (d) Final reconstruction made up of several edges and one isolated vertex. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Simplest_example">
+<title>Simplest Examples</title>
+<para>The following example first generates a set of input points on a square. The points, with no mass attribute, are then passed to the <ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">Optimal_transportation_reconstruction_2</ref> object. After initialization, 100 iterations of the reconstruction process are performed. <linebreak/>
+<bold>File</bold> <ref refid="Optimal_transportation_reconstruction_2_2otr2_simplest_example_8cpp-example" kindref="compound">Optimal_transportation_reconstruction_2/otr2_simplest_example.cpp</ref> <programlisting filename="Optimal_transportation_reconstruction_2/otr2_simplest_example.cpp"><codeline><highlight class="comment">//<sp/>Simplest<sp/>example<sp/>for<sp/>Optimal_transportation_reconstruction_2,<sp/>with<sp/>no<sp/>mass</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>attributes<sp/>for<sp/>the<sp/>input<sp/>points<sp/>and<sp/>no<sp/>Wasserstein<sp/>tolerance</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Optimal_transportation_reconstruction_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">CGAL::Optimal_transportation_reconstruction_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/>Otr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::get_default_random()<sp/>=<sp/>CGAL::Random(1671586136);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Generate<sp/>a<sp/>set<sp/>of<sp/>random<sp/>points<sp/>on<sp/>the<sp/>boundary<sp/>of<sp/>a<sp/>square.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_on_square_2&lt;Point&gt;<sp/>point_generator(1.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy_n(point_generator,<sp/>100,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Otr<sp/>otr(points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(otr.run(100))<sp/></highlight><highlight class="comment">//100<sp/>steps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;All<sp/>done.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Premature<sp/>ending.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>There is no direct relationship between the target number of edges for the output reconstruction and a notion of approximation error. The simplification algorithm can thus be stopped via a maximum tolerance error homogeneous to a distance. More specifically, the tolerance error is specified as the maximum square root of transport cost per unit of mass, which is homogeneous to a distance.</para>
+<para>Note that the tolerance is given in the sense of the Wasserstein distance (see <ref refid="index_1Optimal_transportation_reconstruction_2Wasserstein" kindref="member">Wasserstein Distance</ref>). It is <emphasis>not</emphasis> a Hausdorff tolerance: it does not mean that the distance between the input samples and the output polyline is guaranteed to be less than <computeroutput>tolerance</computeroutput>. It means that the square root of transport cost per mass (homogeneous to a distance) is at most <computeroutput>tolerance</computeroutput>. <linebreak/>
+<bold>File</bold> <ref refid="Optimal_transportation_reconstruction_2_2otr2_simplest_example_with_tolerance_8cpp-example" kindref="compound">Optimal_transportation_reconstruction_2/otr2_simplest_example_with_tolerance.cpp</ref> <programlisting filename="Optimal_transportation_reconstruction_2/otr2_simplest_example_with_tolerance.cpp"><codeline><highlight class="comment">//<sp/>Simplest<sp/>example<sp/>with<sp/>tolerance<sp/>for</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Optimal_transportation_reconstruction_2,<sp/>with<sp/>no<sp/>mass<sp/>attributes</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>for<sp/>the<sp/>input<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Optimal_transportation_reconstruction_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">CGAL::Optimal_transportation_reconstruction_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/>Otr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Generate<sp/>100<sp/>random<sp/>points<sp/>on<sp/>the<sp/>boundary<sp/>of<sp/>a<sp/>square.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_on_square_2&lt;Point&gt;<sp/>point_generator(1.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy_n(point_generator,<sp/>100,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Otr<sp/>otr(points);<sp/></highlight><highlight class="comment">//<sp/>no<sp/>mass<sp/>given,<sp/>one<sp/>unit<sp/>mass<sp/>per<sp/>point<sp/>assumed</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr.run_under_wasserstein_tolerance(0.1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Output_example">
+<title>Output Examples</title>
+<para>The output of the reconstruction can be obtained in two ways: either as a sequence of 2D points and segments, or as an indexed format where the connectivity of the segments is encoded, hence the terms vertices and edges. The indexed format records a list of points, then pairs of point indices in the said list for the edges, and point indices for the isolated vertices. <linebreak/>
+<bold>File</bold> <ref refid="Optimal_transportation_reconstruction_2_2otr2_list_output_example_8cpp-example" kindref="compound">Optimal_transportation_reconstruction_2/otr2_list_output_example.cpp</ref> <programlisting filename="Optimal_transportation_reconstruction_2/otr2_list_output_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Optimal_transportation_reconstruction_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">CGAL::Optimal_transportation_reconstruction_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/>Otr_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>load_xy_file(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string&amp;<sp/>filename,<sp/>std::vector&lt;Point&gt;&amp;<sp/>points)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>ifs(filename.c_str());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(ifs<sp/>&gt;&gt;<sp/>point)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back(point);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ifs.close();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>list_output(Otr_2&amp;<sp/>otr2)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;(-------------List<sp/>output----------<sp/>)&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>isolated_points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2.list_output(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::back_inserter(isolated_points),<sp/>std::back_inserter(segments));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;::iterator<sp/>pit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(pit<sp/>=<sp/>isolated_points.begin();<sp/>pit<sp/>!=<sp/>isolated_points.end();<sp/>pit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/><sp/>&lt;&lt;<sp/>*pit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment&gt;::iterator<sp/>sit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(sit<sp/>=<sp/>segments.begin();<sp/>sit<sp/>!=<sp/>segments.end();<sp/>sit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*sit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>load_xy_file(</highlight><highlight class="stringliteral">&quot;data/stair-noise00.xy&quot;</highlight><highlight class="normal">,<sp/>points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Otr_2<sp/>otr2(points);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2.run(100);<sp/></highlight><highlight class="comment">//<sp/>100<sp/>steps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>list_output(otr2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> <linebreak/>
+<bold>File</bold> <ref refid="Optimal_transportation_reconstruction_2_2otr2_indexed_output_example_8cpp-example" kindref="compound">Optimal_transportation_reconstruction_2/otr2_indexed_output_example.cpp</ref> <programlisting filename="Optimal_transportation_reconstruction_2/otr2_indexed_output_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Optimal_transportation_reconstruction_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">CGAL::Optimal_transportation_reconstruction_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/>Otr_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>load_xy_file(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string&amp;<sp/>filename,<sp/>std::vector&lt;Point&gt;&amp;<sp/>points)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>ifs(filename.c_str());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(ifs<sp/>&gt;&gt;<sp/>point)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back(point);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ifs.close();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>indexed_output(Otr_2&amp;<sp/>otr2)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;(-------------Off<sp/>output----------<sp/>)&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::size_t&gt;<sp/>isolated_vertices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::pair&lt;std::size_t,std::size_t&gt;<sp/>&gt;<sp/>edges;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2.indexed_output(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(points),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(isolated_vertices),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(edges));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;OFF<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>0<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>edges.size()<sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;::iterator<sp/>pit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(pit<sp/>=<sp/>points.begin();<sp/>pit<sp/>!=<sp/>points.end();<sp/>pit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*pit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>isolated<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::size_t&gt;::iterator<sp/>vit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(vit<sp/>=<sp/>isolated_vertices.begin();<sp/>vit<sp/>!=<sp/>isolated_vertices.end();<sp/>vit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;1<sp/>&quot;</highlight><highlight class="normal"><sp/><sp/>&lt;&lt;<sp/>*vit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>edges</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::pair&lt;std::size_t,<sp/>std::size_t&gt;<sp/>&gt;::iterator<sp/>eit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(eit<sp/>=<sp/>edges.begin();<sp/>eit<sp/>!=<sp/>edges.end();<sp/>eit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2<sp/>&quot;</highlight><highlight class="normal"><sp/><sp/>&lt;&lt;<sp/>eit-&gt;first<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;second<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>load_xy_file(</highlight><highlight class="stringliteral">&quot;data/stair-noise00.xy&quot;</highlight><highlight class="normal">,<sp/>points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Otr_2<sp/>otr2(points);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2.run(100);<sp/></highlight><highlight class="comment">//<sp/>100<sp/>steps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>indexed_output(otr2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Mass_example">
+<title>Example with Mass Attributes</title>
+<para>The following example first reads a set of input points and masses from an ASCII file. Using two property maps, the points and their initial mass are passed to the <ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">Optimal_transportation_reconstruction_2</ref> object. After initialization 100 iterations of the reconstruction process are performed, then the segments and isolated points of the reconstructed shape are extracted and printed to the console. <linebreak/>
+<bold>File</bold> <ref refid="Optimal_transportation_reconstruction_2_2otr2_mass_example_8cpp-example" kindref="compound">Optimal_transportation_reconstruction_2/otr2_mass_example.cpp</ref> <programlisting filename="Optimal_transportation_reconstruction_2/otr2_mass_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Optimal_transportation_reconstruction_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>std::pair</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;Point,<sp/>FT&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PointMassPair;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;PointMassPair&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PointMassList;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::First_of_pair_property_map<sp/>&lt;PointMassPair&gt;<sp/><sp/><sp/><sp/>Point_property_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Second_of_pair_property_map<sp/>&lt;PointMassPair&gt;<sp/><sp/><sp/>Mass_property_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">CGAL::Optimal_transportation_reconstruction_2</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>K,<sp/>Point_property_map,<sp/>Mass_property_map&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Otr_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>load_xym_file(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string&amp;<sp/>filename,<sp/>PointMassList&amp;<sp/>points)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>ifs(filename.c_str());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>mass;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(ifs<sp/>&gt;&gt;<sp/>point<sp/>&amp;&amp;<sp/>ifs<sp/>&gt;&gt;<sp/>mass)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back(std::make_pair(point,<sp/>mass));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ifs.close();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PointMassList<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>load_xym_file(</highlight><highlight class="stringliteral">&quot;data/stair.xym&quot;</highlight><highlight class="normal">,<sp/>points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_property_map<sp/>point_pmap;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mass_property_map<sp/><sp/>mass_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Otr_2<sp/>otr2(points,<sp/>point_pmap,<sp/>mass_pmap);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2.run(100);<sp/></highlight><highlight class="comment">//<sp/>100<sp/>steps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>isolated_vertices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment&gt;<sp/>edges;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2.list_output(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::back_inserter(isolated_vertices),<sp/>std::back_inserter(edges));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Isolated<sp/>vertices:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;::iterator<sp/>vit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(vit<sp/>=<sp/>isolated_vertices.begin();<sp/>vit<sp/>!=<sp/>isolated_vertices.end();<sp/>vit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*vit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Edges:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment&gt;::iterator<sp/>eit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(eit<sp/>=<sp/>edges.begin();<sp/>eit<sp/>!=<sp/>edges.end();<sp/>eit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*eit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2API">
+<title>API</title>
+<para>The only class exposed to the user is the <emphasis> <ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">Optimal_transportation_reconstruction_2</ref> </emphasis> class.</para>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Sample">
+<title>Sample Call</title>
+<para><programlisting filename=".cpp"><codeline><highlight class="comment">/*</highlight></codeline>
+<codeline><highlight class="comment">K<sp/>:<sp/>a<sp/>geometric<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">Optimal_transportation_reconstruction_2&lt;K&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2(points.begin(),<sp/>points.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">otr2.run(100);<sp/></highlight><highlight class="comment">//<sp/>perform<sp/>100<sp/>edge<sp/>collapse<sp/>operators</highlight></codeline>
+</programlisting></para>
+<para>In case the input is not just points without masses, one can provide a property map that matches this input. <programlisting filename=".cpp"><codeline><highlight class="comment">/*</highlight></codeline>
+<codeline><highlight class="comment">K<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>:<sp/>a<sp/>geometric<sp/>kernel.</highlight></codeline>
+<codeline><highlight class="comment">Point_property_map<sp/>:<sp/>a<sp/>PropertyMap<sp/>for<sp/>accessing<sp/>the<sp/>input<sp/>points.</highlight></codeline>
+<codeline><highlight class="comment">Mass_property_map<sp/><sp/>:<sp/>a<sp/>PropertyMap<sp/>for<sp/>accessing<sp/>the<sp/>mass<sp/>attributes<sp/>of<sp/>the</highlight></codeline>
+<codeline><highlight class="comment"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>input<sp/>points.</highlight></codeline>
+<codeline><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">Optimal_transportation_reconstruction_2&lt;K, Point_property_map, Mass_property_map&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>otr2(points.begin(),<sp/>points.end(),<sp/>point_pmap,<sp/>mass_pmap);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">otr2.run(100);<sp/></highlight><highlight class="comment">//<sp/>perform<sp/>100<sp/>edge<sp/>collapse<sp/>operators</highlight></codeline>
+</programlisting></para>
+<para>Alternatively to calling <ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2_1aa7a32398e56863507255a93294664bcf" kindref="member"><computeroutput>run()</computeroutput></ref>, one can call <ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2_1a4da6cbf9c758cd7e04cd281f8bbd4960" kindref="member"><computeroutput>run_until()</computeroutput> </ref> and specify the number of output vertices one wants to keep as illustrated in <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_twenty_vertices" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_twenty_vertices</ref>. <programlisting filename=".cpp"><codeline><highlight class="normal">otr2.run_until(20);<sp/></highlight><highlight class="comment">//<sp/>perform<sp/>edge<sp/>collapse<sp/>operators<sp/>until<sp/>20<sp/>vertices<sp/>remain.</highlight></codeline>
+</programlisting></para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_twenty_vertices"/> <image type="html" name="twenty_vertices.png"></image>
+ <image type="latex" name="twenty_vertices.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_twenty_vertices" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_twenty_vertices</ref> Examples of 20-vertex reconstructions from datasets consisting of 2000, 400 and 200 input points respectively. These examples illustrate the behavior of the algorithm when the input point density decreases. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Finally, calling <ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2_1ada2cdd4244c0005d0527acdb68cb02cb" kindref="member"><computeroutput>run_under_wasserstein_tolerance()</computeroutput> </ref> allows the user to run the algorithm based on a distance criterion when the number of output edges is not known as illustrated in <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_tolerance" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_tolerance</ref>. <programlisting filename=".cpp"><codeline><highlight class="normal">otr2.run_under_wasserstein_tolerance(0.1);<sp/></highlight><highlight class="comment">//<sp/>perform<sp/>collapses<sp/>until<sp/>no<sp/>more<sp/>can<sp/>be<sp/>done<sp/>within<sp/>tolerance</highlight></codeline>
+</programlisting></para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_tolerance"/> <image type="html" name="tolerances.png"></image>
+ <image type="latex" name="tolerances.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_tolerance" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_tolerance</ref> Examples of reconstructions with different Wasserstein tolerance threshold. Top: input point set and reconstruction with a tolerance of 0.005. Bottom: reconstructions with a tolerance of 0.05 and with a tolerance of 0.1. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Global_relocation">
+<title>Global Point Relocation</title>
+<para>As noise and missing data may prevent the reconstructed shape to have sharp corners at the correct places, the algorithm offers a function to relocate all points of the reconstruction: <programlisting filename=".cpp"><codeline><highlight class="normal">otr2.relocate_all_points();</highlight></codeline>
+</programlisting> Note that these points coincide with the vertices of the underlying triangulation. This function can be called either after one run of simplification, or interleaved with several runs of simplification.</para>
+<para>The new point locations are chosen such that the approximation of the output segments and isolated points to the input points is improved. More specifically, the relocation process iterates between computing the best transport plan given the current reconstruction, and relocating the triangulation vertices while keeping the current transport plan unchanged. The vertices are relocated so as to minimize the transport cost induced by the current transport plan <ref refid="citelist_1CITEREF_degoes:hal-00758019" kindref="member">[1]</ref>.</para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_relocation"/> <image type="html" name="relocation.png"></image>
+ <image type="latex" name="relocation.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_relocation" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_relocation</ref> Left: before point relocation. Right: after point relocation. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2Parameters">
+<title>User Parameters</title>
+<para>The behavior of the algorithm is controlled via the following parameters.</para>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Flip">
+<title>Edge Flipping</title>
+<para>During simplification of the internal triangulation some recursive edge flip operators are required to guarantee that the triangulation remain valid when applying a half edge collapse operator (see <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_edgeflip" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_edgeflip</ref>). Calling set_use_flip(false) prevents the algorithm from using edge flips, yielding shorter computational times at the price of suboptimal results as not all edges can be considered for being collapsible.</para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_edgeflip"/> <image type="html" name="edgeflip.jpg"></image>
+ <image type="latex" name="edgeflip.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_edgeflip" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_edgeflip</ref> Edge flipping. Left: the blue edge creates fold-overs because of blocking edges shown in black. Middle: after running the recursive edge flipping procedure the blue edge is collapsible. Right: triangulation after edge collapse. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Relevance">
+<title>Edge Relevance</title>
+<para>An edge is relevant from the approximation point of view if (1) it is long, (2) approximates a large number of points (or a large amount of mass when points have mass attributes), and (3) has a small approximation error. More specifically, the notion of relevance is defined as <formula id="0">$ m(e) * |e|^2 / cost(e) $</formula>, where <formula id="1">$ m(e) $</formula> denotes the mass of the points approximated by the edge, <formula id="2">$ |e| $</formula> denotes the edge length and <formula id="3">$ cost(e) $</formula> its approximation error. As the error is defined by mass time squared distance the relevance is unitless. The default value is 1, so that all edges approximating some input points are considered relevant. A larger relevance value provides us with a means to increase resilience to outliers.</para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Random">
+<title>Random Sample Size</title>
+<para>By default the simplification relies upon an exhaustive priority queue of half edge collapse operators during decimation. For improved efficiency, a parameter <emphasis> sample size </emphasis> strictly greater than 0 switches to a multiple choice approach, i.e., a best-choice selection in a random sample of edge collapse operators, of size <emphasis>sample size</emphasis>. A typical value for the sample size is 15, but this value must be enlarged when targeting a very coarse simplification.</para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Local_relocation">
+<title>Local Point Relocation</title>
+<para>In addition to the global relocation function described above, an optional parameter of the constructor of the <emphasis> <ref refid="classCGAL_1_1Optimal__transportation__reconstruction__2" kindref="compound">Optimal_transportation_reconstruction_2</ref> </emphasis> class provides a means to relocate the points <emphasis>locally</emphasis> after each edge collapse operator (possibly combined with edge flips). Locally herein means that only the vertices of a local stencil in the triangulation around the each edge collapse operator are relocated, with a process similar to the one described above in the global relocation function. The local stencil is chosen as the one-ring neighborhood of the vertex remaining after collapsing an edge. The relocation process being iterative, one parameter controls the number of relocation steps.</para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Verbose">
+<title>Verbose Output</title>
+<para>The verbose parameter, between 0 and 2, determines how much console output the algorithm generates. A 0 value generates no output to the standard output. A value greater than 0 generates output to the standard output <computeroutput>std::cerr</computeroutput>.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2Robustness">
+<title>Robustness</title>
+<para>A virtue of the algorithm is its robustness to noise and outliers. <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_robustness" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_robustness</ref> shows that the output of the algorithm is robust in the sense that it is hardly affected by noise and/or outliers, as long as the density of outliers is small compared to the density of the input points.</para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_robustness"/> <image type="html" name="robustness.png"></image>
+ <image type="latex" name="robustness.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_robustness" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_robustness</ref> Robustness to noise and outliers. Left: noise-free point set. Middle: noisy point set. Right: point set hampered by noise and outliers. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2Density">
+<title>Variable Density</title>
+<para><ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_density" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_density</ref> illustrates the behavior of the algorithm on a point set with uniform mass attributes, versus variable density. As the algorithm gives more importance to densely sampled areas, this translates into smaller edges on densely sampled areas. On sparsely sampled areas the algorithm initially approximates each point by one isolated vertex, then progressively approximates the points with edges. <anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_density"/> <image type="html" name="density.png"></image>
+ <image type="latex" name="density.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_density" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_density</ref> Variable density. Left: input point set. The three other pictures show how the approximation evolves when pushing the simplification forward. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2Mixed">
+<title>Mixed Dimension</title>
+<para><ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_mixed" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_mixed</ref> depicts an input point set sampling a set of line segments and a solid area. Depending on the targeted number of points in the output, the solid area is approximated by a set of evenly sampled isolated vertices.</para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_mixed"/> <image type="html" name="mixed.png"></image>
+ <image type="latex" name="mixed.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_mixed" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_mixed</ref> Mixed dimension. Left: input point set. Middle: Isolated vertices in blue, relevant edges in green and irrelevant edges in red. Right: final output. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2Variable_mass">
+<title>Variable Mass</title>
+<para>The mass attributes provides a means to adjust the importance given to each point for approximation. <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_variable" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_variable</ref> depicts a reconstruction from a gray level image after thresholding, where the gray level of the pixels are used as mass attribute.</para>
+<para><anchor id="index_1fig__Optimal_Transportation_Curve_Reconstruction_variable"/> <image type="html" name="variable.png"></image>
+ <image type="latex" name="variable.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Optimal_Transportation_Curve_Reconstruction_variable" kindref="member">fig__Optimal_Transportation_Curve_Reconstruction_variable</ref> Variable mass. Left: input gray level image. Middle: image after thresholding to reduce the number of pixels used as points with non-zero mass. Right: final reconstruction. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2HowDoesItWork">
+<title>How Does It Work?</title>
+<para>The task addressed here is to reconstruct a shape from a noisy point set <formula id="4">$ S $</formula> in <formula id="5">$ \mathbb{R}^2 $</formula>, i.e., given a set of points in the plane, find a set of points and segments (more formally, a <emphasis> 0-1 simplicial complex </emphasis>) which best approximates <formula id="4">$ S $</formula>.</para>
+<para>The approximation error is derived from the theory of optimal transportation between geometric measures <ref refid="citelist_1CITEREF_degoes:hal-00758019" kindref="member">[1]</ref>. More specifically, the input point set is seen as a discrete measure, i.e., a set of pointwise masses. The goal is to find a 0-1 simplicial complex where the edges are the support of a <emphasis>piecewise uniform</emphasis> continuous measure (i.e., a line density of masses) and the vertices are the support of a discrete measure. Approximating the input point set in our context translates into approximating the input discrete measure by another measure composed of line segments and points.</para>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Wasserstein">
+<title>Wasserstein Distance</title>
+<para>Intuitively, the optimal transportation distance (Wasserstein-2 distance in our context) measures the amount of work that it takes to transport the input measure onto the vertices and edges of the triangulation, where the measure is constrained to be uniform (and greater or equal to zero) on each edge, and just greater or equal to zero on each vertex. Note that the Wasserstein distance is symmetric.</para>
+<para>When all vertices of the triangulation coincide with the input points (after full initialization) the total transport cost is zero as each input point relocates to a vertex at no cost, and the reconstruction is made of isolated vertices only.</para>
+<para>Assume for now that the input point set is composed of 10 points (each with mass 1) uniformly sampled on a line segment, and that the triangulation contains a single edge coinciding with the line segment. Although the (one-sided Euclidean) distance from the points to the edge is zero (the converse being not zero), the Wasserstein distance from the points to the edge is non zero, as we constrain the mass density of the edge to be uniform, and the total mass (integral of density) of the edge to equal 10, i.e., the total mass of the input points. The input points should hence be transported <emphasis> tangentially </emphasis> on the edge in order to match the uniform density, the optimal <emphasis> transport plan </emphasis> for the input points being described as smaller line segments with equal lengths, covering the edge.</para>
+<para>If one now samples uniformly 20 points on the same edge (each with mass 0.5) the Wasserstein distance is smaller (albeit the total mass is 10 as before), as the transport plan is described by smaller line segments. In a slightly different configuration where the 20 input points have different masses, the optimal transport plan is described by small line segments whose length is proportional to the mass of the associated input point. When the input points are not strictly on the edge, the transport plan has both tangential and normal components.</para>
+<para>In other words, one approximates well the input points by a single edge when the input points are densely and uniformly sampling that edge. Beyond symmetry, one virtue of the Wasserstein distance is thus to quantize both the deviation from the points to the edge, and the non-uniformity of the points on that edge. This distance is also resilient to outliers (points far from the edge) when the mass of these outliers is small compared to the total mass of the input points.</para>
+</sect2>
+<sect2 id="index_1Optimal_transportation_reconstruction_2Reconstruction">
+<title>Reconstruction</title>
+<para>The algorithm performs a fine to coarse simplification of a triangulation. It starts by constructing a box around the input points <formula id="6">$S$</formula> and computes the Delaunay Triangulation <formula id="7">$ T_0 $</formula> on all or a subset of <formula id="4">$ S $</formula>. <formula id="7">$ T_0 $</formula> is the first output simplex, which is simplified in subsequent iterations by repeated edge collapses. To chose the next edge, an edge collapse operator is simulated for all feasible edges, i.e., for edges which introduce neither overlaps nor fold-overs in the triangulation. The next edge <formula id="8">$ e $</formula> for collapse is chosen according to the overall cost of the transportation plan for <formula id="9">$ T \setminus e $</formula>, where the cheapest overall cost is preferred. Since disregarding edges which do not preserve the embedding of the triangulation can severely affect the performance of the greedy approach to optimal transport, the collapse operator is modified by adding a local flip procedure which makes every edge collapsible.</para>
+<para>The transportation plan is approximated by assigning each input point temporarily to the closest simplex edge. After this partitioning of the input points w.r.t. the edges, all the points temporarily assigned to a given edge are being assigned to it permanently if and only if the corresponding transportation costs are less than the transportation cost for each of the two end vertices of the edge. Otherwise each of the points is assigned to the cheapest of the two vertices. This process of edge collapse and transportation plan update is repeated until the desired number of vertices, specified by the users, has been reached.</para>
+<para>At the end of the process, the edges which carry little mass can be filtered out and the remaining relevant edges and isolated vertices are reported as reconstructing the input shape.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Optimal_transportation_reconstruction_2History">
+<title>Design and Implementation History</title>
+<para>This package is the result of the work of Ivo Vigan during the 2014 season of the Google Summer of Code. He has been mentored by Clément Jamin, Pierre Alliez and Fernando de Goes. The code is based on an initial research code written by Pierre Alliez and Fernando de Goes in 2010, for a paper published at the EUROGRAPHICS Symposium on Geometry Processing 2011 <ref refid="citelist_1CITEREF_degoes:hal-00758019" kindref="member">[1]</ref>. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Optimal_transportation_reconstruction_2.txt"/>
+  </compounddef>
+</doxygen>

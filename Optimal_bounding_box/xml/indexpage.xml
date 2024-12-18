@@ -1,0 +1,274 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Building_Optimal_Bounding_Box"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><anchor id="index_1fig__OBBBanner"/><center> <image type="html" name="obb_chess.png" inline="yes"></image>
+ </center></para>
+<para><simplesect kind="authors"><para>Konstantinos Katrioplas, Mael Rouxel-Labbé</para>
+</simplesect>
+</para>
+<sect1 id="index_1OBBIntro">
+<title>Introduction</title>
+<para>Encompassing a model within a volume is a common approach to accelerate a number of applications such as collision detection or visibility testing: the proxy volume provides a rapid way to test a configuration or filter results, with the real model only being used when required. Typical coarser volumes that can be used to approximate a more complex model are simplified meshes (for example using the package <ref refid="packages_1PkgSurfaceMeshSimplification" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Simplification</ref>), convex hulls, or simple rectangular boxes. Within this last category, the axis-aligned bounding box (AABB) has obvious advantages: it is extremely simple to compute and one may build a hierarchical structure of successively tighter volumes to further speed up intersection and distance computations. One such example of structure is the CGAL AABB tree (<ref refid="packages_1PkgAABBTree" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D and 3D Fast Intersection and Distance Computation</ref>). The disadvantage is also clear: the box is usually poorly fitting most models. A good compromise between the good approximation offered by convex hulls or simplified meshes and the speed offered by axis-aligned bounding boxes are <emphasis>Optimal Bounding Boxes</emphasis>. Contrary to the AABB, the optimal bounding box of a model is not necessarily axis-aligned, but provides a tight approximation.</para>
+<para><anchor id="index_1fig__obb_aabb_vs_obb"/><center> <image type="html" name="aabb_vs_obb.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__obb_aabb_vs_obb" kindref="member">fig__obb_aabb_vs_obb</ref> Left: the axis-aligned bounding box. Right: the optimal bounding box, a much better fit.</para>
+<para><htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>In 2D, the optimal bounding rectangle of an input can be computed in linear time using the technique of <emphasis>rotating calipers</emphasis>, first introduced by Toussaint <ref refid="citelist_1CITEREF_cgal:t-sgprc-83" kindref="member">[4]</ref> (see also the CGAL package <ref refid="packages_1PkgBoundingVolumes" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Bounding Volumes</ref>). An algorithm to compute the optimal oriented bounding box in 3D was proposed by O’Rourke <ref refid="citelist_1CITEREF_cgal:or-fmeb-85" kindref="member">[3]</ref>, but its cubic complexity in the number of points makes it unusable in practice. The implementation proposed in this package is based on the paper of Chang et al.<ref refid="citelist_1CITEREF_cgal:cgm-fobbo-11" kindref="member">[1]</ref>, who introduced an algorithm to compute a close approximation of the optimal bounding box. As this is but an approximation of the optimal bounding box, we call the resulting box, the <emphasis>Oriented Bounding Box</emphasis>.</para>
+</sect1>
+<sect1 id="index_1OBBOrientedBoundingBox">
+<title>Oriented Bounding Box</title>
+<para>The algorithm introduced by Chang et al. formulates the computation of the optimal bounding box as an unconstrained optimization problem on the 3D matrix rotation group. The function to optimize is defined as the volume of the box. Because this function is non-differentiable, in particular near local optima, traditional optimization methods might encounter convergence issues. Consequently, Chang et al.&apos;s algorithm employs a combination of a derivative-free optimization method, the Nelder-Mead simplex method <ref refid="citelist_1CITEREF_cgal:nm-smfm-65" kindref="member">[2]</ref>, and a metaheuristics method based on biological evolution principles to maintain and evolve a population of tentative rotation matrices. The purpose of this evolution is to oppose a global approach to the local Nelder-Mead optimization, enabling the algorithm to explore the search space as much as possible, and to find not only a local minimum, but a global optimum.</para>
+<sect2 id="index_1OBBOptimality">
+<title>Missing the Optimality</title>
+<para>In theory, the genetic algorithms used by Chang et al. enable - given enough time - the algorithm to explore the complete search space. In practice, an algorithm does not have infinite time at its disposal. In addition, there is no simple way to check if the current-best solution is optimal. Thus, an implementation of the algorithm cannot provide the same guarantees that the theoretical algorithm offers. However, we observe that in practice the algorithm constructs a close approximation of the optimal bounding box most of the time.</para>
+</sect2>
+<sect2 id="index_1OBBConvexHull">
+<title>Convex Hull Computation as Preprocessing</title>
+<para>As the bounding box only depends on the convex hull of the object, computing its convex hull as a preprocessing step is a good way to reduce the number of points in subsequent computations. The computational trade-off is developed in more details in Section <ref refid="index_1OBBComplexityPerformance" kindref="member">Complexity and Performance</ref>.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1OBBImplementation">
+<title>Design and Implementation</title>
+<para>The computation of the oriented bounding box can be performed by calling the free function <computeroutput><ref refid="group__PkgOptimalBoundingBox__Oriented__bounding__box_1gac1917f59df722d338d44a63d3a8aa14a" kindref="member">CGAL::oriented_bounding_box()</ref></computeroutput>. Convex hull computation is performed using the package <ref refid="packages_1PkgConvexHull3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Convex Hulls</ref>, and is enabled by default.</para>
+<sect2 id="index_1OBBInnOut">
+<title>Input and Output</title>
+<para>The input can be a range of 3D points, or a mesh, with a variety of <ref refid="group__bgl__namedparameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> enabling using further custom inputs.</para>
+<para>The result of the algorithm can be retrieved as:<itemizedlist>
+<listitem><para>the best affine transformation <formula id="0">${\mathcal R}_b$</formula> that the algorithm has found;</para>
+</listitem><listitem><para>an array of eight points, representing the best oriented bounding box that the algorithm has constructed, which is related to <formula id="1">$ {\mathcal R}_b$</formula> as it is the inverse transformation of the axis-aligned bounding box of the transformed input object. The order of the points in the array is the same as in the function <ref refid="group__PkgBGLHelperFct" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag"><computeroutput>CGAL::make_hexahedron()</computeroutput> </ref>, which can be used to construct a mesh from these points.</para>
+</listitem><listitem><para>a model of <computeroutput><ref refid="classMutableFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">MutableFaceGraph</ref></computeroutput>, a quadrangular mesh representing the oriented bounding box.</para>
+</listitem></itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1OBBTraitsnKernels">
+<title>Traits and Kernel Choice</title>
+<para>The requirements on geometric objects and operations on these objects are described in the traits class concept <computeroutput><ref refid="classOrientedBoundingBoxTraits__3" kindref="compound">OrientedBoundingBoxTraits_3</ref></computeroutput>. A model of this concept is provided: <computeroutput><ref refid="classCGAL_1_1Oriented__bounding__box__traits__3" kindref="compound">CGAL::Oriented_bounding_box_traits_3</ref></computeroutput>.</para>
+<para>If the approach using the convex hull is chosen, a kernel offering exact predicates must be used to ensure a correct hull. In addition, the eight bounding vertices are constructed using the best found affine transformation; consequently, a kernel providing exact construction may also be useful.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1OBBComplexityPerformance">
+<title>Complexity and Performance</title>
+<para>A major drawback of the exact algorithm of O’Rourke is its cubic complexity and consequent large runtimes. In this section, we investigate the speedup gained by preprocessing the input data with a convex hull computation, and show that the oriented bounding box algorithm exhibits linear complexity.</para>
+<para>Models from the <ulink url="https://ten-thousand-models.appspot.com/">Thingi10k</ulink> data set are used with speeds being averaged over 100 runs for each model. The machine used is a laptop running Fedora 30 64-bits, with two 6-core Intel(R) i9-8950HK CPU clocked at 2.90GHz, and with 32GB of RAM. The CGAL kernel used is <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref></computeroutput>.</para>
+<sect2 id="index_1OBBConvexHullComplexity">
+<title>Cost and Gain of Convex Hull Computations</title>
+<para>Computing the convex hull as a preliminary step provides a significant speed advantage.</para>
+<para><anchor id="index_1fig__ch_speed_up"/><center> <image type="html" name="ch_speedup.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__ch_speed_up" kindref="member">fig__ch_speed_up</ref> Computation of the speedup achieved on the total runtime of the algorithm when the convex hull is computed and used afterwards. Note that the total runtime includes the construction of the convex hull (when it is used). The color and size of the dots represent the number of vertices in the input data (larger, bluer points having more input vertices than greener, smaller points). Computing the convex hull is beneficial for all but a handful of cases. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1OBBOrientedBoundingBoxComplexity">
+<title>Performance of the Oriented Bounding Box Algorithm</title>
+<para>We analyze in this section the computation time of the algorithm based on the number of vertices on the convex hull.</para>
+<para><anchor id="index_1fig__obb_timings"/><center> <image type="html" name="obb_time.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__obb_timings" kindref="member">fig__obb_timings</ref> Running times for the oriented bounding box construction of the convex hull of models of the <ulink url="https://ten-thousand-models.appspot.com/">Thingi10k</ulink> data set. The color and size of the dots represent the number of vertices in the input data (larger, bluer points having more input vertices than greener, smaller points). The algorithm exhibits linear complexity in practice. For visibility reasons, the few models whose convex hull has more than 10000 vertices are excluded from this graph, but consistent results are observed. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1OBBexamples">
+<title>Examples</title>
+<sect2 id="index_1OBBBasicExample">
+<title>Basic Example</title>
+<para>The following example illustrates a basic usage of the algorithm: an input mesh is read, its oriented bounding box is computed using an array as output, and a mesh is constructed from the eight points.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Optimal_bounding_box_2obb_example_8cpp-example" kindref="compound">Optimal_bounding_box/obb_example.cpp</ref> <programlisting filename="Optimal_bounding_box/obb_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="optimal__bounding__box_8h" kindref="compound">CGAL/optimal_bounding_box.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/triangulate_faces.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/measure.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Real_timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PMP<sp/>=<sp/>CGAL::Polygon_mesh_processing;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/pig.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref><sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!PMP::IO::read_polygon_mesh(filename,<sp/>sm)<sp/>||<sp/>sm.<ref refid="classCGAL_1_1Surface__mesh_1ad29a74494f8712c0010915b59f7073be" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">is_empty</ref>())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Real_timer<sp/>timer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.start();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>the<sp/>extreme<sp/>points<sp/>of<sp/>the<sp/>mesh,<sp/>and<sp/>then<sp/>a<sp/>tightly<sp/>fitted<sp/>oriented<sp/>bounding<sp/>box</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::array&lt;Point,<sp/>8&gt;<sp/>obb_points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOptimalBoundingBox__Oriented__bounding__box_1gac1917f59df722d338d44a63d3a8aa14a" kindref="member">CGAL::oriented_bounding_box</ref>(sm,<sp/>obb_points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::use_convex_hull(</highlight><highlight class="keyword">true</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Elapsed<sp/>time:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>timer.time()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Make<sp/>a<sp/>mesh<sp/>out<sp/>of<sp/>the<sp/>oriented<sp/>bounding<sp/>box</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh<sp/>obb_sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgBGLGeneratorFct_1ga12fa3e202c24740dade5764e3ea80c41" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::make_hexahedron</ref>(obb_points[0],<sp/>obb_points[1],<sp/>obb_points[2],<sp/>obb_points[3],</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>obb_points[4],<sp/>obb_points[5],<sp/>obb_points[6],<sp/>obb_points[7],<sp/>obb_sm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream(</highlight><highlight class="stringliteral">&quot;obb.off&quot;</highlight><highlight class="normal">)<sp/>&lt;&lt;<sp/>obb_sm;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PMP::triangulate_faces(obb_sm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Volume:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>PMP::volume(obb_sm)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1OBBExampleNP">
+<title>Using Named Parameters</title>
+<para>The following example illustrates how to use <ref refid="group__bgl__namedparameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> to efficiently compute the oriented bounding box of a mesh whose vertices&apos; positions are modified on the fly.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Optimal_bounding_box_2obb_with_point_maps_example_8cpp-example" kindref="compound">Optimal_bounding_box/obb_with_point_maps_example.cpp</ref> <programlisting filename="Optimal_bounding_box/obb_with_point_maps_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="optimal__bounding__box_8h" kindref="compound">CGAL/optimal_bounding_box.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;array&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;unordered_map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Surface_mesh&gt;::vertex_descriptor<sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">CP<sp/>=<sp/><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/pig.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref><sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!CGAL::Polygon_mesh_processing::IO::read_polygon_mesh(filename,<sp/>sm)<sp/>||<sp/>sm.<ref refid="classCGAL_1_1Surface__mesh_1ad29a74494f8712c0010915b59f7073be" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">is_empty</ref>())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>a<sp/>typical<sp/>call</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::array&lt;Point,<sp/>8&gt;<sp/>obb_points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOptimalBoundingBox__Oriented__bounding__box_1gac1917f59df722d338d44a63d3a8aa14a" kindref="member">CGAL::oriented_bounding_box</ref>(sm,<sp/>obb_points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>one<sp/>can<sp/>associate<sp/>positions<sp/>to<sp/>the<sp/>vertices<sp/>of<sp/>the<sp/>mesh<sp/>without<sp/>changing<sp/>the<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::unordered_map&lt;vertex_descriptor,<sp/>Point&gt;<sp/>translated_positions;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>vertex_descriptor&amp;<sp/>v<sp/>:<sp/>vertices(sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>translated_positions[v]<sp/>=<sp/>sm.<ref refid="classCGAL_1_1Surface__mesh_1a3b9a1f49c28d2d299a379c29d565ec10" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">point</ref>(v)<sp/>+<sp/>Vector(1,<sp/>2,<sp/>3);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOptimalBoundingBox__Oriented__bounding__box_1gac1917f59df722d338d44a63d3a8aa14a" kindref="member">CGAL::oriented_bounding_box</ref>(sm,<sp/>obb_points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CP::vertex_point_map(boost::make_assoc_property_map(translated_positions)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>using<sp/>a<sp/>range<sp/>of<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>vertex_descriptor&amp;<sp/>v<sp/>:<sp/>vertices(sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back(sm.<ref refid="classCGAL_1_1Surface__mesh_1a3b9a1f49c28d2d299a379c29d565ec10" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">point</ref>(v));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOptimalBoundingBox__Oriented__bounding__box_1gac1917f59df722d338d44a63d3a8aa14a" kindref="member">CGAL::oriented_bounding_box</ref>(points,<sp/>obb_points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>one<sp/>can<sp/>associate<sp/>positions<sp/>to<sp/>the<sp/>range<sp/>without<sp/>changing<sp/>the<sp/>range</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;Point,<sp/>Point&gt;<sp/>scaled_positions;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>p<sp/>:<sp/>points)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>scaled_positions[p]<sp/>=<sp/>p<sp/>+<sp/>(p<sp/>-<sp/><ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOptimalBoundingBox__Oriented__bounding__box_1gac1917f59df722d338d44a63d3a8aa14a" kindref="member">CGAL::oriented_bounding_box</ref>(points,<sp/>obb_points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CP::point_map(boost::make_assoc_property_map(scaled_positions)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1OBBRotatedTree">
+<title>Rotated AABB Tree</title>
+<para>The following example uses the affine transformation, which is the affine transformation such that the axis-aligned bounding box of the transformed vertices of the mesh has minimum volume, returned by the algorithm to build a custom vertex point property map. An AABB tree of the (on the fly) rotated faces of the mesh is then constructed.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Optimal_bounding_box_2rotated_aabb_tree_example_8cpp-example" kindref="compound">Optimal_bounding_box/rotated_aabb_tree_example.cpp</ref> <programlisting filename="Optimal_bounding_box/rotated_aabb_tree_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_face_graph_triangle_primitive.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="optimal__bounding__box_8h" kindref="compound">CGAL/optimal_bounding_box.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/property_map/function_property_map.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Aff_transformation_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Aff_transformation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Surface_mesh&gt;::vertex_descriptor<sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Aff_tr_fct</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Aff_tr_fct()<sp/>:<sp/>m_at(nullptr),<sp/>m_sm(nullptr)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Aff_tr_fct(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Aff_transformation&amp;<sp/>at,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Surface_mesh&amp;<sp/>sm)<sp/>:<sp/>m_at(&amp;at),<sp/>m_sm(&amp;sm)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>vertex_descriptor<sp/>v)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_at-&gt;transform(m_sm-&gt;point(v));<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Aff_transformation*<sp/>m_at;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Surface_mesh*<sp/>m_sm;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/pig.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!CGAL::Polygon_mesh_processing::IO::read_polygon_mesh(filename,<sp/>sm)<sp/>||<sp/>sm.is_empty())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>get<sp/>the<sp/>transformation<sp/>that<sp/>yields<sp/>the<sp/>optimal<sp/>bounding<sp/>box</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Aff_transformation<sp/>at;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOptimalBoundingBox__Oriented__bounding__box_1gac1917f59df722d338d44a63d3a8aa14a" kindref="member">CGAL::oriented_bounding_box</ref>(sm,<sp/>at);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>functor<sp/>to<sp/>apply<sp/>the<sp/>affine<sp/>transformation<sp/>to<sp/>a<sp/>vertex<sp/>of<sp/>the<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Aff_tr_fct<sp/>aff_tr_fct(at,<sp/>sm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>aff_tr_vpm<sp/>=<sp/>boost::make_function_property_map&lt;vertex_descriptor&gt;(aff_tr_fct);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>rotated<sp/>AABB<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__face__graph__triangle__primitive" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/AABB_tree.tag">CGAL::AABB_face_graph_triangle_primitive</ref>&lt;Surface_mesh,<sp/></highlight><highlight class="keyword">decltype</highlight><highlight class="normal">(aff_tr_vpm)&gt;<sp/>AABB_face_graph_primitive;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/AABB_tree.tag">CGAL::AABB_traits_3&lt;K, AABB_face_graph_primitive&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>AABB_face_graph_traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/AABB_tree.tag">CGAL::AABB_tree&lt;AABB_face_graph_traits&gt;</ref><sp/>tree(faces(sm).begin(),<sp/>faces(sm).end(),<sp/>sm,<sp/>aff_tr_vpm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1OBBHistory">
+<title>Implementation History</title>
+<para>A prototype was created by Konstantinos Katrioplas in 2018. Mael Rouxel-Labbé worked to speed up and robustify the implementation, and to submit the first version of this package. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Optimal_bounding_box.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Principal_Component_Analysis"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Pierre Alliez, Sylvain Pion and Ankit Gupta</para>
+</simplesect>
+This package provides functions to analyze sets of objects in 2D and 3D. It provides the computation of axis-aligned bounding boxes, centers of mass and principal component analysis for all bounded objects, as well as barycenters for sets of weighted points. Note that unlike most of the CGAL packages, this package uses approximation methods (in particular for linear least squares fitting) and is not intended to provide an exact canonical result in any sense.</para>
+<sect1 id="index_1Principal_component_analysisDefinitions">
+<title>Definitions</title>
+<para>A <emphasis>bounding box</emphasis> for a set of objects is a cuboid that contains the set. An <emphasis>axis-aligned bounding box</emphasis> captures the maximum extents of all objects from the set within their coordinate system, i.e., a bounding box aligned with the axes of the coordinate system. Axis-aligned bounding boxes are frequently used in geometric algorithms as an indication of the general location of a data set, for either display, first-approximation spatial query, or spatial indexing purposes.</para>
+<para>A <emphasis>centroid</emphasis> of a set of objects is their center of mass, i.e., the point whose coordinates are computed by means of coordinates of all points composing the objects. Note that although the general definition of center of mass incorporates a density function (and hence weighted means), the current implementation assumes a uniform density (see barycenter below defined for weighted points). For a point set <formula id="4">$ \{X_1,X_2,...,X_N\}$</formula> the centroid <formula id="5">$ \bar{X}$</formula> is computed as <formula id="6">\[ \bar{X} = \frac{1}{N} \sum_{i=1}^{N}{ X_i}. \]</formula> For a set of segments <formula id="7">$ \{S_1,S_2,...,S_N\}$</formula> the centroid <formula id="5">$ \bar{X}$</formula> is computed as <formula id="8">\[ \bar{X} = \frac{1}{\sum_{i=1}^{N}{\left|S_i\right|}} \sum_{i=1}^{N}{ \left|S_i\right| \bar{S_i}}, \]</formula> where <formula id="9">$ \left|S_i\right|$</formula> stands for the length of a segment and <formula id="10">$ \bar{S_i}$</formula> stands for its uniform barycenter (midpoint). For a set of triangles <formula id="11">$ \{T_1,T_2,...,T_N\}$</formula> the centroid <formula id="5">$ \bar{X}$</formula> is computed as <formula id="12">\[ \bar{X} = \frac{1}{\sum_{i=1}^{N}{\left|T_i\right|}} \sum_{i=1}^{N}{ \left|T_i\right| \bar{T_i}}, \]</formula> where <formula id="13">$ \left|T_i\right|$</formula> stands for the area of a triangle and <formula id="14">$ \bar{T_i}$</formula> stands for its uniform barycenter. Such definition still holds for more general objects where the Lebesgue measure (length in 1D, area in 2D, volume in 3D) is used for weighting the object barycenters. Centers of mass are used to summarize data sets for either approximation, spatial query or spatial indexing purposes.</para>
+<para>A <emphasis>barycenter</emphasis> of a set of weighted points is the point whose coordinates are computed by means of weighted coordinates of all weighted points from the set. When all weights are equal the barycenter coincides with the centroid.</para>
+<para>Given a set of objects, <emphasis>linear least squares fitting</emphasis> amounts to finding the linear sub-space which minimizes the sum of squared distances from all points composing the objects of the set, to their projection onto this linear sub-space. Such linear sub-space is obtained by so-called principal component analysis (PCA). PCA is defined as a transformation that transforms the objects to a new coordinate system such that the greatest variance by orthogonal projection of the objects comes to lie on the first coordinate (called the first principal component), the second greatest variance on the second coordinate, and so on. PCA is often used in geometric applications to reduce data sets to lower dimensions for analysis or approximation. Figure below illustrates (least squares) fitting of a line to a 2D point set, fitting of a line and a plane to a 3D point set and fitting of a plane to a set of 3D triangles.</para>
+<para><anchor id="index_1fig__PCAfit"/> <image type="html" name="fit.png"></image>
+ <image type="latex" name="fit.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__PCAfit" kindref="member">fig__PCAfit</ref> Left: fitting a line to a 2D point set (centroid dotted in red). Middle: fitting a line and a plane to a 3D point set. Right: fitting a plane to a set of 3D triangles. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1subsecpca_examples">
+<title>Examples</title>
+<sect2 id="index_1Principal_component_analysisBoundingBoxof">
+<title>Bounding Box of 2D and 3D Point Sets</title>
+<para>In the following example we use STL containers of 2D points and 3D points, and compute their axis-aligned bounding box. <linebreak/>
+<bold>File</bold> <ref refid="Principal_component_analysis_2bounding_box_8cpp-example" kindref="compound">Principal_component_analysis/bounding_box.cpp</ref> <programlisting filename="Principal_component_analysis/bounding_box.cpp"><codeline><highlight class="comment">//<sp/>Example<sp/>program<sp/>for<sp/>the<sp/>bounding_box()<sp/>function<sp/>for<sp/>2D<sp/>points<sp/>and<sp/>3D<sp/>points.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/bounding_box.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;FT&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>axis-aligned<sp/>bounding<sp/>box<sp/>of<sp/>2D<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>points_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.0,<sp/>0.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(2.0,<sp/>2.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(3.0,<sp/>5.0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Iso_rectangle_2<sp/>c2<sp/>=<sp/><ref refid="group__PkgPrincipalComponentAnalysisDbb_1ga7674a40dcf2ee64bebc89d97bf801c1d" kindref="member">CGAL::bounding_box</ref>(points_2.begin(),<sp/>points_2.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>c2<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>axis-aligned<sp/>bounding<sp/>box<sp/>of<sp/>3D<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points_3;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(1.0,<sp/>0.0,<sp/>0.5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(2.0,<sp/>2.0,<sp/>1.2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(3.0,<sp/>5.0,<sp/>4.5));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Iso_cuboid_3<sp/>c3<sp/>=<sp/><ref refid="group__PkgPrincipalComponentAnalysisDbb_1ga7674a40dcf2ee64bebc89d97bf801c1d" kindref="member">CGAL::bounding_box</ref>(points_3.begin(),<sp/>points_3.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>c3<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Principal_component_analysisCentroidof2D">
+<title>Centroid of 2D and 3D Objects</title>
+<para>In the following example we use STL containers of 2D, 3D points and 3D triangles, and compute their centroid. The dimension tag indicates the dimension of the objects being fitted (0 for points, 2 for triangles). Note that it is also possible to compute the centroid of the triangle edges (3D segments) by specifying 1 as dimension tag, and to compute the centroid of the triangle vertices (3D points) by specifying 0 as dimension tag. <linebreak/>
+<bold>File</bold> <ref refid="Principal_component_analysis_2centroid_8cpp-example" kindref="compound">Principal_component_analysis/centroid.cpp</ref> <programlisting filename="Principal_component_analysis/centroid.cpp"><codeline><highlight class="comment">//<sp/>Example<sp/>program<sp/>for<sp/>the<sp/>centroid()<sp/>function<sp/>for<sp/>2D<sp/>points,<sp/>3D<sp/>points<sp/>and<sp/>3D<sp/>triangles.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/centroid.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;FT&gt;</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Triangle_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Triangle__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Triangle_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>centroid<sp/>of<sp/>2D<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>points_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.0,<sp/>0.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(2.0,<sp/>2.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(3.0,<sp/>5.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>c2<sp/>=<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::centroid</ref>(points_2.begin(),<sp/>points_2.end(),<ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag&lt;0&gt;</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>c2<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>centroid<sp/>of<sp/>3D<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points_3;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(1.0,<sp/>0.0,<sp/>0.5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(2.0,<sp/>2.0,<sp/>1.2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(3.0,<sp/>5.0,<sp/>4.5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>c3<sp/>=<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::centroid</ref>(points_3.begin(),<sp/>points_3.end(),<ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag&lt;0&gt;</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>c3<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>centroid<sp/>of<sp/>3D<sp/>triangles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Triangle_3&gt;<sp/>triangles_3;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>p(1.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>q(1.0,<sp/>2.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>r(0.0,<sp/>1.0,<sp/>3.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>s(0.0,<sp/>2.0,<sp/>5.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>triangles_3.push_back(<ref refid="classCGAL_1_1Triangle__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Triangle_3</ref>(p,q,r));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>triangles_3.push_back(<ref refid="classCGAL_1_1Triangle__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Triangle_3</ref>(p,q,s));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>c3<sp/>=<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::centroid</ref>(triangles_3.begin(),<sp/>triangles_3.end(),<ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag&lt;2&gt;</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>c3<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Principal_component_analysisBarycenterof">
+<title>Barycenter of a Set of Weighted Points</title>
+<para>In the following example we use STL containers of 2D and 3D weighted points, and compute their barycenter. <linebreak/>
+<bold>File</bold> <ref refid="Principal_component_analysis_2barycenter_8cpp-example" kindref="compound">Principal_component_analysis/barycenter.cpp</ref> <programlisting filename="Principal_component_analysis/barycenter.cpp"><codeline><highlight class="comment">//<sp/>Example<sp/>program<sp/>for<sp/>the<sp/>barycenter()<sp/>function<sp/>for<sp/>2D<sp/>and<sp/>3D<sp/>points.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/barycenter.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;FT&gt;</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>barycenter<sp/>of<sp/>2D<sp/>weighted<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::pair&lt;Point_2,<sp/>FT&gt;<sp/>&gt;<sp/>points_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.0,<sp/>0.0),<sp/><sp/>1.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(2.0,<sp/>2.0),<sp/><sp/>2.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_2.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(3.0,<sp/>5.0),<sp/>-2.0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>c2<sp/>=<sp/><ref refid="group__barycenter__grp_1ga93e459977649c2430139b5778101529b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::barycenter</ref>(points_2.begin(),<sp/>points_2.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>c2<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>barycenter<sp/>of<sp/>3D<sp/>weighted<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::pair&lt;Point_3,<sp/>FT&gt;<sp/>&gt;<sp/>points_3;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(1.0,<sp/>0.0,<sp/>0.5),<sp/><sp/>1.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(2.0,<sp/>2.0,<sp/>1.2),<sp/><sp/>2.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points_3.push_back(std::make_pair(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(3.0,<sp/>5.0,<sp/>4.5),<sp/>-5.0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>c3<sp/>=<sp/><ref refid="group__barycenter__grp_1ga93e459977649c2430139b5778101529b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::barycenter</ref>(points_3.begin(),<sp/>points_3.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>c3<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Principal_component_analysisLeastSquares">
+<title>Least Squares Fitting of a Line to a 2D Point Set</title>
+<para>In the following example we use a STL container of 2D points, and compute the best fitting line in the least squares sense. <linebreak/>
+<bold>File</bold> <ref refid="Principal_component_analysis_2linear_least_squares_fitting_points_2_8cpp-example" kindref="compound">Principal_component_analysis/linear_least_squares_fitting_points_2.cpp</ref> <programlisting filename="Principal_component_analysis/linear_least_squares_fitting_points_2.cpp"><codeline><highlight class="comment">//<sp/>Example<sp/>program<sp/>for<sp/>linear<sp/>least<sp/>squares<sp/>fitting<sp/>of<sp/>a<sp/>2D<sp/>point<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/linear_least_squares_fitting_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;FT&gt;</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Line_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Line;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(Point(1.0,2.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(Point(3.0,4.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back(Point(5.0,6.0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>fit<sp/>line</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Line<sp/>line;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPrincipalComponentAnalysisDLLSF2_1gaf0d4435db5901ebe10cafd7de7c077f3" kindref="member">linear_least_squares_fitting_2</ref>(points.begin(),points.end(),line,<ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag&lt;0&gt;</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Principal_component_analysisLeastSquares_1">
+<title>Least Squares Fitting of a Line and a Plane to a 3D Triangle Set</title>
+<para>In the following example we use a STL container of 3D triangles, and compute the best fitting line and plane in the least squares sense. Note that we can fit either the whole triangles, the triangle edges or the triangle vertices. <linebreak/>
+<bold>File</bold> <ref refid="Principal_component_analysis_2linear_least_squares_fitting_triangles_3_8cpp-example" kindref="compound">Principal_component_analysis/linear_least_squares_fitting_triangles_3.cpp</ref> <programlisting filename="Principal_component_analysis/linear_least_squares_fitting_triangles_3.cpp"><codeline><highlight class="comment">//<sp/>Example<sp/>program<sp/>for<sp/>the<sp/>linear_least_square_fitting<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>on<sp/>a<sp/>set<sp/>of<sp/>3D<sp/>triangles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/linear_least_squares_fitting_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;FT&gt;</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Line_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Line;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Plane_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Plane;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Triangle_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Triangle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Triangle&gt;<sp/>triangles;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>a(1.0,2.0,3.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>b(4.0,0.0,6.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>c(7.0,8.0,9.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>d(8.0,7.0,6.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>e(5.0,3.0,4.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>triangles.push_back(Triangle(a,b,c));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>triangles.push_back(Triangle(a,b,d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>triangles.push_back(Triangle(d,e,c));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Line<sp/>line;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Plane<sp/>plane;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>fit<sp/>plane<sp/>to<sp/>whole<sp/>triangles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPrincipalComponentAnalysisDLLSF3_1gadcf556c115c6bac30a54bf7fdd0d32e3" kindref="member">linear_least_squares_fitting_3</ref>(triangles.begin(),triangles.end(),plane,<ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag&lt;2&gt;</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>fit<sp/>line<sp/>to<sp/>triangle<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPrincipalComponentAnalysisDLLSF3_1gadcf556c115c6bac30a54bf7fdd0d32e3" kindref="member">linear_least_squares_fitting_3</ref>(triangles.begin(),triangles.end(),line,<sp/><ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag&lt;0&gt;</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Principal_component_analysis.txt"/>
+  </compounddef>
+</doxygen>

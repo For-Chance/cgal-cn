@@ -1,0 +1,484 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Planar_Parameterization_of_Triangulated_Surface_Meshes"/> <anchor id="index_1chapsurface_mesh_parameterization"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Laurent Saboret, Pierre Alliez, Bruno L<eacute/>vy, Mael Rouxel-Labb<eacute/>, Andreas Fabri and Hardik Jain</para>
+</simplesect>
+</para>
+<sect1 id="index_1Surface_mesh_parameterizationIntroduction">
+<title>Introduction</title>
+<para>Parameterizing a surface amounts to finding a one-to-one mapping from a suitable domain to the surface. A good mapping is the one which minimizes either angle distortions (conformal parameterization) or area distortions (equiareal parameterization) in some sense. In this package, we focus on parameterizing triangulated surfaces which are homeomorphic to a disk or a sphere, and on piecewise linear mappings onto a planar domain.</para>
+<para>Although the main motivation behind the first parameterization methods was the application to texture mapping, it is now frequently used for mapping more sophisticated modulation signals (such as normal, transparency, reflection or light modulation maps), fitting scattered data, re-parameterizing spline surfaces, repairing CAD models, approximating surfaces and remeshing.</para>
+<para>This CGAL package implements surface parameterization methods, such as As Rigid As Possible Parameterization, Tutte Barycentric Mapping, Discrete Authalic Parameterization, Discrete Conformal Maps, Least Squares Conformal Maps, Floater Mean Value Coordinates, or Orbifold Tutte Embeddings. These methods mainly distinguish by the distortion they minimize (angles vs. areas), by the constrained border onto the planar domain (convex polygon vs. free border) and by the bijectivity guarantees of the mapping.</para>
+<para>The package proposes an interface for any model of the concept <computeroutput><ref refid="classFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceGraph</ref></computeroutput>, such as the classes <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput>, or the mesh classes of <ulink url="https://www.openmesh.org">OpenMesh</ulink>.</para>
+<para><simplesect kind="remark"><para>The class <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput> can be used to virtually cut a mesh, allowing to transform an input mesh in subdomain(s) that fit the disk-or-sphere topology requirement.</para>
+</simplesect>
+Since parameterizing meshes requires an efficient representation of sparse matrices and efficient iterative or direct linear solvers, we provide a unified interface to linear solvers as described in Chapter <ref refid="packages_1PkgSolverInterface" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and Solvers</ref>.</para>
+<para>Note that linear solvers commonly use double precision floating point numbers. Therefore, this package is intended to be used with a CGAL Cartesian kernel with doubles.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigintroduction"/> <image type="html" name="introduction.jpg"></image>
+ <image type="latex" name="introduction.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Surface_mesh_parameterizationfigintroduction" kindref="member">fig__Surface_mesh_parameterizationfigintroduction</ref> Texture mapping via Least Squares Conformal Maps parameterization. Top: original mesh and texture. Bottom: parameterized mesh (left: parameter space, right: textured mesh). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Surface_mesh_parameterizationBasics">
+<title>Basics</title>
+<sect2 id="index_1Surface_mesh_parameterizationDefaultSurface">
+<title>Default Surface Parameterization</title>
+<para>From the user point of view, the simplest entry point to this package is the following function:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TriangleMesh,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>VertexUVMap&gt;</highlight></codeline>
+<codeline><highlight class="normal">Error_code<sp/>parameterize(TriangleMesh<sp/>&amp;<sp/>mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::graph_traits&lt;TriangleMesh&gt;::halfedge_descriptor<sp/>bhd,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>VertexUVMap<sp/>uvm);</highlight></codeline>
+</programlisting></para>
+<para>The function <computeroutput>parameterize()</computeroutput> applies a default surface parameterization method, namely Floater Mean Value Coordinates <ref refid="citelist_1CITEREF_cgal:f-mvc-03" kindref="member">[4]</ref> (see Section <ref refid="index_1Surface_mesh_parameterizationFloaterMean" kindref="member">Floater Mean Value Coordinates</ref>), to the connected component of the mesh of type <computeroutput>TriangleMesh</computeroutput> with the border given by the halfedge <computeroutput>bhd</computeroutput>. This border is parameterized with an arc-length circular border parameterization. The sparse linear solver of the <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen</ref> library is used.</para>
+<para>The mesh of type <computeroutput>TriangleMesh</computeroutput> must be a model of the concept <computeroutput><ref refid="classFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceGraph</ref></computeroutput> and must additionally be triangulated, 2-manifold, oriented, and homeomorphic to a disc (possibly with holes). The last requirement is not hard and we will later show how to parameterize a mesh that is not a topological disk (Section <ref refid="index_1secCuttingaMesh" kindref="member">Cutting a Mesh</ref>). The result is stored in a property map (whose type is here VertexUVMap) for the mesh vertices. See also Chapter <ref refid="packages_1PkgPropertyMap" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and Boost Property Maps</ref>.</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_parameterizationDefaultExample">
+<title>Default Parameterization Example</title>
+<para>In the following example, we apply the default parameterization (Floater Mean Value Coordinates) to a <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref></computeroutput> mesh. We store the UV-coordinates as a vertex property using the <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref></computeroutput> built-in property mechanism.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_parameterization_2simple_parameterization_8cpp-example" kindref="compound">Surface_mesh_parameterization/simple_parameterization.cpp</ref> <programlisting filename="Surface_mesh_parameterization/simple_parameterization.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/IO/File_off.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/parameterize.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/measure.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/>SurfaceMesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;SurfaceMesh&gt;::vertex_descriptor<sp/><sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;SurfaceMesh&gt;::halfedge_descriptor<sp/><sp/><sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;SurfaceMesh&gt;::face_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">SMP<sp/>=<sp/>CGAL::Surface_mesh_parameterization;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/nefertiti.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SurfaceMesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>a<sp/>halfedge<sp/>on<sp/>the<sp/>border</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>halfedge_descriptor<sp/>bhd<sp/>=<sp/>CGAL::Polygon_mesh_processing::longest_border(sm).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>UV<sp/>property<sp/>map<sp/>that<sp/>holds<sp/>the<sp/>parameterized<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SurfaceMesh::Property_map&lt;vertex_descriptor,<sp/>Point_2&gt;<sp/><sp/>UV_pmap;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>UV_pmap<sp/>uv_map<sp/>=<sp/>sm.add_property_map&lt;vertex_descriptor,<sp/>Point_2&gt;(</highlight><highlight class="stringliteral">&quot;h:uv&quot;</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SMP::parameterize(sm,<sp/>bhd,<sp/>uv_map);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;result.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SMP::IO::output_uvmap_to_off(sm,<sp/>bhd,<sp/>uv_map,<sp/>out);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Figure <ref refid="index_1fig__Surface_mesh_parameterizationfigsimple" kindref="member">fig__Surface_mesh_parameterizationfigsimple</ref> illustrates the input and output of this program.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigsimple"/><center> <image type="html" name="nefertiti.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigsimple" kindref="member">fig__Surface_mesh_parameterizationfigsimple</ref> Input (left), parameter space (middle), and textured mesh (right) corresponding to the example <ref refid="Surface_mesh_parameterization_2simple_parameterization_8cpp-example" kindref="compound">simple_parameterization.cpp</ref>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_parameterizationEnhancedparameterize">
+<title>Choosing a Parameterization Algorithm</title>
+<para>This package provides a second <computeroutput>parameterize()</computeroutput> entry point where the user can specify a parameterization method:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TriangleMesh,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Parameterizer_3,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>VertexUVMap&gt;</highlight></codeline>
+<codeline><highlight class="normal">Error_code<sp/>parameterize(TriangleMesh&amp;<sp/>mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classParameterizer__3" kindref="compound">Parameterizer_3</ref><sp/>parameterizer,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::graph_traits&lt;TriangleMesh&gt;::halfedge_descriptor<sp/>bhd,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>VertexUVMap<sp/>uvm);</highlight></codeline>
+</programlisting></para>
+<para>It computes a one-to-one mapping from a 3D triangle surface mesh to a simple 2D domain. The mapping is piecewise linear on the triangle mesh. The result is a pair (u,v) of parameter coordinates for each vertex of the input mesh. A one-to-one mapping may be guaranteed or not, depending on the choice of the <ref refid="classParameterizer__3" kindref="compound">Parameterizer_3</ref> algorithm.</para>
+<para>In the following example, we use the Discrete Authalic parameterizer with a circular border parameterization. We use a <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref></computeroutput> for the mesh and store the UV-coordinates as a vertex property using the <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref></computeroutput> built-in property mechanism.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_parameterization_2discrete_authalic_8cpp-example" kindref="compound">Surface_mesh_parameterization/discrete_authalic.cpp</ref> <programlisting filename="Surface_mesh_parameterization/discrete_authalic.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/IO/File_off.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/Circular_border_parameterizer_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/Discrete_authalic_parameterizer_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/Error_code.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/parameterize.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/measure.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdlib&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/><sp/>SurfaceMesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;SurfaceMesh&gt;::halfedge_descriptor<sp/><sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;SurfaceMesh&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;SurfaceMesh&gt;::face_descriptor<sp/><sp/><sp/><sp/><sp/><sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">SMP<sp/>=<sp/>CGAL::Surface_mesh_parameterization;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/three_peaks.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SurfaceMesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>A<sp/>halfedge<sp/>on<sp/>the<sp/>border</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>halfedge_descriptor<sp/>bhd<sp/>=<sp/>CGAL::Polygon_mesh_processing::longest_border(sm).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>2D<sp/>points<sp/>of<sp/>the<sp/>uv<sp/>parametrisation<sp/>will<sp/>be<sp/>written<sp/>into<sp/>this<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SurfaceMesh::Property_map&lt;vertex_descriptor,<sp/>Point_2&gt;<sp/><sp/>UV_pmap;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>UV_pmap<sp/>uv_map<sp/>=<sp/>sm.add_property_map&lt;vertex_descriptor,<sp/>Point_2&gt;(</highlight><highlight class="stringliteral">&quot;v:uv&quot;</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SMP::Circular_border_arc_length_parameterizer_3&lt;SurfaceMesh&gt;<sp/><sp/>Border_parameterizer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SMP::Discrete_authalic_parameterizer_3&lt;SurfaceMesh,<sp/>Border_parameterizer&gt;<sp/>Parameterizer;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SMP::Error_code<sp/>err<sp/>=<sp/>SMP::parameterize(sm,<sp/>Parameterizer(),<sp/>bhd,<sp/>uv_map);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(err<sp/>!=<sp/>SMP::OK)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>SMP::get_error_message(err)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;result.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SMP::IO::output_uvmap_to_off(sm,<sp/>bhd,<sp/>uv_map,<sp/>out);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Other parameterization methods can easily be swapped in by simply replacing the lines</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/Circular_border_parameterizer_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/Discrete_authalic_parameterizer_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SMP::Circular_border_arc_length_parameterizer_3&lt;SurfaceMesh&gt;<sp/><sp/>Border_parameterizer;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SMP::Discrete_authalic_parameterizer_3&lt;SurfaceMesh,<sp/>Border_parameterizer&gt;<sp/>Parameterizer;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>...</highlight></codeline>
+</programlisting></para>
+<para>with other <emphasis>compatible</emphasis> border and domain parameterizers, e.g.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/Square_border_parameterizer_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/Barycentric_mapping_parameterizer_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SMP::Square_border_uniform_parameterizer_3&lt;SurfaceMesh&gt;<sp/>Border_parameterizer;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>SMP::Barycentric_mapping_parameterizer_3&lt;SurfaceMesh,<sp/>Border_parameterizer&gt;<sp/>Parameterizer;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>...</highlight></codeline>
+</programlisting></para>
+<para>Which border and which domain parameterizers can be combined is explained in the next section.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1secSurfaceParameterizationMethods">
+<title>Surface Parameterization Methods</title>
+<para>This CGAL package implements surface parameterization methods, such as As Rigid as Possible, Tutte Barycentric, Discrete Authalic Parameterization, Discrete Conformal Map, Least Squares Conformal Maps, Floater Mean Value Coordinates, or Orbifold Tutte Embeddings. These methods are provided as models of the <computeroutput><ref refid="classParameterizer__3" kindref="compound">Parameterizer_3</ref></computeroutput> concept.</para>
+<para>The different parameterization methods can be classified into three categories depending on the type of border parameterization that is required: fixed border, free border, and borderless.</para>
+<para>Illustrations of the different methods are obtained with the same input model, the <emphasis>hand</emphasis> model, shown in Figure <ref refid="index_1fig__Surface_mesh_parameterizationfigbase" kindref="member">fig__Surface_mesh_parameterizationfigbase</ref>. The hand is a topological sphere, and a <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput> is used to cut it into a topological disk. In Figure <ref refid="index_1fig__Surface_mesh_parameterizationfigbase" kindref="member">fig__Surface_mesh_parameterizationfigbase</ref>, the seam is traced in red and the four cones used for Orbifold Tutte Parameterization (Section <ref refid="index_1Surface_mesh_parameterizationOrbi" kindref="member">Orbifold Tutte Embeddings</ref>) are marked with green dots.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigbase"/><center> <image type="html" name="hand_base.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigbase" kindref="member">fig__Surface_mesh_parameterizationfigbase</ref> The base mesh used in the illustrations of the different methods throughout this Section. The seam is traced in red. Vertices marked with green dots are cones. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1Surface_mesh_parameterizationFixedBorder">
+<title>Fixed Border Surface Parameterizations</title>
+<para>Fixed border surface parameterizations are characterized by having a constrained border in parameter space: two (u,v) coordinates for each vertex along the border. Different choices exist for such border parameterization methods, described in Section <ref refid="index_1secBorderParameterizationsforFixedMethods" kindref="member">Border Parameterizations for Fixed Methods</ref>.</para>
+<sect3 id="index_1Surface_mesh_parameterizationTutteBarycentric">
+<title>Tutte Barycentric Mapping</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Barycentric__mapping__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Barycentric_mapping_parameterizer_3</ref>&lt;TriangleMesh, BorderParameterizer, SolverTraits&gt;</computeroutput></para>
+<para>The Barycentric Mapping parameterization method has been introduced by Tutte <ref refid="citelist_1CITEREF_t-hdg-63" kindref="member">[12]</ref>. In parameter space, each vertex is placed at the barycenter of its neighbors to achieve the so-called convex combination condition. This algorithm amounts to solve one sparse linear system for each set of parameter coordinates, with a #vertices x #vertices sparse and symmetric positive definite matrix (if the border vertices are eliminated from the linear system). A coefficient <formula id="0">$ (i,j)$</formula> of the matrix is set to 1 for an edge linking the vertex <formula id="1">$ v_i$</formula> to the vertex <formula id="2">$ v_j$</formula>, to minus the degree of the vertex <formula id="1">$ v_i$</formula> for a diagonal element, and to 0 for any other matrix entry. Although a bijective mapping is guaranteed when the border is convex, this method does not minimize either angle nor area distortion.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfiguniform"/><center> <image type="html" name="uniform_new.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfiguniform" kindref="member">fig__Surface_mesh_parameterizationfiguniform</ref> Tutte Barycentric mapping parameterization (the blue line depicts the cut graph). Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_parameterizationDiscreteAuthalic">
+<title>Discrete Authalic Parameterization</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Discrete__authalic__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Discrete_authalic_parameterizer_3</ref>&lt;TriangleMesh, BorderParameterizer, SolverTraits&gt;</computeroutput></para>
+<para>The Discrete Authalic parameterization method has been introduced by Desbrun et al. <ref refid="citelist_1CITEREF_cgal:dma-ipsm-02" kindref="member">[2]</ref>. It corresponds to a weak formulation of an area-preserving method, and in essence locally minimizes the area distortion. A one-to-one mapping is guaranteed only if the convex combination condition is fulfilled and the border is convex. This method solves two #vertices x #vertices sparse linear systems. The matrix (the same for both systems) is asymmetric.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigauthalic"/><center> <image type="html" name="authalic_new.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigauthalic" kindref="member">fig__Surface_mesh_parameterizationfigauthalic</ref> Discrete Authalic Parameterization (the blue line depicts the cut graph). Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_parameterizationDiscreteConformal">
+<title>Discrete Conformal Map</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Discrete__conformal__map__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Discrete_conformal_map_parameterizer_3</ref>&lt;TriangleMesh, BorderParameterizer, SolverTraits&gt;</computeroutput></para>
+<para>Discrete Conformal Map parameterization has been introduced to the graphics community by Eck et al. <ref refid="citelist_1CITEREF_cgal:eddhls-maam-95" kindref="member">[3]</ref>. It attempts to lower angle deformation by minimizing a discrete version of the Dirichlet energy as derived by Pinkall and Polthier <ref refid="citelist_1CITEREF_cgal:pp-cdmsc-93" kindref="member">[10]</ref>. A one-to-one mapping is guaranteed only when the two following conditions are fulfilled: the barycentric mapping condition (each vertex in parameter space is a convex combination of its neighboring vertices), and the border is convex. This method solves two #vertices x #vertices sparse linear systems. The matrix (the same for both systems) is sparse and symmetric positive definite (if the border vertices are eliminated from the linear system and if the mesh contains no hole), and thus can be efficiently solved using dedicated linear solvers.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigconformal"/><center> <image type="html" name="conformal_new.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigconformal" kindref="member">fig__Surface_mesh_parameterizationfigconformal</ref> Discrete Conformal Map. Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_parameterizationFloaterMean">
+<title>Floater Mean Value Coordinates</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Mean__value__coordinates__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Mean_value_coordinates_parameterizer_3</ref>&lt;TriangleMesh, BorderParameterizer, SolverTraits&gt;</computeroutput></para>
+<para>The Mean Value Coordinates parameterization method has been introduced by Floater <ref refid="citelist_1CITEREF_cgal:f-mvc-03" kindref="member">[4]</ref>. Each vertex in parameter space is optimized to be a convex combination of its neighboring vertices. This method is in essence an approximation of the Discrete Conformal Map, with a guaranteed one-to-one mapping when the border is convex. This method solves two #vertices x #vertices sparse linear systems. The matrix (the same for both systems) is asymmetric.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigfloater"/><center> <image type="html" name="floater_new.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigfloater" kindref="member">fig__Surface_mesh_parameterizationfigfloater</ref> Floater Mean Value Coordinates. Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_parameterizationIterativeAuthalic">
+<title>Iterative Authalic Parameterization</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Iterative__authalic__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Iterative_authalic_parameterizer_3</ref>&lt;TriangleMesh, BorderParameterizer, SolverTraits&gt;</computeroutput></para>
+<para>The Iterative Authalic parameterization method has been introduced by Jain et al. <ref refid="citelist_1CITEREF_cgal:j-lrsspp-19" kindref="member">[6]</ref>. This parameterization is a fixed border parameterization and is part of the authalic parameterization family, meaning that it aims to minimize area distortion between the input surface mesh and the parameterized output. More precisely, the approach used by this parameterizer is to iteratively redistribute the <formula id="3">$ L_2$</formula> stretch - as defined by Sander et al. <ref refid="citelist_1CITEREF_cgal:ssgh-tmpm-01" kindref="member">[11]</ref> - over the mesh.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigiterativeauthalic"/><center> <image type="html" name="iterative_authalic.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigiterativeauthalic" kindref="member">fig__Surface_mesh_parameterizationfigiterativeauthalic</ref> Iterative Authalic Parameterization (the blue line depicts the cut graph). Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Although this is a fixed border parameterization method, it does not guarantee a one-to-one mapping. However, it will in practice yield valid results with less distortion than other authalic parameterization methods.</para>
+</sect3>
+<sect3 id="index_1secBorderParameterizationsforFixedMethods">
+<title>Border Parameterizations for Fixed Methods</title>
+<para>Parameterization methods for borders are used as traits classes modifying the behavior of <computeroutput><ref refid="classParameterizer__3" kindref="compound">Parameterizer_3</ref></computeroutput> models. They are also provided as models of the <computeroutput><ref refid="classParameterizer__3" kindref="compound">Parameterizer_3</ref></computeroutput> concept. Border parameterizations for fixed border surface parameterizations are a family of methods to define a set of constraints, namely two <formula id="4">$ u,v$</formula> coordinates for each vertex along the border.</para>
+<para>Different choices are offered to the user when choosing border parameterizers for fixed border methods: <itemizedlist>
+<listitem>
+<para>The user can select a border parameterization among two commonly used methods: uniform or arc-length parameterization.</para>
+<para><emphasis>Usage:</emphasis> Uniform border parameterizations are more stable, although they yield poor visual results. The arc-length border parameterization is used by default.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>One convex shape specified by one shape among two standard ones: a circle or a square.</para>
+<para><emphasis>Usage:</emphasis> The circular border parameterization is used by default as it corresponds to the simplest convex shape. The square border parameterization is commonly used for texture mapping. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigcircular_border"/> <image type="html" name="border.png"></image>
+ <image type="latex" name="border.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Surface_mesh_parameterizationfigcircular_border" kindref="member">fig__Surface_mesh_parameterizationfigcircular_border</ref> Left: Julius Cesar mask parameterization with Authalic/circular border. Right: Julius Cesar mask&apos;s image with Floater/square border. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>All combinations of uniform/arc-length and circle/square are provided by the following classes:</para>
+<para><itemizedlist>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Circular__border__arc__length__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Circular_border_arc_length_parameterizer_3</ref>&lt;TriangleMesh&gt;</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Circular__border__uniform__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Circular_border_uniform_parameterizer_3</ref>&lt;TriangleMesh&gt;</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Square__border__arc__length__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Square_border_arc_length_parameterizer_3</ref>&lt;TriangleMesh&gt;</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Square__border__uniform__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Square_border_uniform_parameterizer_3</ref>&lt;TriangleMesh&gt;</computeroutput> </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>An illustration of the use of different border parameterizers can be found in the example <ref refid="Surface_mesh_parameterization_2square_border_parameterizer_8cpp-example" kindref="compound">square_border_parameterizer.cpp</ref>.</para>
+</sect3>
+</sect2>
+<sect2 id="index_1Surface_mesh_parameterizationFreeBorderSurface">
+<title>Free Border Surface Parameterizations</title>
+<para>For free border parameterization methods, the vertices of the border are free to move.</para>
+<sect3 id="index_1Surface_mesh_parameterizationLeastSquares">
+<title>Least Squares Conformal Maps</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1LSCM__parameterizer__3" kindref="compound">Surface_mesh_parameterization::LSCM_parameterizer_3</ref>&lt;TriangleMesh, BorderParameterizer, SolverTraits&gt;</computeroutput></para>
+<para>The Least Squares Conformal Maps (LSCM) parameterization method has been introduced by L<eacute/>vy et al. <ref refid="citelist_1CITEREF_cgal:lprm-lscm-02" kindref="member">[8]</ref>. It corresponds to a conformal method with a free border (at least two vertices have to be constrained to obtain a unique solution), which allows further lowering of the angle distortion. A one-to-one mapping is not guaranteed by this method. It solves a (2 <formula id="5">$ \times$</formula> #triangles) <formula id="5">$ \times$</formula> #vertices sparse linear system in the least squares sense, which implies solving a symmetric matrix.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigLSCM"/><center> <image type="html" name="LSCM_new.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigLSCM" kindref="member">fig__Surface_mesh_parameterizationfigLSCM</ref> Least Squares Conformal Maps. Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_parameterizationARAP">
+<title>As Rigid As Possible Parameterization</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1ARAP__parameterizer__3" kindref="compound">Surface_mesh_parameterization::ARAP_parameterizer_3</ref>&lt;TriangleMesh, BorderParameterizer, SolverTraits&gt;</computeroutput></para>
+<para>An as-rigid-as-possible parameterization was introduced by Liu et al. <ref refid="citelist_1CITEREF_liu2008local" kindref="member">[9]</ref>. It is a shape-preserving method based on an iterative energy minimization process. Each step alternates a local optimization technique to find the best local mapping and a global stitching technique equivalent to the resolution of a linear system to guarantee that the parameterized mesh is a triangulation.</para>
+<para>A generalization of the formulation of the local optimization introduces a scalar coefficient <lambda/> that allows the user to balance angle and shape distortion: the closer <lambda/> is to 0, the more importance is given to the minimization of angle distortion; inversely, when <lambda/> grows, the parameterizer gives more and more importance to the minimization of shape distortion.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigARAP"/><center> <image type="html" name="ARAP_new.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigARAP" kindref="member">fig__Surface_mesh_parameterizationfigARAP</ref> As Rigid As Possible parameterization (the blue line depicts the cut graph). Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1secBorderParameterizationsforFreeMethods">
+<title>Border Parameterizations for Free Methods</title>
+<para>Parameterization methods for borders are used as traits classes modifying the behavior of <computeroutput><ref refid="classParameterizer__3" kindref="compound">Parameterizer_3</ref></computeroutput> models. They are also provided as models of the <computeroutput><ref refid="classParameterizer__3" kindref="compound">Parameterizer_3</ref></computeroutput> concept. The border parameterizations associated to free border surface parameterization methods define only two constraints: the pinned vertices.</para>
+<para><itemizedlist>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Two__vertices__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Two_vertices_parameterizer_3</ref>&lt;TriangleMesh&gt;</computeroutput></para>
+<para><emphasis>Usage:</emphasis> <computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Two__vertices__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Two_vertices_parameterizer_3</ref>&lt;TriangleMesh&gt;</computeroutput> is the default free border parameterization, and is the only one available in the current version of this package.</para>
+<para></para>
+</listitem>
+</itemizedlist>
+</para>
+</sect3>
+</sect2>
+<sect2 id="index_1Surface_mesh_parameterizationBorderless">
+<title>Borderless Surface Parameterizations</title>
+<para>Borderless parameterization methods do not require as input a mesh that is homeomorphic to a disk.</para>
+<sect3 id="index_1Surface_mesh_parameterizationOrbi">
+<title>Orbifold Tutte Embeddings</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__parameterization_1_1Orbifold__Tutte__parameterizer__3" kindref="compound">Surface_mesh_parameterization::Orbifold_Tutte_parameterizer_3</ref>&lt;SeamMesh, SolverTraits&gt;</computeroutput></para>
+<para>Orbifold-Tutte Planar Embedding was introduced by Aigerman and Lipman <ref refid="citelist_1CITEREF_aigerman2015orbifold" kindref="member">[1]</ref> and is a generalization of Tutte’s embedding to other topologies, and in particular spheres, which we consider here. The orbifold-Tutte embedding bijectively maps the original surface, that is required to be a topological ball, to a canonical, topologically equivalent, two-dimensional flat surface called a Euclidean orbifold. There are 17 Euclidean orbifolds, of which only the 4 sphere orbifolds are currently implemented in <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL</ref>.</para>
+<para>The orbifold-Tutte embedding yields a seamless, globally bijective parameterization that, similarly to the classic Tutte embedding, only requires solving a sparse linear system for its computation.</para>
+<para>The algorithm requires the user to select a set of vertices of the input mesh and mark them as <emphasis>cones</emphasis>, which will be the singularities of the unfolding. Internally, the process requires the use of (virtual) seams between the cones, but the choice of these seams does not influence the result. The <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput> structure (see also Section <ref refid="index_1secCuttingaMesh" kindref="member">Cutting a Mesh</ref>) is used for this purpose.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigOrbifold"/><center> <image type="html" name="orbifold_new.jpg" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Surface_mesh_parameterizationfigOrbifold" kindref="member">fig__Surface_mesh_parameterizationfigOrbifold</ref> Type IV Orbifold Tutte Embedding. The (four) base cones are shown in green and the virtual cut is traced in blue. Rightmost: parameter space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+</sect2>
+</sect1>
+<sect1 id="index_1secCuttingaMesh">
+<title>Cutting a Mesh</title>
+<para>The surface parameterization methods proposed in this package only deal with meshes which are homeomorphic (topologically equivalent) to discs. Nevertheless, meshes with arbitrary topology and number of connected components can be parameterized, provided that the user specifies a cut graph (a set of edges), which defines the border of a topological disc. These edges can be passed together with a mesh via the <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput> structure.</para>
+<para><anchor id="index_1fig__Surface_mesh_parameterizationfigcut"/> <image type="html" name="cut.png"></image>
+ <image type="latex" name="cut.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Surface_mesh_parameterizationfigcut" kindref="member">fig__Surface_mesh_parameterizationfigcut</ref> Cut Graph <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>In the following example, we apply the default parameterization to a <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref></computeroutput>-based <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput>. We store the UV-coordinates as a halfedge property using a <computeroutput><ref refid="classCGAL_1_1Unique__hash__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Miscellany.tag">Unique_hash_map</ref></computeroutput>.</para>
+<para>Note that vertices on a seam are duplicated in a <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput> structure and thus the UV-coordinates are here associated to the halfedges of the underlying (input) mesh.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_parameterization_2seam_Polyhedron_3_8cpp-example" kindref="compound">Surface_mesh_parameterization/seam_Polyhedron_3.cpp</ref> <programlisting filename="Surface_mesh_parameterization/seam_Polyhedron_3.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/graph/Seam_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/IO/File_off.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_parameterization/parameterize.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Unique_hash_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/measure.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>PolyMesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;PolyMesh&gt;::edge_descriptor<sp/>SM_edge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;PolyMesh&gt;::halfedge_descriptor<sp/>SM_halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;PolyMesh&gt;::vertex_descriptor<sp/>SM_vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Unique__hash__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Miscellany.tag">CGAL::Unique_hash_map&lt;SM_halfedge_descriptor, Point_2&gt;</ref><sp/>UV_uhm;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Unique__hash__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Miscellany.tag">CGAL::Unique_hash_map&lt;SM_edge_descriptor, bool&gt;</ref><sp/>Seam_edge_uhm;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Unique__hash__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Miscellany.tag">CGAL::Unique_hash_map&lt;SM_vertex_descriptor, bool&gt;</ref><sp/>Seam_vertex_uhm;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;UV_uhm&gt;<sp/>UV_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Seam_edge_uhm&gt;<sp/>Seam_edge_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Seam_vertex_uhm&gt;<sp/>Seam_vertex_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Seam_mesh&lt;PolyMesh, Seam_edge_pmap, Seam_vertex_pmap&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::face_descriptor<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">SMP<sp/>=<sp/>CGAL::Surface_mesh_parameterization;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in_mesh((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/lion.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!in_mesh)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>problem<sp/>loading<sp/>the<sp/>input<sp/>data&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolyMesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>in_mesh<sp/>&gt;&gt;<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Two<sp/>property<sp/>maps<sp/>to<sp/>store<sp/>the<sp/>seam<sp/>edges<sp/>and<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Seam_edge_uhm<sp/>seam_edge_uhm(</highlight><highlight class="keyword">false</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Seam_edge_pmap<sp/>seam_edge_pm(seam_edge_uhm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Seam_vertex_uhm<sp/>seam_vertex_uhm(</highlight><highlight class="keyword">false</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Seam_vertex_pmap<sp/>seam_vertex_pm(seam_vertex_uhm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh(sm,<sp/>seam_edge_pm,<sp/>seam_vertex_pm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>filename<sp/>=<sp/>(argc&gt;2)<sp/>?<sp/>argv[2]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;data/lion.selection.txt&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SM_halfedge_descriptor<sp/>smhd<sp/>=<sp/>mesh.add_seams(filename);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(smhd<sp/>==<sp/>SM_halfedge_descriptor()<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Warning:<sp/>No<sp/>seams<sp/>in<sp/>input&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>2D<sp/>points<sp/>of<sp/>the<sp/>uv<sp/>parametrisation<sp/>will<sp/>be<sp/>written<sp/>into<sp/>this<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>this<sp/>is<sp/>a<sp/>halfedge<sp/>property<sp/>map,<sp/>and<sp/>that<sp/>uv<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>are<sp/>only<sp/>stored<sp/>for<sp/>the<sp/>canonical<sp/>halfedges<sp/>representing<sp/>a<sp/>vertex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>UV_uhm<sp/>uv_uhm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>UV_pmap<sp/>uv_pm(uv_uhm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>A<sp/>halfedge<sp/>on<sp/>the<sp/>(possibly<sp/>virtual)<sp/>border</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>halfedge_descriptor<sp/>bhd<sp/>=<sp/>CGAL::Polygon_mesh_processing::longest_border(mesh).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SMP::parameterize(mesh,<sp/>bhd,<sp/>uv_pm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;result.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SMP::IO::output_uvmap_to_off(mesh,<sp/>bhd,<sp/>uv_pm,<sp/>out);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1Surface_mesh_parameterizationComplexity">
+<title>Complexity and Guarantees</title>
+<sect2 id="index_1Surface_mesh_parameterizationParameterization">
+<title>Parameterization Methods and Guarantees</title>
+<para><itemizedlist>
+<listitem>
+<para><bold>Fixed boundaries</bold> <itemizedlist>
+<listitem>
+<para><emphasis>One-to-one mapping</emphasis><linebreak/>
+ Tutte&apos;s theorem guarantees a one-to-one mapping provided that the weights are all positive and the border is convex. It is the case for Tutte Barycentric Mapping and Floater Mean Value Coordinates. It is not always the case for Discrete Conformal Map (cotangents), Discrete Authalic, and Iterative Authalic parameterizations.  </para>
+</listitem>
+<listitem>
+<para><emphasis>Non-singularity of the matrix</emphasis><linebreak/>
+ Geshorgin&apos;s theorem guarantees the convergence of the solver if the matrix is diagonal dominant. This is the case with positive weights (Tutte Barycentric Mapping and Floater Mean Value Coordinates).  </para>
+</listitem>
+</itemizedlist>
+</para>
+</listitem>
+<listitem>
+<para><bold>Free boundaries</bold> <itemizedlist>
+<listitem>
+<para><emphasis>One-to-one mapping</emphasis><linebreak/>
+ No guarantee is provided by either LSCM or ARAP parameterizations (both global overlaps and triangle flips can occur).  </para>
+</listitem>
+<listitem>
+<para><emphasis>Non-singularity of the matrix</emphasis><linebreak/>
+ For LSCM, the matrix of the system is the Gram matrix of a matrix with maximal rank, and is therefore non-singular (Gram theorem).  </para>
+</listitem>
+</itemizedlist>
+</para>
+</listitem>
+<listitem>
+<para><bold>Boundary-less</bold> <itemizedlist>
+<listitem>
+<para><emphasis>One-to-one mapping</emphasis><linebreak/>
+ The Orbifold-Tutte embedding is guaranteed to exist and to be computable via a sparse linear system.  </para>
+</listitem>
+</itemizedlist>
+</para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Surface_mesh_parameterizationExtendingthe">
+<title>Implementation History</title>
+<para>The main author of the first version of this package was Laurent Saboret, who worked as an engineer at Inria Sophia-Antipolis under the supervision of Pierre Alliez and Bruno Lévy. Bruno Lévy added OpenNL support to the package.</para>
+<para>For <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL</ref> 4.11, the package has undergone a major rewrite by Andreas Fabri and Mael Rouxel-Labbé. The As-Rigid-As-Possible parameterization technique was added and all algorithms are now based on the <computeroutput><ref refid="classFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceGraph</ref></computeroutput> API. The Orbifold Tutte Embedding parameterization technique was also added with the help of its authors, Noam Aigerman and Yaron Lipman. Finally, the class <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput> was introduced to handle virtual borders. The class <computeroutput><ref refid="classCGAL_1_1Seam__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Seam_mesh</ref></computeroutput> is also a model of a <computeroutput><ref refid="classFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceGraph</ref></computeroutput>, and replaces a wrapper which had a more complicated API.</para>
+<para>Iterative authalic parameterization was added in <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL</ref> 5.2 by Mael Rouxel-Labbé, based on a prototype developed by Hardik Jain.</para>
+<para>In <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL</ref> 6.0 this package no longer uses the fork of OpenNL that was distributed with <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL</ref> and hence was removed. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Surface_mesh_parameterization.txt"/>
+  </compounddef>
+</doxygen>

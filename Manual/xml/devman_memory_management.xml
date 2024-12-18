@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_memory_management" kind="page">
+    <compoundname>devman_memory_management</compoundname>
+    <title>Memory Management</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="authors"><para>Michael Seel (<computeroutput><ulink url="mailto:seel@mpi-sb.mpg.de">seel@mpi-sb.mpg.de</ulink></computeroutput>) </para>
+</simplesect>
+<simplesect kind="authors"><para>Efi Fogel (<computeroutput><ulink url="mailto:efif@post.tau.ac.il">efif@post.tau.ac.il</ulink></computeroutput>)</para>
+</simplesect>
+One of the design goals of CGAL (Section <ref refid="devman_intro_1secdesign_goals" kindref="member">Primary design goals</ref> ) is efficiency, and this means not only implementing efficient algorithms but also implementing them efficiently. One way to improve the efficiency of an implementation is through efficient memory management. This can be done by making the library data structures independent of the underlying memory model. However, to avoid unacceptable efficiency degradations complete abstraction of the memory model should be avoided. Here we describe one way to address this using allocators. An allocator encapsulates the information about an allocation model.</para>
+<para>We adopted the definition of the Standard C++ allocator <ref refid="citelist_1CITEREF_cgal:ansi-is14882-98" kindref="member">[3]</ref>. The <computeroutput>std::allocator</computeroutput> is the only predefined and required allocator imposed by [C++] on all C++ compiler implementations. The exact specification can also be found at <ulink url="https://en.wikipedia.org/wiki/Allocator_(C++)"><computeroutput>https://en.wikipedia.org/wiki/Allocator_(C++)</computeroutput></ulink>.</para>
+<para>Objects of type <computeroutput>std::allocator&lt;T&gt;</computeroutput> can be used to obtain small, typed chunks of memory to be used, for example, as static members of a class. This is especially interesting with classes of a constant size that are frequently allocated and deallocated (e.g., points, lines, circles), since a memory allocator can maintain the corresponding memory chunks in local blocks and thus can answer allocation and deallocation calls much faster than the corresponding system calls.</para>
+<sect1 id="devman_memory_management_1secallocator_macro">
+<title>The allocator macro</title>
+<para>The macro <computeroutput><ref refid="group__PkgSTLExtensionRef_1ga859086d0e8d189c8c967229e024e5e82" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL_ALLOCATOR(T)</ref></computeroutput> is defined as <computeroutput>std::allocator&lt;T&gt;</computeroutput> in the file <computeroutput>&lt;CGAL/memory.h&gt;</computeroutput>. <computeroutput>CGAL_ALLOCATOR</computeroutput> is used as the default allocator for all CGAL components. You can redefine it, for example, if LEDA is present, you can define it (before including any CGAL header file) as follows:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;LEDA/allocator.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#define<sp/>CGAL_ALLOCATOR(t)<sp/>leda_allocator&lt;t&gt;</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="devman_memory_management_1secusing_memory_allocator">
+<title>Using the allocator</title>
+<para>How should a data structure use the allocator mechanism? Just make the allocator one of the template arguments of the data structure. Then use a static member object to allocate items on the heap that you want to keep optimized regarding allocation and deallocation. We show an example using a trivial list structure:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/memory.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">dlink</highlight></codeline>
+<codeline><highlight class="normal">{<sp/>T<sp/>some_member;<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Alloc<sp/>=<sp/>CGAL_ALLOCATOR(dlink&lt;T&gt;)<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">list</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>dlink&lt;T&gt;*<sp/>dlink_ptr;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Alloc<sp/>list_allocator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/>list_allocator<sp/>M;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">list()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p<sp/>=<sp/>M.allocate(1);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>allocation<sp/>of<sp/>space<sp/>for<sp/>one<sp/>dlink</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>M.construct(p,dlink&lt;T&gt;());<sp/><sp/></highlight><highlight class="comment">//<sp/>inplace<sp/>construction<sp/>of<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">~list()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>M.destroy(p);<sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>destroy<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>M.deallocate(p,1);<sp/></highlight><highlight class="comment">//<sp/>deallocate<sp/>memory</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>dlink_ptr<sp/>p;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>init<sp/>static<sp/>member<sp/>allocator<sp/>object:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Alloc&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>list&lt;T,Alloc&gt;::list_allocator<sp/>list&lt;T,Alloc&gt;::M<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>list&lt;T,Alloc&gt;::list_allocator();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>list&lt;int&gt;<sp/>L;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="devman_memory_management_1secmemory_req_and_rec">
+<title>Requirements and recommendations</title>
+<para>Recommendations: <itemizedlist>
+<listitem>
+<para>Use an allocator template parameter (which defaults to <computeroutput>CGAL_ALLOCATOR</computeroutput>) for data structures for which an optimization with regard to allocation and deallocation is beneficial. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_memory_management.txt"/>
+  </compounddef>
+</doxygen>

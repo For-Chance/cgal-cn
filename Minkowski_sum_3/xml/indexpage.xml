@@ -1,0 +1,210 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_3D_Minkowski_Sum_of_Polyhedra"/><anchor id="index_1chapterMinkowskiSum3"/><simplesect kind="author"><para>Peter Hachenberger</para>
+</simplesect>
+</para>
+<sect1 id="index_1Minkowski_sum_3Introduction">
+<title>Introduction</title>
+<para><anchor id="index_1fig__figspoonStar"/> <image type="html" name="spoon_star.png"></image>
+ <image type="latex" name="spoon_star.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figspoonStar" kindref="member">fig__figspoonStar</ref> The Minkowski sum of a spoon and a star. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The Minkowski sum of two point sets <formula id="0">$ P$</formula> and <formula id="1">$ Q$</formula> in <formula id="2">$ \mathbb{R}^d$</formula>, denoted by <formula id="3">$ P \oplus Q$</formula>, is defined as the set <formula id="4">$ \{p+q:p \in P, q \in Q
+\}$</formula>. Minkowski sums are used in a wide range of applications such as robot motion planning <ref refid="citelist_1CITEREF_l-rmp-91" kindref="member">[3]</ref> and computer-aided design <ref refid="citelist_1CITEREF_cgal:ek-sicad-99" kindref="member">[2]</ref>. <ref refid="index_1fig__figmotionPlanning" kindref="member">fig__figmotionPlanning</ref> shows an example how Minkowski sums can be used to plan the motion of a translational robot. We want to know which are legal positions of the robot, and where can the robot go to from a specified starting position. If we model both the robot and the obstacles as a polyhedron and compute the Minkowski sum of the inverted robot (robot reflected at the origin) and the obstacles, then this Minkowski sum represents all illegal positions of the robot, i.e., all positions where it intersects the obstacle. Of course, the complement of that polyhedron describes all legal positions of the robot, i.e., all positions where it does not intersect an obstacle.</para>
+<para><anchor id="index_1fig__figmotionPlanning"/> <image type="html" name="motion_planning.png"></image>
+ <image type="latex" name="motion_planning.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figmotionPlanning" kindref="member">fig__figmotionPlanning</ref> Can the robot enter the room? The Minkowski sum of the inverted robot and the obstacle describes the illegal positions of the robot with respect to the obstacle. Since the boundary of the Minkowski sum describes legal positions, there is a path for the robot between the outer area and the room. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The Minkowski sum can be illustrated as follows. Pick an arbitrary reference point <formula id="5">$ r$</formula> of <formula id="0">$ P$</formula> (black dot in the lower left corner of the robot in <ref refid="index_1fig__figmotionPlanning" kindref="member">fig__figmotionPlanning</ref> ). Then place the inverted set <formula id="6">$ -P$</formula> on <formula id="1">$ Q$</formula>, such that <formula id="7">$ -r$</formula> is on the boundary of <formula id="1">$ Q$</formula>. Finally, move <formula id="6">$ -P$</formula> along the complete boundary of <formula id="1">$ Q$</formula>. The union of <formula id="1">$ Q$</formula> and the points swept by <formula id="6">$ -P$</formula> is the Minkowski sum of <formula id="0">$ P$</formula> and <formula id="1">$ Q$</formula>.</para>
+<para>Implementing the Minkowski sum, the reference point does not need to be chosen. It is implicitly given as the origin of the coordinate system. Choosing a different reference point is equivalent to translating the coordinate system. Such a translation does not change the shape of the Minkowski sum; it only translates the Minkowski sum by the same vector.</para>
+<para>This package provides a function <computeroutput><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">minkowski_sum_3()</ref></computeroutput> that computes the Minkowski sum of two Nef polyhedra. We do not support arbitrary Nef polyhedra, yet. The restrictions are discussed in detail in Section <ref refid="index_1Minkowski_sum_3Features" kindref="member">Features and Restrictions</ref>.</para>
+</sect1>
+<sect1 id="index_1Minkowski_sum_3Decomposition">
+<title>Decomposition Method</title>
+<para>The decomposition method for computing the Minkowski sum of non-convex polyhedra makes use of the fact that Minkowski sums of convex polyhedra are rather easy to compute. It decomposes both polyhedra into convex pieces, computes all pairwise Minkowski sums of the convex pieces, and merges the pairwise sums <ref refid="citelist_1CITEREF_bkos-cgaa-97" kindref="member">[1]</ref>.</para>
+<para><anchor id="index_1fig__Mink3decomp"/> <image type="html" name="decomposition_method.png"></image>
+ <image type="latex" name="decomposition_method.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Mink3decomp" kindref="member">fig__Mink3decomp</ref> The decomposition method decomposes both input polyhedra into convex parts, computes all pairwise Minkowski sums of the convex parts, and merges the pairwise sums. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Minkowski sum are inherently complex to compute. Using the decomposition method, each polyhedron might be divided into a quadratic number of pieces, which is worst-case optimal. Then up to <formula id="8">$ n^2m^2$</formula> pairwise sums have to be computed and merged, where <formula id="9">$ n$</formula> and <formula id="10">$ m$</formula> are the complexities of the two input polyhedra (the complexity of a <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> is the sum of its <computeroutput>Vertices</computeroutput>, <computeroutput>Halfedges</computeroutput> and <computeroutput>SHalfedges</computeroutput>). In total the operation runs in <formula id="11">$O(n^3m^3)$</formula> time.</para>
+<para>Since the computation of the Minkowski sum takes quite some time, we give the running times of some Minkowski sum computations. They were computed with CGAL 3.3 on a machine with a 2.4 GHz AMD Opteron processor and 4 GB RAM. The code was compiled with g++ 3.2 and compiler options -O2. The <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> class was instantiated with the geometric kernel <computeroutput><ref refid="structCGAL_1_1Homogeneous" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Homogeneous</ref>&lt;<ref refid="classleda__integer" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">leda_integer</ref>&gt;</computeroutput>. The Minkowski sum of the spoon and the star is illustrated in <ref refid="index_1fig__figspoonStar" kindref="member">fig__figspoonStar</ref>.</para>
+<para><center> <table rows="9" cols="7"><row>
+<entry thead="no" align="left" colspan="7"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="3"><para>model 1 </para>
+</entry><entry thead="no" align="left" colspan="3"><para>model 2 </para>
+</entry><entry thead="no" align="center"><para>running </para>
+</entry></row>
+<row>
+<entry thead="no" align="center"><para>name </para>
+</entry><entry thead="no" align="center"><para>facets </para>
+</entry><entry thead="no" align="center"><para>conv. pcs. </para>
+</entry><entry thead="no" align="center"><para>name </para>
+</entry><entry thead="no" align="center"><para>facets </para>
+</entry><entry thead="no" align="center"><para>conv. pcs. </para>
+</entry><entry thead="no" align="center"><para>time </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="7"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="no" align="center"><para>mushroom </para>
+</entry><entry thead="no" align="center"><para>448 </para>
+</entry><entry thead="no" align="center"><para>255 </para>
+</entry><entry thead="no" align="center"><para>cube </para>
+</entry><entry thead="no" align="center"><para>6 </para>
+</entry><entry thead="no" align="center"><para>1 </para>
+</entry><entry thead="no" align="center"><para>204s </para>
+</entry></row>
+<row>
+<entry thead="no" align="center"><para>mushroom </para>
+</entry><entry thead="no" align="center"><para>448 </para>
+</entry><entry thead="no" align="center"><para>255 </para>
+</entry><entry thead="no" align="center"><para>ball1 </para>
+</entry><entry thead="no" align="center"><para>128 </para>
+</entry><entry thead="no" align="center"><para>1 </para>
+</entry><entry thead="no" align="center"><para>553s </para>
+</entry></row>
+<row>
+<entry thead="no" align="center"><para>spoon </para>
+</entry><entry thead="no" align="center"><para>336 </para>
+</entry><entry thead="no" align="center"><para>186 </para>
+</entry><entry thead="no" align="center"><para>star </para>
+</entry><entry thead="no" align="center"><para>24 </para>
+</entry><entry thead="no" align="center"><para>5 </para>
+</entry><entry thead="no" align="center"><para>882s </para>
+</entry></row>
+<row>
+<entry thead="no" align="center"><para>cup </para>
+</entry><entry thead="no" align="center"><para>1000 </para>
+</entry><entry thead="no" align="center"><para>774 </para>
+</entry><entry thead="no" align="center"><para>ball2 </para>
+</entry><entry thead="no" align="center"><para>1000 </para>
+</entry><entry thead="no" align="center"><para>1 </para>
+</entry><entry thead="no" align="center"><para>9851s </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="7"><para><hruler/>
+ </para>
+</entry></row>
+</table>
+</center></para>
+<para><center><bold>Performance of the function <computeroutput><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">minkowski_sum_3()</ref></computeroutput>.</bold></center></para>
+<para><center></center></para>
+</sect1>
+<sect1 id="index_1Minkowski_sum_3Features">
+<title>Features and Restrictions</title>
+<para><anchor id="index_1sectionMinkowskiSum_3Restrictions"/> This package was written to allow the computation of Minkowski sums of full-dimensional polyhedra even in so-called tight-passage scenarios. Tight passage scenarios occur in robot motion planning, when a robot is just as wide as a passage it needs to traverse. In these scenarios at least one polyhedron - the obstacles or the robot - must be modeled as an open set. Then the Minkowski sum will also be an open set and tight passages will occur as lower-dimensional exclusions, i.e., as facets, lines, or vertices that are, in contrast to the volume around them, not part of the resulting point set. <ref refid="index_1fig__figmotionPlanning" kindref="member">fig__figmotionPlanning</ref> shows such a tight passage scenario.</para>
+<para>Our implementation uses <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> to model the input polyhedra and the result polyhedron. An instance of <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> represents a subdivision of the three-dimensional space into vertices, edges, facets, and volumes. Some of these items form the polyhedron (selected), while others represent the outer volume or holes within the polyhedron (unselected). As an example, the unit cube is the point set <formula id="12">$ [0,1]^3$</formula>. The smallest subdivision that represents the unit cube has 8 vertices, 12 edges, 6 facets, and 2 volumes. The volumes enclosed by the vertices, edges, and facets is the interior of the cube and therefore selected. The volume outside the cube does not belong to it and is therefore unselected. The vertices, edges, and facets - also denoted as boundary items - are needed to separate the two volumes, but are also useful for representing topological properties. In case of the (closed) unit cube the boundary items are part of the polyhedron and therefore selected, but in case of the open unit cube <formula id="13">$ [0,1)^3$</formula> they are unselected. Each item has its own selection mark, which allows the correct representation of Nef polyhedra, which are closed under Boolean and topological operations. Details can be found in Chapter <ref refid="index_1chapterNef3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">3D Boolean Operations on Nef Polyhedra</ref>.</para>
+<para>The use of <computeroutput><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">Nef_polyhedron_3</ref></computeroutput> allows many scenarios beyond the Minkowski sum of two solids. First, they can model the input and the result of a tight passage scenario, i.e., they can model open and closed solids as is needed for the input models, and they can model tight passages, which are lower-dimensional exclusions represented as unselected facets, edges, and vertices. We strive for extending the package to work for arbitrary 3D Nef polyhedra. In addition to the Minkowski sums of two solids, we added several features. At the moment we allow an input polyhedron to consist of: <orderedlist>
+<listitem>
+<para>singular vertices </para>
+</listitem>
+<listitem>
+<para>singular edges </para>
+</listitem>
+<listitem>
+<para>singular convex facets without holes </para>
+</listitem>
+<listitem>
+<para>surfaces with convex facets that have no holes. </para>
+</listitem>
+<listitem>
+<para>three-dimensional features, whose coplanar facets have common selection marks (this includes open and closed solids) </para>
+</listitem>
+</orderedlist>
+</para>
+<para>Taking a different viewpoint, the implementation is restricted as follows: <orderedlist>
+<listitem>
+<para>The input polyhedra must be bounded (selected outer volume is ignored). </para>
+</listitem>
+<listitem>
+<para>All sets of coplanar facets of a full-dimensional feature must have the same selection mark (in case of different selection marks, unselected is assumed). </para>
+</listitem>
+<listitem>
+<para>All facets of lower-dimensional features need to be convex and must not have holes (non-convex facets and holes are ignored). </para>
+</listitem>
+</orderedlist>
+</para>
+<para>The second restriction might seem a bit odd. It stems from the fact that the Minkowski sum on convex polyhedra can only handle polyhedra, whose sides consist of a single facet. The decomposition process usually yields complex adjacency relations between a convex part, its adjacent convex parts, and the outer volume. The side of a convex piece is then decomposed into several facets, each of which represents one of these adjacency relations. For the convex Minkowski sum, we ignore the decompositions of the sides, but need to find a common selection mark. If there are two facets that are adjacent to the outer volume, but have different selections marks, we cannot set a common selection mark without spoiling the correctness of the Minkowski sum.</para>
+</sect1>
+<sect1 id="index_1Minkowski_sum_3Usage">
+<title>Usage</title>
+<para>The function <computeroutput><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">minkowski_sum_3()</ref></computeroutput> should be used with the <computeroutput><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_exact_constructions_kernel</ref></computeroutput>, which often is the most efficient choice and allows floating-point input. Consult Section <ref refid="index_1sectionNef_3IO" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">File I/O for Nef Polyhedra</ref> for more details.</para>
+<para>The following example code illustrates the usage of the function <computeroutput><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">minkowski_sum_3()</ref></computeroutput>. Note that either input polyhedra will be modified by the function if it is non-convex. So, if they are needed further on, they need to be copied, first. The copying is not done by the function itself to keep the memory usage as small as possible.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Minkowski_sum_3_2cube_offset_8cpp-example" kindref="compound">Minkowski_sum_3/cube_offset.cpp</ref> <programlisting filename="Minkowski_sum_3/cube_offset.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Nef_polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/Nef_polyhedron_iostream_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/minkowski_sum_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">CGAL::Nef_polyhedron_3&lt;Kernel&gt;</ref><sp/>Nef_polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Nef_polyhedron<sp/>N0,<sp/>N1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in(</highlight><highlight class="stringliteral">&quot;cube.nef3&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>in<sp/>&gt;&gt;<sp/>N0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cin<sp/>&gt;&gt;<sp/>N1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Nef_polyhedron<sp/>result<sp/>=<sp/><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">CGAL::minkowski_sum_3</ref>(N0,<sp/>N1);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1Minkowski_sum_3Glide">
+<title>Glide</title>
+<para><anchor id="index_1fig__Mink3glide"/> <image type="html" name="glide.png"></image>
+ <image type="latex" name="glide.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Mink3glide" kindref="member">fig__Mink3glide</ref> The region swept by a star that moves along a polygonal path. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>With the function <computeroutput><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">minkowski_sum_3()</ref></computeroutput> it is also possible to realize other interesting geometric operations like the glide operation, which computes the point set swept by a polyhedron that moves along a polygonal path. The following example shows how to construct a polygonal path and then compute the glide operation by calling the function <computeroutput><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">minkowski_sum_3()</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Minkowski_sum_3_2glide_8cpp-example" kindref="compound">Minkowski_sum_3/glide.cpp</ref> <programlisting filename="Minkowski_sum_3/glide.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Nef_polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/Nef_polyhedron_iostream_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/minkowski_sum_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Nef__polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Nef_3.tag">CGAL::Nef_polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/>Nef_polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>*<sp/>point_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;point_iterator,point_iterator&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_range;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::list&lt;point_range&gt;<sp/>polyline;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Nef_polyhedron<sp/>N0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cin<sp/>&gt;&gt;<sp/>N0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>pl[6]<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(-100,0,0),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(40,-70,0),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(40,50,40),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(-90,-60,60),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0,<sp/>0,<sp/>-100),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(30,0,150)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>polyline<sp/>poly;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.push_back(point_range(pl,pl+6));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Nef_polyhedron<sp/>N1(poly.begin(),<sp/>poly.end(),<sp/>Nef_polyhedron::Polylines_tag());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Nef_polyhedron<sp/>result<sp/>=<sp/><ref refid="group__PkgMinkowskiSum3Ref_1ga3bf12a91d48792b17c9649b6c8e51d0c" kindref="member">CGAL::minkowski_sum_3</ref>(N0,<sp/>N1);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect1>
+    </detaileddescription>
+    <location file="Minkowski_sum_3.txt"/>
+  </compounddef>
+</doxygen>

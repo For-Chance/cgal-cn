@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_STL_Extensions_for_CGAL"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Michael Hoffmann, Clément Jamin, Lutz Kettner, Sylvain Pion, and Ron Wein</para>
+</simplesect>
+</para>
+<sect1 id="index_1stl_intro">
+<title>Introduction</title>
+<para>CGAL is designed in the spirit of the generic programming paradigm to work together with the Standard Template Library (STL) <ref refid="citelist_1CITEREF_cgal:ansi-is14882-98" kindref="member">[2]</ref>, <ref refid="citelist_1CITEREF_cgal:a-gps-98" kindref="member">[1]</ref>. This chapter documents non-geometric STL-like components that are not provided in the STL standard but in CGAL: a doubly-connected list managing items in place (where inserted items are not copied), a compact container, a multi-set class that uses three-valued comparisons and offers additional functionality, generic algorithms, iterators, functor adaptors for binding and swapping arguments and for composition, functors for projection and creation and adaptor classes around iterators and circulators. See also circulators in Chapter <ref refid="index_1Chapter_Handles_Ranges_and_Circulators" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handles and Circulators</ref>. A class storing polymorphic objects is also provided, as well as a class to manage the uncertainty of some values. Finally, tags and policy classes to specify complexity trade-offs of data-structures, and a class which helps specifying that the default types in template parameter lists are desired is also provided.</para>
+</sect1>
+<sect1 id="index_1stl_doubly">
+<title>Doubly-Connected List Managing Items in Place</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1In__place__list" kindref="compound">In_place_list</ref>&lt;T,bool&gt;</computeroutput> manages a sequence of items in place in a doubly-connected list. Its goals are the flexible handling of memory management and performance optimization. The item type has to provide the two necessary pointers <computeroutput>&amp;T::next_link</computeroutput> and <computeroutput>&amp;T::prev_link</computeroutput>. One possibility to obtain these pointers is to inherit them from the base class <computeroutput><ref refid="classCGAL_1_1In__place__list__base" kindref="compound">In_place_list_base</ref>&lt;T&gt;</computeroutput>.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1In__place__list" kindref="compound">In_place_list</ref>&lt;T,bool&gt;</computeroutput> is a container quite similar to STL containers, with the advantage that it is able to handle the stored elements by reference instead of copying them. It is possible to delete an element only knowing its address and no iterator to it. This used to simplify mutually pointed data structures like a halfedge data structure for planar maps or polyhedral surfaces (the current design does not need this anymore). The usual iterators are also available.</para>
+</sect1>
+<sect1 id="index_1stl_compact">
+<title>Compact Containers</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Compact__container" kindref="compound">Compact_container</ref>&lt;T, Allocator&gt;</computeroutput> is an STL like container which provides a very compact storage for its elements. It achieves this goal by requiring <computeroutput>T</computeroutput> to provide access to a pointer in it, which is going to be used by <computeroutput><ref refid="classCGAL_1_1Compact__container" kindref="compound">Compact_container</ref>&lt;T, Allocator&gt;</computeroutput> for its internal management. The traits class <computeroutput><ref refid="structCGAL_1_1Compact__container__traits" kindref="compound">Compact_container_traits</ref>&lt;T&gt;</computeroutput> specifies the way to access that pointer. The class <computeroutput><ref refid="classCGAL_1_1Compact__container__base" kindref="compound">Compact_container_base</ref></computeroutput> can be used as a base class to provide the pointer, although in this case you do not get the most compact representation. The values that this pointer can have during valid use of the object are valid pointer values to 4 bytes aligned objects (i.e., the two least significant bits of the pointer need to be zero when the object is constructed). Another interesting property of this container is that iterators are not invalidated during <computeroutput>insert</computeroutput> or <computeroutput>erase</computeroutput> operations.</para>
+<para>The main deviation from the STL container concept is that the <computeroutput>++</computeroutput> and <computeroutput>--</computeroutput> operators of the iterator do not have a constant time complexity in all cases. The actual complexity is related to the maximum size that the container has had during its life time compared to its current size, because the iterator has to go over the &quot;erased&quot; elements as well, so the bad case is when the container used to contain lots of elements, but now has far less. In this case, we suggest to do a copy of the container in order to &quot;defragment&quot; the internal representation.</para>
+<para>The objects stored in this container can optionally store an &quot;erase counter&quot;. If it exists, i.e. if the object is a model of the <computeroutput><ref refid="classObjectWithEraseCounter" kindref="compound">ObjectWithEraseCounter</ref></computeroutput> concept, each time an object is erased from the container, the erase counter of the object will be incremented. For example, this erase counter can be exploited using the <computeroutput><ref refid="classCGAL_1_1CC__safe__handle" kindref="compound">CC_safe_handle</ref></computeroutput> helper class, so that one can know if a handle is still pointing to the same element. Note that this is meaningful only because the container doesn&apos;t deallocate elements until the destruction or <ref refid="group__PkgBGLHelperFct_1ga4d3b9bb446f55fd37206eeba9d582296" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">clear()</ref> of the container. For example, this counter is used by the parallel 3D mesh generation engine to lazily manage the queues of bad cells: an element in the queue is a pair containing a cell iterator and the erase counter value of the cell when it has been inserted. When an element is popped from the queue, the algorithm checks if the current value of the erase counter matches the stored value. If it doesn&apos;t match, it means the cell has been destroyed in the meantime and the algorithm ignores it. Without this lazy management, each time a cell is destroyed, the algorithm has to look for it in the queue and remove it. This mechanism is even more useful for the parallel version of the meshing process, since each thread has its own queue and looking for a cell in all the queues would be very slow.</para>
+<para>This container has been developed in order to efficiently handle large data structures like the triangulation and halfedge data structures. It can probably be useful for other kinds of graphs as well.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Concurrent__compact__container" kindref="compound">Concurrent_compact_container</ref>&lt;T, Allocator&gt;</computeroutput> provides the same features, but enables concurrency-safe <computeroutput>insert</computeroutput> and <computeroutput>erase</computeroutput> operations. Other operations are not concurrency-safe. It requires the program to be linked against the <ulink url="https://github.com/oneapi-src/oneTBB">Intel TBB library</ulink>.</para>
+</sect1>
+<sect1 id="index_1stl_multi">
+<title>Multiset with Extended Functionality</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Multiset" kindref="compound">Multiset</ref>&lt;Type,Compare,Allocator&gt;</computeroutput> represents a multi-set of elements of type <computeroutput>Type</computeroutput>, represented as a red-black tree (see <ref refid="citelist_1CITEREF_clrs-ia-01" kindref="member">[3]</ref> for an excellent introduction to red-black trees). It differs from the STL&apos;s <computeroutput>multiset</computeroutput> class-template mainly due to the fact that it is parameterized by a comparison functor <computeroutput>Compare</computeroutput> that returns the three-valued <computeroutput>Comparison_result</computeroutput> (namely it returns either <computeroutput>SMALLER</computeroutput>, <computeroutput>EQUAL</computeroutput>, or <computeroutput>LARGER</computeroutput>), rather than a <emphasis>less</emphasis> functor returning <computeroutput>bool</computeroutput>. Thus, it is possible to maintain the underlying red-black tree with less invocations of the comparison functor, which can considerably decrease running times, especially when comparing elements of type <computeroutput>Type</computeroutput> is an expensive operation.</para>
+<para><computeroutput><ref refid="classCGAL_1_1Multiset" kindref="compound">Multiset</ref>&lt;Type,Compare,Allocator&gt;</computeroutput> also guarantees that the order of elements sent to the comparison functor is fixed. For example, if we insert a new element <computeroutput>x</computeroutput> into the set (or erase an element from the set), then we always invoke <computeroutput>Compare()(x, y)</computeroutput> (and never <computeroutput>Compare()(y, x)</computeroutput>), where <computeroutput>y</computeroutput> is an element already stored in the set. This behavior, not supported by <computeroutput>std::multiset</computeroutput>, is sometimes crucial for designing more efficient comparison predicates.</para>
+<para>The interface of <computeroutput><ref refid="classCGAL_1_1Multiset" kindref="compound">Multiset</ref>&lt;Type,Compare,Allocator&gt;</computeroutput> is in general derived from <computeroutput>std::multiset</computeroutput>. However, it extends the interface by offering some additional operations, such as: inserting of an element into the set given its <emphasis>exact</emphasis> position (and not just using an insertion hint); looking up keys whose type may differ from <computeroutput>Type</computeroutput>, as long as users supply a comparison functor <computeroutput>CompareKey</computeroutput>, between the keys and set elements; and catenating and splitting sets.</para>
+</sect1>
+<sect1 id="index_1stl_hash">
+<title>Hashing</title>
+<para>For handles and indices of vertices, halfedges, faces, etc., we provide specializations of <computeroutput>boost::hash&lt;T&gt;</computeroutput> and <computeroutput>std::hash&lt;T&gt;</computeroutput>, so that they can be used with classes such as <computeroutput>boost::unordered_map</computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="STL_Extension_2unordered_map_8cpp-example" kindref="compound">STL_Extension/unordered_map.cpp</ref> <programlisting filename="STL_Extension/unordered_map.cpp"><codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/unordered_map.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::unordered_map&lt;vertex_descriptor,<sp/>int&gt;<sp/>bum;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>vd<sp/><sp/>=<sp/>mesh.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">add_vertex</ref>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>bum[vd]<sp/>=<sp/>7812;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1stl_polyobject">
+<title>Polymorphic Object</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Object" kindref="compound">Object</ref></computeroutput> can store an object of whatever other type. It can be used by a function to return objects of different types. A mechanism to extract the stored object based on its type is also provided. This class is similar to <computeroutput>std::any</computeroutput>.</para>
+</sect1>
+<sect1 id="index_1stl_uncertainty">
+<title>Uncertainty Management</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Uncertain" kindref="compound">Uncertain</ref>&lt;T&gt;</computeroutput> represents a range of values of type <computeroutput>T</computeroutput>. <computeroutput>T</computeroutput> is allowed to stand for <computeroutput>bool</computeroutput>, or CGAL&apos;s enumeration types <computeroutput>Sign</computeroutput>, <computeroutput>Comparison_result</computeroutput>, <computeroutput>Orientation</computeroutput>, <computeroutput>Oriented_side</computeroutput>, <computeroutput>Bounded_side</computeroutput> and <computeroutput>Angle</computeroutput>.</para>
+<para>The idea is that sometimes you are not sure of the result of a function, and you would like to communicate that to the caller. <computeroutput><ref refid="classCGAL_1_1Uncertain" kindref="compound">Uncertain</ref>&lt;T&gt;</computeroutput> allows just that. It also provides functions to naturally extend the Boolean operations for <computeroutput><ref refid="classCGAL_1_1Uncertain" kindref="compound">Uncertain</ref>&lt;bool&gt;</computeroutput> for example.</para>
+<para><computeroutput><ref refid="classCGAL_1_1Uncertain" kindref="compound">Uncertain</ref>&lt;T&gt;</computeroutput> is used in CGAL as the return type of geometric predicates when the number type used is interval arithmetic like <computeroutput><ref refid="classCGAL_1_1Interval__nt" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">Interval_nt</ref></computeroutput>. End users typically do not see it as it is hidden in the implementation of the filtered predicates provided by the various filtered kernels, but it is important that providers of predicates that are meant to be filtered by <computeroutput><ref refid="classCGAL_1_1Filtered__predicate" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Filtered_predicate</ref></computeroutput>, know about it.</para>
+<para>It can also be used in other contexts as well, as it is a general tool.</para>
+</sect1>
+<sect1 id="index_1stl_complexity">
+<title>Complexity Tags and Policies</title>
+<para>Some data structures and algorithms can be implemented with different complexity trade-offs between memory usage and time complexity. CGAL provides the tags <computeroutput><ref refid="structCGAL_1_1Fast" kindref="compound">Fast</ref></computeroutput> and <computeroutput><ref refid="structCGAL_1_1Compact" kindref="compound">Compact</ref></computeroutput> which can be used to select between those variants. For example, the <computeroutput><ref refid="structCGAL_1_1Location__policy" kindref="compound">Location_policy</ref></computeroutput> class is parameterized by these tags and allows to specify the complexity of point location (currently in <computeroutput>Delaunay_triangulation_3</computeroutput> only). Convenient typedefs <computeroutput>Fast_location</computeroutput> and <computeroutput>Compact_location</computeroutput> are also provided.</para>
+</sect1>
+<sect1 id="index_1stl_defaults">
+<title>Default Arguments in Template Parameter Lists</title>
+<para>In C++, it is possible to specify defaults at the end of a template parameter list. Specifying that one wishes to use the default is simply done by omitting it. This is however possible only at the end of the list. <computeroutput><ref refid="structCGAL_1_1Default" kindref="compound">Default</ref></computeroutput> provides a simple mechanism that performs something equivalent anywhere in the sequence.</para>
+</sect1>
+<sect1 id="index_1secchecks">
+<title>Checks</title>
+<para>Much of the CGAL code contains checks. For example, all checks used in the kernel code are prefixed by <computeroutput>CGAL_KERNEL</computeroutput>. Other packages have their own prefixes, as documented in the corresponding chapters. Some are there to check if the kernel behaves correctly, others are there to check if the user calls kernel routines in an acceptable manner.</para>
+<para>There are five types of checks. The first three are errors and lead to a halt of the program if they fail. The fourth only leads to a warning, and the last one is compile-time only.</para>
+<para><variablelist>
+<varlistentry><term>Preconditions </term></varlistentry>
+<listitem><para>check if the caller of a routine has called it in a proper fashion. If such a check fails it is the responsibility of the caller (usually the user of the library).  </para>
+</listitem>
+<varlistentry><term>Postconditions </term></varlistentry>
+<listitem><para>check if a routine does what it promises to do. If such a check fails it is the fault of this routine, so of the library.  </para>
+</listitem>
+<varlistentry><term>Assertions </term></varlistentry>
+<listitem><para>are other checks that do not fit in the above two categories.  </para>
+</listitem>
+<varlistentry><term>Warnings </term></varlistentry>
+<listitem><para>are checks for which it is not so severe if they fail.  </para>
+</listitem>
+<varlistentry><term>Static assertions </term></varlistentry>
+<listitem><para>are compile-time assertions, used e.g. to verify the values of compile-time constants or compare types for (in)equality.  </para>
+</listitem>
+</variablelist>
+</para>
+<para>By default, all of these checks are performed. It is however possible to turn them off through the use of compile time switches. For example, for the checks in the kernel code, these switches are the following: <computeroutput>CGAL_KERNEL_NO_PRECONDITIONS</computeroutput>, <computeroutput>CGAL_KERNEL_NO_POSTCONDITIONS</computeroutput>, <computeroutput>CGAL_KERNEL_NO_ASSERTIONS</computeroutput> and <computeroutput>CGAL_KERNEL_NO_WARNINGS</computeroutput>.</para>
+<para>So, in order to compile the file <computeroutput>foo.cpp</computeroutput> with the postcondition checks off, you can do:</para>
+<para><computeroutput>CC -DCGAL_KERNEL_NO_POSTCONDITIONS foo.cpp</computeroutput></para>
+<para>This is also preferably done by modifying your makefile by adding <computeroutput>-DCGAL_KERNEL_NO_POSTCONDITIONS</computeroutput> to the <computeroutput>CXXFLAGS</computeroutput> variable.</para>
+<para>The name <computeroutput>KERNEL</computeroutput> in the macro name can be replaced by a package specific name in order to control assertions done in a given package. This name is given in the documentation of the corresponding package, in case it exists.</para>
+<para>Note that global macros can also be used to control the behavior over the whole CGAL library:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput>CGAL_NO_PRECONDITIONS</computeroutput>,</para>
+</listitem><listitem><para><computeroutput>CGAL_NO_POSTCONDITIONS</computeroutput>,</para>
+</listitem><listitem><para><computeroutput>CGAL_NO_ASSERTIONS</computeroutput>,</para>
+</listitem><listitem><para><computeroutput>CGAL_NO_WARNINGS</computeroutput> and</para>
+</listitem><listitem><para><computeroutput>CGAL_NDEBUG</computeroutput>.</para>
+</listitem></itemizedlist>
+</para>
+<para>Setting the macro <computeroutput>CGAL_NDEBUG</computeroutput> disables all checks. This way, adding <computeroutput>-DCGAL_NDEBUG</computeroutput> to your compilation flags removes absolutely all checks. This is the default recommended setup for performing timing benchmarks for example.</para>
+<para>Note that the setting of the standard macro <computeroutput>NDEBUG</computeroutput> sets <computeroutput>CGAL_NDEBUG</computeroutput>, unless <computeroutput>CGAL_DEBUG</computeroutput> is also defined. If both <computeroutput>NDEBUG</computeroutput> and <computeroutput>CGAL_DEBUG</computeroutput> are defined, then the standard <computeroutput>assert</computeroutput> macro is disabled, but not the <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL</ref> assertions and preconditions.</para>
+<para>Not all checks are on by default. The first four types of checks can be marked as expensive or exactness checks (or both). These checks need to be turned on explicitly by supplying one or both of the compile time switches <computeroutput>CGAL_KERNEL_CHECK_EXPENSIVE</computeroutput> and <computeroutput>CGAL_KERNEL_CHECK_EXACTNESS</computeroutput>.</para>
+<para>Expensive checks are, as the word says, checks that take a considerable time to compute. Considerable is an imprecise phrase. Checks that add less than 10 percent to the execution time of the routine they are in are not expensive. Checks that can double the execution time are. Somewhere in between lies the border line. Checks that increase the asymptotic running time of an algorithm are always considered expensive. Exactness checks are checks that rely on exact arithmetic. For example, if the intersection of two lines is computed, the postcondition of this routine may state that the intersection point lies on both lines. However, if the computation is done with doubles as number type, this may not be the case, due to round off errors. So, exactness checks should only be turned on if the computation is done with some exact number type.</para>
+<para>By definition, static assertions are both inexpensive and unaffected by precision management. Thus, the categories do not apply for static assertions.</para>
+<sect2 id="index_1stl_alteriung">
+<title>Altering the Failure Behavior</title>
+<para>As stated above, if a postcondition, precondition or assertion is violated, an exception is thrown, and if nothing is done to catch it, the program will abort. This behavior can be changed by means of the function <computeroutput><ref refid="group__PkgSTLExtensionAssertions_1ga57511207f5935f17b3264e2d03124027" kindref="member">set_error_behaviour()</ref></computeroutput> and the enum <computeroutput>Failure_behaviour</computeroutput>.</para>
+<para>The <computeroutput>THROW_EXCEPTION</computeroutput> value is the default, which throws an exception.</para>
+<para>If the <computeroutput>EXIT</computeroutput> value is set, the program will stop and return a value indicating failure, but not dump the core. The <computeroutput>CONTINUE</computeroutput> value tells the checks to go on after diagnosing the error. Note that since CGAL 3.4, <computeroutput>CONTINUE</computeroutput> has the same effect as <computeroutput>THROW_EXCEPTION</computeroutput> for errors (but it keeps its meaning for warnings), it is not possible anymore to let assertion failures simply continue (except by totally disabling them).</para>
+<para><htmlonly block="yes"> &lt;div class=&quot;CGALAdvanced&quot;&gt; &lt;div&gt;Advanced&lt;/div&gt; </htmlonly></para>
+<para>If the <computeroutput>EXIT_WITH_SUCCESS</computeroutput> value is set, the program will stop and return a value corresponding to successful execution and not dump the core. <htmlonly block="yes"> &lt;/div&gt; </htmlonly></para>
+<para>The value that is returned by <computeroutput><ref refid="group__PkgSTLExtensionAssertions_1ga57511207f5935f17b3264e2d03124027" kindref="member">set_error_behaviour()</ref></computeroutput> is the value that was in use before.</para>
+<para>For warnings we provide <computeroutput><ref refid="group__PkgSTLExtensionAssertions_1gaeb4e85bca7bfc12e7fd086bf36a39a77" kindref="member">set_warning_behaviour()</ref></computeroutput> which works in the same way. The only difference is that for warnings the default value is <computeroutput>CONTINUE</computeroutput>.</para>
+<para>Setting the error and warning behavior is not thead safe.</para>
+</sect2>
+<sect2 id="index_1stl_control">
+<title>Control at a Finer Granularity</title>
+<para>The compile time flags as described up to now all operate on the whole library. Sometimes you may want to have a finer control. CGAL offers the possibility to turn checks on and off with a bit finer granularity, namely the module in which the routines are defined. The name of the module is to be appended directly after the CGAL prefix. So, the flag <computeroutput>CGAL_KERNEL_NO_ASSERTIONS</computeroutput> switches off assertions in the kernel only, the flag <computeroutput>CGAL_CH_CHECK_EXPENSIVE</computeroutput> turns on expensive checks in the convex hull module. The name of a particular module is documented with that module.</para>
+</sect2>
+<sect2 id="index_1stl_customizing">
+<title>Customizing how Errors are Reported</title>
+<para>Normally, error messages are written to the standard error output. It is possible to do something different with them. To that end you can register your own handler using <computeroutput><ref refid="group__PkgSTLExtensionAssertions_1gaf17f67aed4fb6c658ec7cb3f96f9d838" kindref="member">set_error_handler(Failure_function handler)</ref></computeroutput> This function should be declared as follows.</para>
+<para>There are several things that you can do with your own handler. You can display a diagnostic message in a different way, for instance in a pop up window or to a log file (or a combination). You can also implement a different policy on what to do after an error. For instance, you can throw an exception or ask the user in a dialog whether to abort or to continue. If you do this, it is best to set the error behavior to <computeroutput>CONTINUE</computeroutput>, so that it does not interfere with your policy.</para>
+<para>You can register two handlers, one for warnings and one for errors. Of course, you can use the same function for both if you want. When you set a handler, the previous handler is returned, so you can restore it if you want.</para>
+<sect3 id="index_1stl_failure_example">
+<title>Example</title>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/assertions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>my_failure_handler(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*type,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*expr,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>file,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>line,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>msg)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>report<sp/>the<sp/>error<sp/>in<sp/>some<sp/>way.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>foo()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgSTLExtensionAssertions_1ga22c85e11e31ba1f9954022947822983d" kindref="member">CGAL::Failure_function</ref><sp/>prev;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>prev<sp/>=<sp/><ref refid="group__PkgSTLExtensionAssertions_1gaf17f67aed4fb6c658ec7cb3f96f9d838" kindref="member">CGAL::set_error_handler</ref>(my_failure_handler);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>call<sp/>some<sp/>routines.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgSTLExtensionAssertions_1gaf17f67aed4fb6c658ec7cb3f96f9d838" kindref="member">CGAL::set_error_handler</ref>(prev);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect3>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="STL_Extension.txt"/>
+  </compounddef>
+</doxygen>

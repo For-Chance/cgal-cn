@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_checks" kind="page">
+    <compoundname>devman_checks</compoundname>
+    <title>Checks: Pre- and Postconditions, Assertions, and Warnings</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>Sven Sch<oumlaut/>nherr (<computeroutput><ulink url="mailto:sven@inf.ethz.ch">sven@inf.ethz.ch</ulink></computeroutput>)</para>
+</simplesect>
+Much of the CGAL code contains checks. Some are there to check if the code behaves correctly, others check if the user calls routines in an acceptable manner. We describe the different categories of checks (Section <ref refid="devman_checks_1secchecks_categories" kindref="member">Categories of checks</ref>), the usage of checks (Section <ref refid="devman_checks_1secchecks_using" kindref="member">Using checks</ref>), and a more selective means of controlling checks (Section <ref refid="devman_checks_1secchecks_controlling" kindref="member">Controlling checks at a finer granularity</ref>). Finally, a statement about exception handling is given (Section <ref refid="devman_checks_1secexception_handling" kindref="member">Exception handling</ref>).</para>
+<para>It is forbidden to call <computeroutput>std::abort</computeroutput>, <computeroutput>std::exit</computeroutput> or <computeroutput>assert</computeroutput> directly from CGAL, as these do not allow the user code to react after the error (application processes are killed). Thus, the default behavior of all checks is to throw exceptions for reporting failures.</para>
+<sect1 id="devman_checks_1secchecks_categories">
+<title>Categories of checks</title>
+<para>There are five types of checks. <itemizedlist>
+<listitem>
+<para><bold>Preconditions</bold> check if a routine has been called in a proper fashion and the input adheres to the specifications given by the author of the function. If a precondition fails, it is the responsibility of the caller (usually the user of the library) to fix the problem. </para>
+</listitem>
+<listitem>
+<para><bold>Postconditions</bold> check if a routine does what it promises to do. If a postcondition fails it is the fault of this routine, so the author of the code is responsible. </para>
+</listitem>
+<listitem>
+<para><bold>Assertions</bold> are other checks that do not fit in the above two categories, <emphasis>e.g.</emphasis> they can be used to check invariants. </para>
+</listitem>
+<listitem>
+<para><bold>Warnings</bold> are checks for which it is not so severe if they fail. </para>
+</listitem>
+<listitem>
+<para><bold>Static assertions</bold> are compile-time assertions, used <emphasis>e.g.</emphasis> to verify the values of compile-time constants or compare types for (in)equality. </para>
+</listitem>
+<listitem>
+<para><bold>Destructor assertions</bold> These are checks which can be made within normal clean up of an object. A special macro <computeroutput>CGAL_destructor_assertion</computeroutput> is provided to ensure these checks are not made when the object is being cleaned up during exception handling. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>The according macro names all have the format <computeroutput>CGAL_&lt;check_type&gt;</computeroutput> where <computeroutput>&lt;check_type&gt;</computeroutput> can be one of <itemizedlist>
+<listitem>
+<para><computeroutput>precondition</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>postcondition</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>assertion</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>warning</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>static_assertion</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>destructor_assertion</computeroutput> </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Failures of the first three types are errors and lead to a halt of the program, failures of the last one only lead to a warning. Checks of four categories can be marked with one or both of the following attributes: <itemizedlist>
+<listitem>
+<para><bold>Expensive</bold></para>
+<para>checks take considerable time to compute. &quot;Considerable&quot; is an imprecise phrase. Checks that add less than 10 percent to the execution time of their routine are not expensive. Checks that can double the execution time are. Somewhere in between lies the border line. </para>
+</listitem>
+<listitem>
+<para><bold>Exactness</bold></para>
+<para>checks rely on exact arithmetic. For example, if the intersection of two lines is computed, the postcondition of this routine may state that the intersection point lies on both lines. However, if the computation is done with <computeroutput>double</computeroutput>s as the number type, this may not be the case, due to roundoff errors. </para>
+</listitem>
+</itemizedlist>
+By definition, static assertions are both inexpensive and unaffected by precision management. Thus, the categories do not apply for static assertions.</para>
+<para>The format is one of <itemizedlist>
+<listitem>
+<para><computeroutput>CGAL_&lt;check_type&gt;</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>CGAL_expensive_&lt;check_type&gt;</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>CGAL_exactness_&lt;check_type&gt;</computeroutput> </para>
+</listitem>
+<listitem>
+<para><computeroutput>CGAL_expensive_exactness_&lt;check_type&gt;</computeroutput> </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>By default, all standard checks (without any attribute) are enabled, while expensive and exactness checks are disabled. How this can be changed and how checks are actually used in the code are described in the next section.</para>
+<para>Additionally, we provide macros <computeroutput>CGAL_error()</computeroutput> and <computeroutput>CGAL_error_msg(MSG_TEXT)</computeroutput> which are equivalent to always-failing assertions. However, they cannot be disabled.</para>
+</sect1>
+<sect1 id="devman_checks_1secchecks_using">
+<title>Using checks</title>
+<para>The checks are implemented as preprocessor macros;</para>
+<para><emphasis>i.e.</emphasis>, <computeroutput>CGAL_&lt;check_type&gt;(&lt;Cond&gt;)</computeroutput> realizes a check of type <computeroutput>&lt;check_type&gt;</computeroutput> that asserts the condition <computeroutput>&lt;Cond&gt;</computeroutput>. For example, <programlisting filename=".cpp"><codeline><highlight class="normal">CGAL_precondition(<sp/>first<sp/>!=<sp/>last);</highlight></codeline>
+</programlisting> checks the precondition that a given iterator range is not empty. If the check fails, an error message similar to <programlisting filename=".cpp"><codeline><highlight class="normal"><ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref><sp/>error:<sp/>precondition<sp/>violation!</highlight></codeline>
+<codeline><highlight class="normal">Expr:<sp/>first<sp/>!=<sp/>last</highlight></codeline>
+<codeline><highlight class="normal">File:<sp/>&lt;file<sp/>name&gt;</highlight></codeline>
+<codeline><highlight class="normal">Line:<sp/>&lt;source<sp/>code<sp/>line&gt;</highlight></codeline>
+</programlisting> is written to the standard error stream and the program is aborted. If an additional explanation should be given to the user, macros <computeroutput>CGAL_&lt;check_type&gt;_msg(&lt;Cond&gt;,&lt;Msg&gt;)</computeroutput> can be used. The text in <computeroutput>&lt;Msg&gt;</computeroutput> is just appended to the failure message given above.</para>
+<para>In case a check is more complicated and the computation does not fit into a single statement, the additional code can be encapsulated using <computeroutput>CGAL_&lt;check_type&gt;_code(&lt;Code&gt;)</computeroutput>. This has the advantage that the computation is not done if the corresponding category is disabled. For an example, suppose an algorithm computes a convex polygon. Thus we want to check the postcondition that the polygon is indeed convex, which we consider an expensive check. The code would look like this. <programlisting filename=".cpp"><codeline><highlight class="normal">CGAL_expensive_postcondition_code(<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_convex;<sp/>)</highlight></codeline>
+<codeline><highlight class="normal">CGAL_expensive_postcondition_code(<sp/></highlight><highlight class="comment">/*<sp/>compute<sp/>convexity<sp/>*/</highlight><highlight class="normal"><sp/>)</highlight></codeline>
+<codeline><highlight class="normal">CGAL_expensive_postcondition_code(<sp/></highlight><highlight class="comment">/*<sp/>...<sp/>*/</highlight><highlight class="normal"><sp/>)</highlight></codeline>
+<codeline><highlight class="normal">CGAL_expensive_postcondition_msg<sp/>(<sp/>is_convex,<sp/>\</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;The<sp/>computed<sp/>polygon<sp/>is<sp/>NOT<sp/>convex!&quot;<sp/>);</highlight></codeline>
+</programlisting></para>
+<para>As already mentioned above, the standard checks are enabled by default. This can be changed through the use of compile-time flags.</para>
+<para>By setting the flag <computeroutput>CGAL_NO_&lt;CHECK_TYPE&gt;</computeroutput> all checks of type <computeroutput>&lt;CHECK_TYPE&gt;</computeroutput> are disabled, <emphasis>e.g.</emphasis> adding <computeroutput>-DCGAL_NO_ASSERTIONS</computeroutput> to the compiler call switches off all checks for static and dynamic assertions. To disable all checks in the library, the flag <computeroutput>CGAL_NDEBUG</computeroutput> can be set. Note that the standard flag <computeroutput>NDEBUG</computeroutput> sets <computeroutput>CGAL_NDEBUG</computeroutput>, but it also affects the <computeroutput>assert</computeroutput> macro.</para>
+<para>To enable expensive and exactness checks, respectively, the preprocessor macros <computeroutput>CGAL_CHECK_EXPENSIVE</computeroutput> and <computeroutput>CGAL_CHECK_EXACTNESS</computeroutput> have to be defined. However, exactness checks should only be turned on if the computation is done with some exact number type.</para>
+</sect1>
+<sect1 id="devman_checks_1secchecks_controlling">
+<title>Controlling checks at a finer granularity</title>
+<para>The macros and related compile-time flags described so far all operate on the whole library. CGAL offers the possibility to turn checks on and off just for the kernel. <ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref> assertions are stated using the macro <computeroutput>CGAL_kernel_assertion(&lt;Cond&gt;)</computeroutput>, and they can be disabled by defining the macros <computeroutput>CGAL_KERNEL_NO_ASSERTIONS</computeroutput> or <computeroutput>CGAL_NO_ASSERTIONS</computeroutput>. See <ref refid="index_1secchecks" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">the section Checks in STL Extensions</ref>, for details.</para>
+</sect1>
+<sect1 id="devman_checks_1secchecks_cgal_assume">
+<title>Suppress warnings using CGAL_assume.</title>
+<para>Moderns compilers, when their optimizers are activated, sometimes emit warnings about events that may occur. For example: <verbatim>warning: array subscript is above array bounds [-Warray-bounds]
+</verbatim> or: <verbatim>warning: &apos;res&apos; may be used uninitialized in this function [-Wmaybe-uninitialized]
+</verbatim></para>
+<para>Most false positives could be removed if the compiler knew that an integer variable is within given bounds, or that a Boolean variable is true. If <computeroutput>CGAL_NDEBUG</computeroutput> is not defined, then a <computeroutput>CGAL_assertion</computeroutput> is enough to instruct the compiler that a given condition is fulfilled. But, usually when the compiler optimizers are activated, <computeroutput>CGAL_NDEBUG</computeroutput> is also defined, to speed up the generated binary code. In that case, <computeroutput>CGAL_assume</computeroutput> can be used.</para>
+<para><computeroutput>CGAL_assume</computeroutput> is identical to <computeroutput>CGAL_assertion</computeroutput> when <computeroutput>CGAL_NDEBUG</computeroutput> is not defined. But, even if <computeroutput>CGAL_NDEBUG</computeroutput> is defined, its semantic uses compiler-specific instructions, such as <ulink url="https://msdn.microsoft.com/en-us/library/1b3fsfxw.aspx"><computeroutput>__assume</computeroutput> from MSVC</ulink>, or <ulink url="https://clang.llvm.org/docs/LanguageExtensions.html#builtin-unreachable"><computeroutput>__builtin_unreachable</computeroutput></ulink> recognized by both clang and g++.</para>
+</sect1>
+<sect1 id="devman_checks_1secexception_handling">
+<title>Exception handling</title>
+<para>Some parts of the library use exceptions, but there is no general specific policy concerning exception handling in CGAL. It is nevertheless good to target exception safety, as much as possible. Good references on exception safety are: Appendix E of <ref refid="citelist_1CITEREF_cgal:s-cpl-97" kindref="member">[10]</ref> (also available at <ulink url="https://www.stroustrup.com/3rd_safe0.html"><computeroutput>https://www.stroustrup.com/3rd_safe0.html</computeroutput></ulink>), and <ref refid="citelist_1CITEREF_cgal:a-esgc-98" kindref="member">[1]</ref> (also available at <ulink url="https://www.boost.org/community/exception_safety.html"><computeroutput>https://www.boost.org/community/exception_safety.html</computeroutput></ulink>). Any destructor which might throw an exception, including a destructor which uses the <computeroutput>CGAL_destructor_assertion</computeroutput> macro, should be marked with the <computeroutput>noexcept(!CGAL_ASSERTIONS_ENABLED)</computeroutput>.</para>
+</sect1>
+<sect1 id="devman_checks_1secchecks_req_and_rec">
+<title>Requirements and recommendations</title>
+<para>Requirements: <itemizedlist>
+<listitem>
+<para>Write pre- and postcondition checkers for your functions wherever possible. </para>
+</listitem>
+<listitem>
+<para>Use the CGAL preprocessor macros (Sections <ref refid="devman_checks_1secchecks_using" kindref="member">Using checks</ref> and <ref refid="devman_checks_1secchecks_controlling" kindref="member">Controlling checks at a finer granularity</ref> ) exclusively throughout your code (instead of, for example, the <computeroutput>assert</computeroutput> macro or the <computeroutput>std::abort</computeroutput> or <computeroutput>std::exit</computeroutput> functions) for all checks to assure that all CGAL invariant tests can be handled in a uniform way. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_checks.txt"/>
+  </compounddef>
+</doxygen>

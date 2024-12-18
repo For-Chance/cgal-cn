@@ -1,0 +1,775 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_3D_Surface_mesh"/><anchor id="index_1chapterSurface_mesh"/> <simplesect kind="author"><para>Mario Botsch, Daniel Sieger, Philipp Moeller and Andreas Fabri <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+</simplesect>
+<image type="html" name="clown_fish.jpg"></image>
+</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> is an implementation of a halfedge data structure and can be used to represent a polyhedral surface. It is an alternative to the CGAL packages <ref refid="packages_1PkgHalfedgeDS" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Halfedge Data Structures</ref> and <ref refid="packages_1PkgPolyhedron" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Polyhedral Surface</ref>. The main difference is that it is indexed based and not pointer based. Additionally, the mechanism for adding information to vertices, halfedges, edges, and faces is much simpler and is done at runtime and not at compile time.</para>
+<para>Because the data structure uses integer indices as descriptors for vertices, halfedges, edges and faces it has a lower memory footprint than a 64-bit pointer based version. As the indices are contiguous, they can be used as index into vectors which store properties.</para>
+<para>When elements are removed, they are only marked as removed, and a garbage collection function must be called to really remove them.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> can be used through its class member functions as well as through the BGL API as described in the package <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref>, as it is a model of the concepts <computeroutput><ref refid="classMutableFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">MutableFaceGraph</ref></computeroutput> and <computeroutput><ref refid="classFaceListGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceListGraph</ref></computeroutput>. Therefore it is possible to apply the algorithms of the packages <ref refid="packages_1PkgSurfaceMeshSimplification" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Simplification</ref>, <ref refid="packages_1PkgSurfaceMeshSegmentation" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Segmentation</ref>, and <ref refid="packages_1PkgSurfaceMeshDeformation" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Deformation</ref> on a surface mesh.</para>
+<sect1 id="index_1sectionSurfaceMeshUsage">
+<title>Usage</title>
+<para>The main class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> provides four nested classes that represent the basic elements of the halfedge data structure:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Vertex__index" kindref="compound">Surface_mesh::Vertex_index</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Halfedge__index" kindref="compound">Surface_mesh::Halfedge_index</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Face__index" kindref="compound">Surface_mesh::Face_index</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Edge__index" kindref="compound">Surface_mesh::Edge_index</ref></computeroutput></para>
+</listitem></itemizedlist>
+</para>
+<para>These types are just wrappers for an integer and their main purpose is to guarantee type safety. They are default constructible, which yields an <emphasis>invalid</emphasis> element. New elements can be added and removed to the <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> through a set of low-level functions which do not maintain connectivity. One exception is <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a3bbb4fcc69d61f1bd816a255b2251f74" kindref="member">Surface_mesh::add_face()</ref></computeroutput>, which tries to add a new face to the mesh (defined by a sequence of vertices), and fails if the operation is not topologically valid. In that case, the returned <computeroutput>Face_index</computeroutput> is <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1ab88a9b19157845d6f9881c4ab77c79d6" kindref="member">Surface_mesh::null_face()</ref></computeroutput>.</para>
+<para><programlisting><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh&lt;Point&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal">Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal">Mesh::Vertex_index<sp/>u<sp/>=<sp/>m.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">add_vertex</ref>(Point(0,1,0));</highlight></codeline>
+<codeline><highlight class="normal">Mesh::Vertex_index<sp/>v<sp/>=<sp/>m.add_vertex(Point(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal">Mesh::Vertex_index<sp/>w<sp/>=<sp/>m.add_vertex(Point(1,0,0));</highlight></codeline>
+<codeline><highlight class="normal">m.add_face(u,<sp/>v,<sp/>w);</highlight></codeline>
+</programlisting></para>
+<para>As <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> is index-based <ref refid="classCGAL_1_1Surface__mesh_1_1Vertex__index" kindref="compound">Vertex_index</ref>, <ref refid="classCGAL_1_1Surface__mesh_1_1Halfedge__index" kindref="compound">Halfedge_index</ref>, <ref refid="classCGAL_1_1Surface__mesh_1_1Edge__index" kindref="compound">Edge_index</ref>, and <ref refid="classCGAL_1_1Surface__mesh_1_1Face__index" kindref="compound">Face_index</ref> do not have member functions to access connectivity or properties. The functions of the <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> instance from which they were created must be used to obtain this information.</para>
+<sect2 id="index_1usage_example">
+<title>Example</title>
+<para>The first example shows how to create a very simple <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> by adding 2 faces, and how to check that a face is correctly added to the mesh.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2check_orientation_8cpp-example" kindref="compound">Surface_mesh/check_orientation.cpp</ref> <programlisting filename="Surface_mesh/check_orientation.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;K::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Vertex_index<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Face_index<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>the<sp/>points<sp/>as<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>u<sp/>=<sp/>m.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">add_vertex</ref>(K::Point_3(0,1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v<sp/>=<sp/>m.add_vertex(K::Point_3(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>w<sp/>=<sp/>m.add_vertex(K::Point_3(1,1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>x<sp/>=<sp/>m.add_vertex(K::Point_3(1,0,0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.add_face(u,v,w);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_descriptor<sp/>f<sp/>=<sp/>m.add_face(u,v,x);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(f<sp/>==<sp/>Mesh::null_face())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr&lt;&lt;</highlight><highlight class="stringliteral">&quot;The<sp/>face<sp/>could<sp/>not<sp/>be<sp/>added<sp/>because<sp/>of<sp/>an<sp/>orientation<sp/>error.&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>f<sp/>=<sp/>m.add_face(u,x,v);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(f<sp/>!=<sp/>Mesh::null_face());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The second example shows how to access the points associated to the vertices, either for an individual vertex, or as the range of points of the entire mesh. Such a range can be accessed in a for-loop or passed to functions that expect a range of points as input.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2sm_points_8cpp-example" kindref="compound">Surface_mesh/sm_points.cpp</ref> <programlisting filename="Surface_mesh/sm_points.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/convex_hull_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;K::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Vertex_index<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Face_index<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v0<sp/>=<sp/>m.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">add_vertex</ref>(K::Point_3(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v1<sp/>=<sp/>m.add_vertex(K::Point_3(1,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v2<sp/>=<sp/>m.add_vertex(K::Point_3(0,1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v3<sp/>=<sp/>m.add_vertex(K::Point_3(0,0,1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_descriptor<sp/>fd<sp/>=<sp/>m.add_face(v0,<sp/>v1,<sp/>v2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.add_face(v1,<sp/>v0,<sp/>v3);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Access<sp/>the<sp/>point<sp/>for<sp/>a<sp/>given<sp/>vertex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/><ref refid="group__PkgBGLIterators_1gabbe82508d78c7c81bf76c2f0dcfd5c9a" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">vertices_around_face</ref>(m.halfedge(fd),<sp/>m)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std<sp/>::cout<sp/>&lt;&lt;<sp/>m.point(vd)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Access<sp/>the<sp/>range<sp/>of<sp/>all<sp/>points<sp/>of<sp/>the<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>K::Point_3&amp;<sp/>p<sp/>:<sp/>m.points()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>ch;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgConvexHull3Functions_1gadc8318947c2133e56b2e56171b2ecd7d" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_3.tag">CGAL::convex_hull_3</ref>(m.points().begin(),<sp/>m.points().end(),<sp/>ch);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1sectionSurfaceMeshConnectivity">
+<title>Connectivity</title>
+<para>A surface mesh is an edge-centered data structure capable of maintaining incidence information of vertices, edges, and faces. Each edge is represented by two halfedges with opposite orientation. Each halfedge stores a reference to an incident face and to an incident vertex. Additionally, it stores a reference to the next and previous halfedge incident to its incident face. For each face and each vertex an incident halfedge is stored. Halfedges do not store the index of the opposite halfedge, as <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> stores opposite halfedges consecutively in memory.</para>
+<para>The following figure illustrates the functions which allow to navigate in a surface mesh: <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aa7db4bc6d4c063059072b2f1a4609c0e" kindref="member">Surface_mesh::opposite()</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aa1cc5db58c2a463d6e7dff79c8f01eda" kindref="member">Surface_mesh::next()</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a59417a612605ec242f066bd9a1e28185" kindref="member">Surface_mesh::prev()</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a1039dd1e0b038b526ddebe477e67f531" kindref="member">Surface_mesh::target()</ref></computeroutput>, and <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a33419ae03fc4d9a8c28367dbe1241a21" kindref="member">Surface_mesh::face()</ref></computeroutput>. Additionally, the functions <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aabd478481f32d6539ac3e1db5ee65e36" kindref="member">Surface_mesh::halfedge()</ref></computeroutput> allows to obtain the halfedge associated to a vertex and to a face. Alternatively, one may use the free functions with the same names defined in the package <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref>.</para>
+<para><anchor id="index_1fig__FigSurfaceMeshConnectivity"/> <image type="html" name="connectivity.svg"></image>
+ <image type="latex" name="connectivity.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__FigSurfaceMeshConnectivity" kindref="member">fig__FigSurfaceMeshConnectivity</ref> Connectivity of halfedges and vertices in a surface mesh seen from outside. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1SurfaceMeshOrientation"/>The halfedges incident to a face form a cycle. Depending on from which side we look at the surface, the sequence of halfedges appears to be oriented <emphasis>clockwise</emphasis> or <emphasis>counterclockwise</emphasis>. When in this manual we speak about the orientation of a traversal then we look at the surface such that the halfedges around a face are oriented counterclockwise, as illustrated in <ref refid="index_1fig__FigSurfaceMeshConnectivity" kindref="member">fig__FigSurfaceMeshConnectivity</ref></para>
+<para>The connectivity does not allow to represent faces with holes.</para>
+</sect1>
+<sect1 id="index_1sectionSurfaceMesh_iterators">
+<title>Ranges and Iterators</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> provides iterator ranges to enumerate all vertices, halfedges, edges, and faces. It provides member functions returning ranges of elements which are compatible with the <ulink url="https://www.boost.org/libs/range/doc/html/index.html">Boost.Range</ulink> library.</para>
+<sect2 id="index_1iterators_example">
+<title>Example</title>
+<para>The following example shows how to obtain the iterator type from a range, alternatives for obtaining the begin and end iterator, and alternatives for range-based loops.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2sm_iterators_8cpp-example" kindref="compound">Surface_mesh/sm_iterators.cpp</ref> <programlisting filename="Surface_mesh/sm_iterators.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;K::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Vertex_index<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Face_index<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>u<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>x</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>+------------+</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/>f<sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>+------------+</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>v<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>w</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>the<sp/>points<sp/>as<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>u<sp/>=<sp/>m.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">add_vertex</ref>(K::Point_3(0,1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v<sp/>=<sp/>m.add_vertex(K::Point_3(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>w<sp/>=<sp/>m.add_vertex(K::Point_3(1,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>x<sp/>=<sp/>m.add_vertex(K::Point_3(1,1,0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*<sp/>face_descriptor<sp/>f<sp/>=<sp/>*/</highlight><highlight class="normal"><sp/>m.add_face(u,v,w,x);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;all<sp/>vertices<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>vertex<sp/>iterator<sp/>type<sp/>is<sp/>a<sp/>nested<sp/>type<sp/>of<sp/>the<sp/>Vertex_range</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Mesh::Vertex_range::iterator<sp/><sp/>vb,<sp/>ve;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Mesh::Vertex_range<sp/>r<sp/>=<sp/>m.vertices();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>iterators<sp/>can<sp/>be<sp/>accessed<sp/>through<sp/>the<sp/>C++<sp/>range<sp/>API</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vb<sp/>=<sp/>r.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ve<sp/>=<sp/>r.end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>or<sp/>the<sp/>boost<sp/>Range<sp/>API</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vb<sp/>=<sp/>std::begin(r);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ve<sp/>=<sp/>std::end(r);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>or<sp/>with<sp/>boost::tie,<sp/>as<sp/>the<sp/>CGAL<sp/>range<sp/>derives<sp/>from<sp/>std::pair</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(boost::tie(vb,<sp/>ve)<sp/>=<sp/>m.vertices();<sp/>vb<sp/>!=<sp/>ve;<sp/>++vb){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>vertex<sp/>index<sp/>and<sp/>vertex<sp/>coordinates</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*vb<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>m.point(*vb)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Instead<sp/>of<sp/>the<sp/>classical<sp/>for<sp/>loop<sp/>one<sp/>can<sp/>use</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>boost<sp/>macro<sp/>for<sp/>a<sp/>range</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>m.vertices()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>or<sp/>the<sp/>C++11<sp/>for<sp/>loop.<sp/>Note<sp/>that<sp/>there<sp/>is<sp/>a<sp/>&apos;:&apos;<sp/>and<sp/>not<sp/>a<sp/>&apos;,&apos;<sp/>as<sp/>in<sp/>BOOST_FOREACH</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>m.vertices()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1sectionSurfaceMesh_circulators">
+<title>Circulators</title>
+<para>Circulators around faces and around vertices are provided as class templates in the package <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref>.</para>
+<para>Circulators around faces basically call <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aa1cc5db58c2a463d6e7dff79c8f01eda" kindref="member">Surface_mesh::next()</ref></computeroutput> in order to go from halfedge to halfedge counterclockwise around the face, and when dereferenced return the halfedge or the incident vertex or the opposite face.</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Halfedge__around__face__circulator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Halfedge_around_face_circulator</ref>&lt;Mesh&gt;</computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Vertex__around__face__circulator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Vertex_around_face_circulator</ref>&lt;Mesh&gt;</computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Face__around__face__circulator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Face_around_face_circulator</ref>&lt;Mesh&gt;</computeroutput></para>
+</listitem></itemizedlist>
+</para>
+<para>Circulators around the target vertex of an edge basically call <computeroutput>Surface_mesh::opposite(Surface_mesh::next())</computeroutput> in order to go from halfedge to halfedge clockwise around the same target vertex.</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Halfedge__around__target__circulator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Halfedge_around_target_circulator</ref>&lt;Mesh&gt;</computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Vertex__around__target__circulator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Vertex_around_target_circulator</ref>&lt;Mesh&gt;</computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Face__around__target__circulator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Face_around_target_circulator</ref>&lt;Mesh&gt;</computeroutput></para>
+</listitem></itemizedlist>
+</para>
+<para>All circulators model <computeroutput><ref refid="classBidirectionalCirculator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">BidirectionalCirculator</ref></computeroutput>. In addition to that they also support a conversion to <computeroutput>bool</computeroutput> for more convenient checking of emptiness.</para>
+<sect2 id="index_1circulators_example">
+<title>Example</title>
+<para>The following example shows how to enumerate the vertices around the target of a given halfedge. The second loop shows that each of these circulator types comes with an equivalent iterator and a free function to create an iterator range.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2sm_circulators_8cpp-example" kindref="compound">Surface_mesh/sm_circulators.cpp</ref> <programlisting filename="Surface_mesh/sm_circulators.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;K::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Vertex_index<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Face_index<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>u<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>x</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>+------------+</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/>f<sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>|<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>+------------+</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>v<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>w</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>the<sp/>points<sp/>as<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>u<sp/>=<sp/>m.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">add_vertex</ref>(K::Point_3(0,1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v<sp/>=<sp/>m.add_vertex(K::Point_3(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>w<sp/>=<sp/>m.add_vertex(K::Point_3(1,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>x<sp/>=<sp/>m.add_vertex(K::Point_3(1,1,0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_descriptor<sp/>f<sp/>=<sp/>m.add_face(u,v,w,x);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;vertices<sp/>around<sp/>vertex<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>v<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Vertex__around__target__circulator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Vertex_around_target_circulator&lt;Mesh&gt;</ref><sp/>vbegin(m.halfedge(v),m),<sp/>done(vbegin);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">do</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*vbegin++<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(vbegin<sp/>!=<sp/>done);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;vertices<sp/>around<sp/>face<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>f<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Vertex__around__face__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Vertex_around_face_iterator&lt;Mesh&gt;</ref><sp/>vbegin,<sp/>vend;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(boost::tie(vbegin,<sp/>vend)<sp/>=<sp/><ref refid="group__PkgBGLIterators_1gabbe82508d78c7c81bf76c2f0dcfd5c9a" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">vertices_around_face</ref>(m.halfedge(f),<sp/>m);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vbegin<sp/>!=<sp/>vend;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>++vbegin){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*vbegin<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>or<sp/>the<sp/>same<sp/>again,<sp/>but<sp/>directly<sp/>with<sp/>a<sp/>range<sp/>based<sp/>loop</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/><ref refid="group__PkgBGLIterators_1gabbe82508d78c7c81bf76c2f0dcfd5c9a" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">vertices_around_face</ref>(m.halfedge(f),<sp/>m)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1sectionSurfaceMesh_properties">
+<title>Properties</title>
+<para><computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> provides a mechanism to specify new properties for vertices, halfedges, edges, and faces at run-time. Each property is identified by a string and its key type. All the values of a given property are stored as consecutive blocks of memory. References to properties are invalidated whenever new elements of the key type are added to the data-structure or when the function <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aea69dbef8122b1acf050c19063f935f2" kindref="member">Surface_mesh::collect_garbage()</ref></computeroutput> is performed. Properties of an element will continue to exist after the element has been deleted. Trying to access a property through an invalidated element will result in undefined behavior.</para>
+<para>One property is maintained by default, namely <computeroutput>&quot;v:point&quot;</computeroutput>. The value of this property has to be supplied when adding a new point to the data structure via <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">Surface_mesh::add_vertex()</ref></computeroutput>. The property can be directly accessed using <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a5c07ed7eaeabd32c5c9da1fbf9734c7a" kindref="member">Surface_mesh::points()</ref></computeroutput> or <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a14b58ffb60d4e0e1ebc4b7ecd43ef66f" kindref="member">Surface_mesh::point(Surface_mesh::Vertex_index v)</ref></computeroutput>.</para>
+<para>When an element is removed, it is only marked as removed, and it gets really removed when <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aea69dbef8122b1acf050c19063f935f2" kindref="member">Surface_mesh::collect_garbage()</ref></computeroutput> is called. Garbage collection will also really remove the properties of these elements.</para>
+<para>The connectivity is also stored in properties, namely the properties named &quot;v:connectivity&quot;, &quot;h:connectivity&quot;, and &quot;f:connectivity&quot;. It is quite similar for the marker of deleted element, where we have &quot;v:removed&quot;, &quot;e:removed&quot;, and &quot;f:removed&quot;.</para>
+<para>Convenience functions are provided to remove property maps added by a user, either by index type (<computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a2a3dd8c01f7fba7b640d85bfd1c41d90" kindref="member">Surface_mesh::remove_property_maps</ref>&lt;I&gt;()</computeroutput>) or all of them (<computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a5696da09300f3d0eafed117668bb3bec" kindref="member">Surface_mesh::remove_all_property_maps()</ref></computeroutput>).</para>
+<para>To clear a mesh, you have the possibility to get a mesh with all added property maps removed (<computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a247d4ad3e6b106ae22e5306203812642" kindref="member">Surface_mesh::clear()</ref></computeroutput>) or to keep them (<computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aad000a07a5ada30536f194b28b59d111" kindref="member">Surface_mesh::clear_without_removing_property_maps()</ref></computeroutput>). Note that in both cases, the &quot;v:point&quot; property map will be preserved and keeping a reference to it is safe.</para>
+<sect2 id="index_1properties_example">
+<title>Example</title>
+<para>This example shows how to use the most common features of the property system.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2sm_properties_8cpp-example" kindref="compound">Surface_mesh/sm_properties.cpp</ref> <programlisting filename="Surface_mesh/sm_properties.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/graph/generators.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;K::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Vertex_index<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Face_index<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v0<sp/>=<sp/>m.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">add_vertex</ref>(K::Point_3(0,2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v1<sp/>=<sp/>m.add_vertex(K::Point_3(2,2,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v2<sp/>=<sp/>m.add_vertex(K::Point_3(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v3<sp/>=<sp/>m.add_vertex(K::Point_3(2,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>v4<sp/>=<sp/>m.add_vertex(K::Point_3(1,1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.add_face(v3,<sp/>v1,<sp/>v4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.add_face(v0,<sp/>v4,<sp/>v1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.add_face(v0,<sp/>v2,<sp/>v4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.add_face(v2,<sp/>v3,<sp/>v4);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>give<sp/>each<sp/>vertex<sp/>a<sp/>name,<sp/>the<sp/>default<sp/>is<sp/>empty</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh::Property_map&lt;vertex_descriptor,std::string&gt;<sp/>name;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>created;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::tie(name,<sp/>created)<sp/>=<sp/>m.add_property_map&lt;vertex_descriptor,std::string&gt;(</highlight><highlight class="stringliteral">&quot;v:name&quot;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&quot;m1&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(created);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>add<sp/>some<sp/>names<sp/>to<sp/>the<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>name[v0]<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;hello&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>name[v2]<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;world&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>You<sp/>get<sp/>an<sp/>existing<sp/>property,<sp/>and<sp/>created<sp/>will<sp/>be<sp/>false</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Mesh::Property_map&lt;vertex_descriptor,std::string&gt;<sp/>name;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>created;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::tie(name,<sp/>created)<sp/>=<sp/>m.add_property_map&lt;vertex_descriptor,std::string&gt;(</highlight><highlight class="stringliteral">&quot;v:name&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(!<sp/>created);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>You<sp/>can&apos;t<sp/>get<sp/>a<sp/>property<sp/>that<sp/>does<sp/>not<sp/>exist</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::optional&lt;Mesh::Property_map&lt;face_descriptor,std::string&gt;&gt;<sp/>gnus<sp/>=<sp/>m.property_map&lt;face_descriptor,std::string&gt;(</highlight><highlight class="stringliteral">&quot;v:gnus&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(!gnus.has_value());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>retrieve<sp/>the<sp/>point<sp/>property<sp/>for<sp/>which<sp/>exists<sp/>a<sp/>convenience<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh::Property_map&lt;vertex_descriptor,<sp/>K::Point_3&gt;<sp/>location<sp/>=<sp/>m.points();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>m.vertices())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>name[vd]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>@<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>location[vd]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgBGLGeneratorFct_1ga6dcbca9acf39adeb33c108a72e6ec8f4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::make_triangle</ref>(K::Point_3(0,0,1),<sp/>K::Point_3(1,0,1),K::Point_3(0,1,1),<sp/>m2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m2.add_property_map&lt;vertex_descriptor,std::string&gt;(</highlight><highlight class="stringliteral">&quot;v:name&quot;</highlight><highlight class="normal">,</highlight><highlight class="stringliteral">&quot;m2&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh::Property_map&lt;vertex_descriptor,int&gt;<sp/>index;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>index<sp/>=<sp/>m2.add_property_map&lt;vertex_descriptor,</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">&gt;(</highlight><highlight class="stringliteral">&quot;v:index&quot;</highlight><highlight class="normal">,-1).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>v<sp/>:<sp/>vertices(m2))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>index[v]<sp/>=<sp/>i++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;properties<sp/>of<sp/>m1:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::string&gt;<sp/>props<sp/>=<sp/>m.properties&lt;vertex_descriptor&gt;();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::string<sp/>p<sp/>:<sp/>props){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.join(m2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;properties<sp/>of<sp/>m1<sp/>after<sp/>join:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::string<sp/>p<sp/>:<sp/>m.properties&lt;vertex_descriptor&gt;()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>v<sp/>:<sp/>vertices(m))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>name[v]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>delete<sp/>the<sp/>string<sp/>property<sp/>again</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.remove_property_map(name);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1sectionSurfaceMesh_borders">
+<title>Borders</title>
+<para>A halfedge stores a reference to a face, its incident face. A halfedge <computeroutput>h</computeroutput> is on the border, if it has no incident face, that is if <computeroutput>sm.face(h) == <ref refid="classCGAL_1_1Surface__mesh_1ab88a9b19157845d6f9881c4ab77c79d6" kindref="member">Surface_mesh::null_face()</ref></computeroutput>. An edge is on the border, if any of its halfedges is on the border. A vertex is on the border, if any of its incident halfedges is on the border.</para>
+<para>A vertex has only one associated halfedge. If the user takes care that the associated halfedge is a border halfedge, in case the vertex is on the border, there is no need to look at all incident halfedges in the <computeroutput><ref refid="group__PkgBGLHelperFct_1gad93e429ad24efeaddeb836c437e719ab" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_border()</ref></computeroutput> function for vertices. In order to only check if the associated halfedge is on the border the function <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a587a5b95dab4077e28b4b6db8d947f1b" kindref="member">Surface_mesh::is_border</ref>(Vertex_index v, bool check_all_incident_halfedges = true)</computeroutput> must be called with <computeroutput>check_all_incident_halfedges = false</computeroutput>.</para>
+<para>The user is in charge to correctly set the halfedge associated to a vertex after having applied an operation that might invalidate this property. The functions <computeroutput>Surface_mesh::set_vertex_halfedge_to_border_halfedge(Vertex_index v)</computeroutput>, <computeroutput>Surface_mesh::set_vertex_halfedge_to_border_halfedge(Halfedge_index h)</computeroutput>, and <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a71e4ba8bbb19ea91f010b13b6df8f1b1" kindref="member">Surface_mesh::set_vertex_halfedge_to_border_halfedge()</ref></computeroutput> enable to set the border halfedge for a single vertex <computeroutput>v</computeroutput>, for all vertices on the boundary of the face of <computeroutput>h</computeroutput>, and for all vertices of the surface mesh, respectively.</para>
+</sect1>
+<sect1 id="index_1sectionSurfaceMesh_BGL">
+<title>Surface Mesh and the BGL API</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> is a model of the concept <computeroutput><ref refid="classIncidenceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">IncidenceGraph</ref></computeroutput> defined in the Boost Graph Library. This enables to apply algorithms such as <ulink url="https://www.boost.org/libs/graph/doc/dijkstra_shortest_paths.html">Dijkstra shortest path</ulink>, or <ulink url="https://www.boost.org/libs/graph/doc/kruskal_min_spanning_tree.html">Kruskal minimum spanning tree</ulink> directly on a surface mesh.</para>
+<para>The types and free functions of the BGL API have each a similar type or member function, for example <table rows="8" cols="3"><row>
+<entry thead="yes" align='left'><para>BGL   </para>
+</entry><entry thead="yes" align='left'><para>Surface_mesh   </para>
+</entry><entry thead="yes" align='left'><para>Remark    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>boost::graph_traits&lt;G&gt;::vertex_descriptor</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Vertex__index" kindref="compound">Surface_mesh::Vertex_index</ref></computeroutput>   </para>
+</entry><entry thead="no" align='left'><para></para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>boost::graph_traits&lt;G&gt;::edge_descriptor</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Edge__index" kindref="compound">Surface_mesh::Edge_index</ref></computeroutput>   </para>
+</entry><entry thead="no" align='left'><para></para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>vertices(const G&amp; g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>sm.vertices()</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para></para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>edges(const G&amp; g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>sm.edges()</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para></para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>vd = source(ed,g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>vd = sm.source(ed)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para></para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para>na   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>n = sm.number_of_vertices()</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para>counts non-deleted vertices and has no BGL equivalent    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>n = num_vertices(g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>n = sm.number_of_vertices() + sm.number_of_removed_vertices()</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para>counts used and deleted vertices in order to have an upper bound on the largest vertex index used   </para>
+</entry></row>
+</table>
+</para>
+<para>It would be nicer to return the number of vertices without taking removed vertices into account, but this would interact badly with the underlying vertex/edge index mappings. The index mapping would no longer fall in the range <computeroutput>[0,num_vertices(g))</computeroutput> which is assumed in many of the algorithms.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> is also a model of the concept <computeroutput><ref refid="classMutableFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">MutableFaceGraph</ref></computeroutput> defined in the package <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref>. This and similar concepts like <computeroutput><ref refid="classHalfedgeGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">HalfedgeGraph</ref></computeroutput> refine the graph concepts of the BGL by introducing the notion of halfedges and faces, as well as cycles of halfedges around faces and around vertices. Again, there are similar types and functions, for example:</para>
+<para><table rows="10" cols="2"><row>
+<entry thead="yes" align='left'><para>BGL   </para>
+</entry><entry thead="yes" align='left'><para>Surface_mesh    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>boost::graph_traits&lt;G&gt;::halfedge_descriptor</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Halfedge__index" kindref="compound">Surface_mesh::Halfedge_index</ref></computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>boost::graph_traits&lt;G&gt;::face_descriptor</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh_1_1Face__index" kindref="compound">Surface_mesh::Face_index</ref></computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>halfedges(const G&amp; g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>sm.halfedges()</computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>faces(const G&amp; g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>sm.faces()</computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>hd = next(hd, g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>hd = sm.next(hd)</computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>hd = prev(hd, g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>hd = sm.prev(hd)</computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>hd = opposite(hd,g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>hd = sm.opposite(hd)</computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput>hd = halfedge(vd,g)</computeroutput>   </para>
+</entry><entry thead="no" align='left'><para><computeroutput>hd = sm.halfedge(vd)</computeroutput>    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para>etc.   </para>
+</entry><entry thead="no" align='left'><para></para>
+</entry></row>
+</table>
+</para>
+<para>The BGL API described in the package <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref> enables us to write geometric algorithms operating on surface meshes, that work for any model of <computeroutput><ref refid="classFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceGraph</ref></computeroutput>, or <computeroutput><ref refid="classMutableFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">MutableFaceGraph</ref></computeroutput>. That is surface mesh simplification, deformation, or segmentation algorithms work for <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref></computeroutput>.</para>
+<para>BGL algorithms use property maps in order to associate information to vertices and edges. One important property is the index, an integer between <computeroutput>0</computeroutput> and <computeroutput>num_vertices(g)</computeroutput> for the vertices of a graph <computeroutput>g</computeroutput>. This allows algorithms to create a vector of the appropriate size in order to store per vertex information. For example a Boolean for storing if a vertex has already been visited during a graph traversal.</para>
+<para>The BGL way of retrieving the vertex index property map of a graph <computeroutput>g</computeroutput> is <computeroutput>vipm = get(boost::vertex_index, g)</computeroutput>, and <computeroutput>get(vipm, vd)</computeroutput> in order then to retrieve the index for a vertex descriptor <computeroutput>vd</computeroutput>, and it is <computeroutput>get(vertex_index, g, vd)</computeroutput> to obtain the vertex index directly.</para>
+<sect2 id="index_1SubsectionSurfaceMeshBglExample">
+<title>Example</title>
+<para>The first example shows that we can apply Kruskal&apos;s minimum spanning tree algorithm directly on a surface mesh.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2sm_kruskal_8cpp-example" kindref="compound">Surface_mesh/sm_kruskal.cpp</ref> <programlisting filename="Surface_mesh/sm_kruskal.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/kruskal_min_spanning_tree.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::vertex_iterator<sp/><sp/><sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::edge_descriptor<sp/><sp/><sp/>edge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>kruskal(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Mesh&amp;<sp/>sm)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>We<sp/>use<sp/>the<sp/>default<sp/>edge<sp/>weight<sp/>which<sp/>is<sp/>the<sp/>squared<sp/>length<sp/>of<sp/>the<sp/>edge</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;edge_descriptor&gt;<sp/>mst;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::kruskal_minimum_spanning_tree(sm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(mst));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#VRML<sp/>V2.0<sp/>utf8\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Shape<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>appearance<sp/>Appearance<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>material<sp/>Material<sp/>{<sp/>emissiveColor<sp/>1<sp/>0<sp/>0}}\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>geometry\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>IndexedLineSet<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/>coord<sp/>Coordinate<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>point<sp/>[<sp/>\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vb,ve;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(boost::tie(vb,<sp/>ve)<sp/>=<sp/>vertices(sm);<sp/>vb!=ve;<sp/>++vb){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sm.point(*vb)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/>}\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/>coordIndex<sp/>[\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::list&lt;edge_descriptor&gt;::iterator<sp/>it<sp/>=<sp/>mst.begin();<sp/>it<sp/>!=<sp/>mst.end();<sp/>++it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>edge_descriptor<sp/>e<sp/>=<sp/>*it<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vertex_descriptor<sp/>s<sp/>=<sp/>source(e,sm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vertex_descriptor<sp/>t<sp/>=<sp/>target(e,sm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>s<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>t<sp/>&lt;&lt;<sp/><sp/></highlight><highlight class="stringliteral">&quot;,<sp/>-1\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;]\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>}#IndexedLineSet\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;}#<sp/>Shape\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>fname<sp/>=<sp/>argc==1?<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/knot1.off&quot;</highlight><highlight class="normal">):argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(fname,<sp/>sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>kruskal(sm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The second example shows how we can use property maps for algorithms such as Prim&apos;s minimum spanning tree. The algorithm internally also uses a <emphasis>vertex index property map</emphasis> calling <computeroutput>get(boost::vertex_index_t,sm)</computeroutput>. For the class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput> this boils down to an identity function as vertices <emphasis>are</emphasis> indices.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2sm_bgl_8cpp-example" kindref="compound">Surface_mesh/sm_bgl.cpp</ref> <programlisting filename="Surface_mesh/sm_bgl.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/dijkstra_shortest_paths.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/graph/prim_minimum_spanning_tree.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>fname<sp/>=<sp/>argc==1?<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/knot1.off&quot;</highlight><highlight class="normal">):argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(fname,<sp/>sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh::Property_map&lt;vertex_descriptor,vertex_descriptor&gt;<sp/>predecessor;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>predecessor<sp/>=<sp/>sm.add_property_map&lt;vertex_descriptor,vertex_descriptor&gt;(</highlight><highlight class="stringliteral">&quot;v:predecessor&quot;</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::prim_minimum_spanning_tree(sm,<sp/>predecessor,<sp/>boost::root_vertex(*vertices(sm).first));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#VRML<sp/>V2.0<sp/>utf8\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;DirectionalLight<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;direction<sp/>0<sp/>-1<sp/>0\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;}\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Shape<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>appearance<sp/>Appearance<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>material<sp/>Material<sp/>{<sp/>emissiveColor<sp/>1<sp/>0<sp/>0}}\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>geometry\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>IndexedLineSet<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/>coord<sp/>Coordinate<sp/>{\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>point<sp/>[<sp/>\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>vertices(sm)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sm.point(vd)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>]\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/>}\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/>coordIndex<sp/>[\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>vertices(sm)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(predecessor[vd]!=vd){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::size_t(vd)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::size_t(predecessor[vd])<sp/>&lt;&lt;<sp/><sp/></highlight><highlight class="stringliteral">&quot;,<sp/>-1\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;]\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>}#IndexedLineSet\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;}#<sp/>Shape\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>sm.remove_property_map(predecessor);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1sectionSurfaceMesh_IO">
+<title>Surface Mesh I/O</title>
+<para>As a model of <computeroutput><ref refid="classFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceGraph</ref></computeroutput> (see Section <ref refid="index_1sectionSurfaceMesh_BGL" kindref="member">Surface Mesh and the BGL API</ref>), <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh</ref></computeroutput> can be read from and written using a number of different file formats. Refer to the <ref refid="group__PkgBGLIOFct" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">I/O Functions</ref> of the <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref> package, and the <ref refid="group__PMP__IO__grp" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">I/O Functions</ref> of the <ref refid="packages_1PkgPolygonMeshProcessing" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Polygon Mesh Processing</ref> package for more information.</para>
+<para>In addition, this package provides <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></computeroutput>-specific overloads of the I/O functions from the <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref> package. This enables reading/writing directly from/to internal property maps, see <ref refid="group__PkgSurfaceMeshIOFunc" kindref="compound">I/O Functions</ref> for more information.</para>
+</sect1>
+<sect1 id="index_1sectionSurfaceMesh_memory">
+<title>Memory Management</title>
+<para>Memory management is semi-automatic. Memory grows as more elements are added to the structure but does not shrink when elements are removed.</para>
+<para>When you add elements and the capacity of the underlying vector is exhausted, the vector reallocates memory. As descriptors are basically indices, they refer to the same element after a reallocation.</para>
+<para>When you remove an element it is only marked as removed. Internally it is put in a free list, and when you add elements to the surface mesh, they are taken from the free list in case it is not empty.</para>
+<para>For all elements we offer a function to obtain the number of used elements, as well as the number of used and removed elements. For vertices the functions are <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1a10ba0d4fbb6ffaf0be57c5a088cc922b" kindref="member">Surface_mesh::number_of_vertices()</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1ad63086c1d200cf3e34a5182d24fb699e" kindref="member">Surface_mesh::number_of_removed_vertices()</ref></computeroutput>, respectively. The first function is slightly different from the free function <computeroutput>num_vertices(const G&amp;)</computeroutput> of the BGL package. As BGL style algorithms use the indices of elements to access data in temporary vectors of size <computeroutput>num_vertices()</computeroutput> this function must return a number larger than the largest index of the elements.</para>
+<para>Iterators such as <computeroutput>Surface_mesh::Vertex_iterator</computeroutput> only enumerate elements that are not marked as deleted.</para>
+<para>To really shrink the used memory, <computeroutput><ref refid="classCGAL_1_1Surface__mesh_1aea69dbef8122b1acf050c19063f935f2" kindref="member">Surface_mesh::collect_garbage()</ref></computeroutput> must be called. Garbage collection also compacts the properties associated with the surface mesh.</para>
+<para>Note however that by garbage collecting elements get new indices. In case you keep vertex descriptors they are most probably no longer referring to the right vertices.</para>
+<sect2 id="index_1SubsectionSurfaceMeshMemoryManagementExample">
+<title>Example</title>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2sm_memory_8cpp-example" kindref="compound">Surface_mesh/sm_memory.cpp</ref> <programlisting filename="Surface_mesh/sm_memory.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;K::Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh::Vertex_index<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh::Vertex_index<sp/>u;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i<sp/>&lt;<sp/>5;<sp/>++i){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Mesh::Vertex_index<sp/>v<sp/>=<sp/>m.<ref refid="classCGAL_1_1Surface__mesh_1a6f899386b0667edc64cfae79cc93386e" kindref="member">add_vertex</ref>(K::Point_3(0,0,i+1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(i==2)<sp/>u=v;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.remove_vertex(u);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;After<sp/>insertion<sp/>of<sp/>5<sp/>vertices<sp/>and<sp/>removal<sp/>of<sp/>the<sp/>3.<sp/>vertex\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#<sp/>vertices<sp/><sp/>/<sp/>#<sp/>vertices<sp/>+<sp/>#<sp/>removed<sp/>vertices<sp/>=<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>m.number_of_vertices()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>/<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>m.number_of_vertices()<sp/>+<sp/>m.number_of_removed_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Iterate<sp/>over<sp/>vertices\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>m.vertices()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>m.point(vd)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>status<sp/>of<sp/>being<sp/>used<sp/>or<sp/>removed<sp/>is<sp/>stored<sp/>in<sp/>a<sp/>property<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh::Property_map&lt;Mesh::Vertex_index,bool&gt;<sp/>removed</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>=<sp/>m.property_map&lt;Mesh::Vertex_index,</highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">&gt;(</highlight><highlight class="stringliteral">&quot;v:removed&quot;</highlight><highlight class="normal">).value();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\nIterate<sp/>over<sp/>vertices<sp/>and<sp/>deleted<sp/>vertices\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#<sp/>vertices<sp/>/<sp/>#<sp/>vertices<sp/>+<sp/>#<sp/>removed<sp/>vertices<sp/>=<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>m.number_of_vertices()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>/<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>m.number_of_vertices()<sp/>+<sp/>m.number_of_removed_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0,<sp/>end<sp/>=<sp/>m.number_of_vertices()<sp/>+<sp/>m.number_of_removed_vertices();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>;<sp/>i<sp/>&lt;<sp/>end;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>vertex_descriptor<sp/>vh(i);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>assert(m.is_removed(vh)<sp/>==<sp/>removed[vh]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>m.point(vh)<sp/>&lt;&lt;<sp/>((m.is_removed(vh))<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>R\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>m.collect_garbage();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\nAfter<sp/>garbage<sp/>collection\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#<sp/>vertices<sp/>/<sp/>#<sp/>vertices<sp/>+<sp/>#<sp/>removed<sp/>vertices<sp/>=<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>m.number_of_vertices()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>/<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>m.number_of_vertices()<sp/>+<sp/>m.number_of_removed_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0,<sp/>end<sp/>=<sp/>m.number_of_vertices()<sp/>+<sp/>m.number_of_removed_vertices();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>;<sp/>i<sp/>&lt;<sp/>end;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>vertex_descriptor<sp/>vh(i);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>m.point(vh)<sp/>&lt;&lt;<sp/>((m.is_removed(vh))<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>R\n&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1SurfaceMeshDraw">
+<title>Draw a Surface Mesh</title>
+<para><anchor id="index_1ssecDrawSurfaceMesh"/> A surface mesh can be visualized by calling the <ref refid="group__PkgDrawSurfaceMesh" kindref="compound">CGAL::draw&lt;SM&gt;() </ref> as shown in the following example. This function opens a new window showing the given surface mesh. A call to this function is blocking, that is the program continues as soon as the user closes the window.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_2draw_surface_mesh_8cpp-example" kindref="compound">Surface_mesh/draw_surface_mesh.cpp</ref> <programlisting filename="Surface_mesh/draw_surface_mesh.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>filename<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Internal<sp/>color<sp/>property<sp/>maps<sp/>are<sp/>used<sp/>if<sp/>they<sp/>exist<sp/>and<sp/>are<sp/>called<sp/>&quot;v:color&quot;,<sp/>&quot;e:color&quot;<sp/>and<sp/>&quot;f:color&quot;.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>vcm<sp/>=<sp/>sm.add_property_map&lt;Mesh::Vertex_index,<sp/><ref refid="classCGAL_1_1IO_1_1Color" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::Color</ref>&gt;(</highlight><highlight class="stringliteral">&quot;v:color&quot;</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>ecm<sp/>=<sp/>sm.add_property_map&lt;Mesh::Edge_index,<sp/><ref refid="classCGAL_1_1IO_1_1Color" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::Color</ref>&gt;(</highlight><highlight class="stringliteral">&quot;e:color&quot;</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>fcm<sp/>=<sp/>sm.add_property_map&lt;Mesh::Face_index&gt;(</highlight><highlight class="stringliteral">&quot;f:color&quot;</highlight><highlight class="normal">,<sp/>CGAL::IO::white()<sp/></highlight><highlight class="comment">/*default*/</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>v<sp/>:<sp/>vertices(sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(v.idx()%2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>put(vcm,<sp/>v,<sp/>CGAL::IO::black());<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>put(vcm,<sp/>v,<sp/>CGAL::IO::blue());<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>e<sp/>:<sp/>edges(sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{<sp/>put(ecm,<sp/>e,<sp/>CGAL::IO::gray());<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>put(fcm,<sp/>*(sm.faces().begin()),<sp/>CGAL::IO::red());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Draw!</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawPolyhedron_1ga56a8df4559b043b885be909514e6069f" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::draw</ref>(sm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>This function requires <computeroutput>CGAL_Qt6</computeroutput>, and is only available if the macro <computeroutput>CGAL_USE_BASIC_VIEWER</computeroutput> is defined. Linking with the cmake target <computeroutput>CGAL::CGAL_Basic_viewer</computeroutput> will link with <computeroutput>CGAL_Qt6</computeroutput> and add the definition <computeroutput>CGAL_USE_BASIC_VIEWER</computeroutput>.</para>
+<para><anchor id="index_1fig__fig_draw_surface_mesh"/> <image type="html" name="draw_surface_mesh.png"></image>
+ <image type="latex" name="draw_surface_mesh.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__fig_draw_surface_mesh" kindref="member">fig__fig_draw_surface_mesh</ref> Result of the run of the draw_surface_mesh program. A window shows the surface mesh and allows to navigate through the 3D scene. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1sectionSurfaceMeshImplementation">
+<title>Implementation Details</title>
+<para>As integer type for the indices we have chosen <computeroutput>std::uint32_t</computeroutput>. On 64 bit operating systems they take only half the size of a pointer. They still allow to have meshes with 2 billion elements.</para>
+<para>We use <computeroutput>std::vector</computeroutput> for storing properties. So by accessing the address of the 0th element of a property map you can access the underlying raw array. This may be useful, for example for passing an array of points to OpenGL.</para>
+<para>We use a <emphasis>freelist</emphasis> for removed elements. This mean when a vertex gets removed and later <computeroutput>add_vertex</computeroutput> is called, the memory of the removed element is reused. This especially means that the n&apos;th inserted element has not necessarily the index <computeroutput>n-1</computeroutput>, and when iterating over elements they will not be enumerated in the insertion order.</para>
+</sect1>
+<sect1 id="index_1sectionSurfaceMeshHistory">
+<title>Implementation History</title>
+<para>This package is derived from an early version of Daniel Sieger and Mario Botsch package <emphasis><ref refid="classCGAL_1_1Surface__mesh" kindref="compound">Surface_mesh</ref></emphasis> <ref refid="citelist_1CITEREF_sieger2011design" kindref="member">[1]</ref>, which is inspired from the design of <ulink url="https://www.openmesh.org/">OpenMesh</ulink> and the CGAL package <ref refid="packages_1PkgPolyhedron" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Polyhedral Surface</ref>.</para>
+<para>Philipp Moeller and Andreas Fabri worked on the code so that iterators fulfill the requirements of the STL iterator concepts, and changed the API so that it becomes a model of the concepts <computeroutput><ref refid="classMutableFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">MutableFaceGraph</ref></computeroutput> and <computeroutput><ref refid="classFaceListGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceListGraph</ref></computeroutput> of the package <ref refid="packages_1PkgBGL" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL and the Boost Graph Library</ref>. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Surface_mesh.txt"/>
+  </compounddef>
+</doxygen>

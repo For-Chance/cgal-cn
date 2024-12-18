@@ -1,0 +1,969 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Shape_Regularization"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Dmitry Anisimov, Gennadii Sytov, Simon Giraudot, Jean-Philippe Bauchet, and Florent Lafarge</para>
+</simplesect>
+<anchor id="index_1fig__regularize_2_overview"/> <image type="html" name="overview.svg"></image>
+ <image type="latex" name="overview.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_2_overview" kindref="member">fig__regularize_2_overview</ref> A closed contour before (red) and after (green) regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect1 id="index_1Shape_Regularization_Intro">
+<title>Introduction</title>
+<para>This CGAL package enables to regularize a set of segments and open or closed contours in 2D and a set of planes in 3D such that all input objects are rotated and aligned with respect to the user-specified conditions. In addition, we provide a global regularization framework that can be adjusted for the user needs and any type of geometric objects. This package can also be used in conjunction with the <ref refid="packages_1PkgShapeDetection" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Shape Detection</ref> package.</para>
+</sect1>
+<sect1 id="index_1QP_Regularization_Segments">
+<title>Segments</title>
+<para>Given a set of unordered 2D segments, users can reinforce three types of regularities among these segments:<itemizedlist>
+<listitem><para><emphasis>Parallelism</emphasis>: segments, which are detected as near parallel, are made exactly parallel.</para>
+</listitem><listitem><para><emphasis>Orthogonality</emphasis>: segments, which are detected as near orthogonal, are made exactly orthogonal.</para>
+</listitem><listitem><para><emphasis>Collinearity</emphasis>: parallel segments, which are detected as near collinear, are made exactly collinear.</para>
+</listitem></itemizedlist>
+</para>
+<para>A typical use of this algorithm consists of the following steps:<orderedlist>
+<listitem><para>Create an input range with 2D segments;</para>
+</listitem><listitem><para>Define groups of segments, which should be regularized together;</para>
+</listitem><listitem><para>Instantiate models of the concepts <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery" kindref="compound">NeighborQuery</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> with the proper parameters;</para>
+</listitem><listitem><para>Call the function <computeroutput>regularize_segments()</computeroutput>.</para>
+</listitem></orderedlist>
+</para>
+<para>Once the user has defined an input range with 2D segments, he can either provide them all to the regularization algorithm, which is the default option, or they could be reorganized into groups of contextually similar segments. For example, all segments of the same length could form a group. When regularizing, only segments within the group are taken into account, that is no segment from one group will be oriented and/or aligned towards a segment from another group (see more details <ref refid="index_1QP_Regularization_Segments_Delaunay" kindref="member">here</ref>).</para>
+<para>To apply the algorithm, the user has to define two models: one of the concept <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery" kindref="compound">NeighborQuery</ref></computeroutput> that provides an access to the closest neighbors of a segment; and the other one of the concept <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> that provides one of the available regularities, which should be adjusted.</para>
+<para>This CGAL component provides a model of the <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery" kindref="compound">NeighborQuery</ref></computeroutput> concept:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Delaunay__neighbor__query__2" kindref="compound">Segments::Delaunay_neighbor_query_2</ref></computeroutput> - finds local neighbors of each segment by constructing a Delaunay triangulation. See more details <ref refid="index_1QP_Regularization_Segments_Delaunay" kindref="member">here</ref>.</para>
+</listitem></itemizedlist>
+</para>
+<para>And two models of the <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> concept:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Angle__regularization__2" kindref="compound">Segments::Angle_regularization_2</ref></computeroutput> - orients segments to reinforce parallelism and orthogonality among them. See more details <ref refid="index_1QP_Regularization_Segments_Angles" kindref="member">here</ref>.</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Offset__regularization__2" kindref="compound">Segments::Offset_regularization_2</ref></computeroutput> - aligns parallel segments to reinforce collinearity among them. See more details <ref refid="index_1QP_Regularization_Segments_Offset" kindref="member">here</ref>.</para>
+</listitem></itemizedlist>
+</para>
+<para>The standard way to regularize a set of input segments is to first apply an angle regularization and then an offset regularization, however the algorithm is flexible to handle other scenarios as you will see later.</para>
+<para><simplesect kind="note"><para>The core of this algorithm is the <ref refid="index_1QP_Regularization" kindref="member">QP Regularization</ref> framework. For more details, please refer to that section.</para>
+</simplesect>
+The example below shows the most straightforward entry point to the algorithm, where we apply two type of regularities: parallelism and orthogonality, within the group of all input segments. The algorithm is called via the function <computeroutput>regularize_segments()</computeroutput>.</para>
+<para><anchor id="index_1fig__regularize_simple_example"/> <image type="html" name="regularize_simple.svg"></image>
+ <image type="latex" name="regularize_simple.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_simple_example" kindref="member">fig__regularize_simple_example</ref> A set of 2D segments before (red) and after (green) the angle and offset regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_simple_8cpp-example" kindref="compound">Shape_regularization/regularize_simple.cpp</ref> <programlisting filename="Shape_regularization/regularize_simple.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__segments_8h" kindref="compound">CGAL/Shape_regularization/regularize_segments.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>input<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment_2&gt;<sp/>segments<sp/>=<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0.2,<sp/>0.0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.2,<sp/>0.0)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.2,<sp/>0.1),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(2.2,<sp/>0.1)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(2.2,<sp/>0.0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(2.0,<sp/>2.0)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(2.0,<sp/>2.0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.0,<sp/>2.0)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.0,<sp/>1.9),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0.0,<sp/>1.9)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(<ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0.0,<sp/>2.0),<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0.2,<sp/>0.0))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize<sp/>all<sp/>segments:<sp/>both<sp/>angles<sp/>and<sp/>offsets.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefSegments_1ga3cde2421ff91530c13c9e8f1feaeae1c" kindref="member">CGAL::Shape_regularization::Segments::</ref></highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgShapeRegularizationRefSegments_1ga3cde2421ff91530c13c9e8f1feaeae1c" kindref="member">    regularize_segments</ref>(segments);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><simplesect kind="note"><para>As it can be seen from the example, the algorithm does not prioritize any directions like vertical or horizontal but rather returns the optimal regularized configuration of the input segments.</para>
+</simplesect>
+</para>
+<sect2 id="index_1QP_Regularization_Segments_Delaunay">
+<title>Delaunay Neighbor Query</title>
+<para>This class finds local neighbors of each segment by constructing a Delaunay triangulation, using the class <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2</ref></computeroutput>, upon the center points of the input segments. The local neighborhood of a segment is thus defined by the corresponding one-ring neighborhood in the triangulation. The Delaunay triangulation can be constructed only for a group of at least two segments.</para>
+<para>The Delaunay neighbor query class constructs the Delaunay triangulation from a group of segments, which has to be provided by the user through the <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Delaunay__neighbor__query__2_1aaffd7eb2871e03b6e0d3cc997b440661" kindref="member">Segments::Delaunay_neighbor_query_2::add_group()</ref></computeroutput> method, and finds local neighbors of each segment only within the group. If this method is never called, all input segments are treated as a group.</para>
+<para>Note that a group can include fewer segments than in the input range. For example, if your input range contains multiple segments, which contextually form three different groups of objects lets say boundaries of three different buildings and you do not want to regularize these buildings with respect to each other, but rather within each building boundary, in that case you should call the <computeroutput>add_group</computeroutput> method three times. An example of such groups can be seen in <ref refid="index_1Regularize_15_Segments_Figure" kindref="member">this figure</ref>, where you can see three groups of contextually similar segments: outer boundary, interior top rhombus and interior bottom rhombus or in the figure below.</para>
+<para>In this figure, there are two squares, one external and one internal. On the left, the red segments show the connectivity among all input segments that is a Delaunay triangulation built upon all these segments, while on the right, the green segments show the connectivity only among external square segments and blue segments only among internal square segments.</para>
+<para><anchor id="index_1fig__delaunay_groups"/> <image type="html" name="delaunay_groups.svg"></image>
+ <image type="latex" name="delaunay_groups.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__delaunay_groups" kindref="member">fig__delaunay_groups</ref> Delaunay triangulation (red) for all input segments (black, left) and two contextually different groups with green Delaunay for the external segments and blue Delaunay for the internal segments (right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Segments_Angles">
+<title>Angle Regularization</title>
+<para>This class orients 2D segments in order to reinforce parallelism and orthogonality among them. To apply the angle regularization on a set of 2D segments, the user has to:<itemizedlist>
+<listitem><para>specify the maximum angle deviation of a segment from its initial orientation that has to be within the interval [0, 90] degrees. If no bound is provided, a bound of 25 degrees will be set as the default value;</para>
+</listitem><listitem><para>add groups of segments, if any, through the <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Angle__regularization__2_1a973f865ac9b75042b31ec29d88f2b606" kindref="member">Segments::Angle_regularization_2::add_group()</ref></computeroutput> method.</para>
+</listitem></itemizedlist>
+</para>
+<para>After the optimization, each segment is rotated with respect to its midpoint.</para>
+<para><anchor id="index_1fig__regularize_100_segments_angles_example"/> <image type="html" name="regularize_100_segments_angles.svg"></image>
+ <image type="latex" name="regularize_100_segments_angles.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_100_segments_angles_example" kindref="member">fig__regularize_100_segments_angles_example</ref> A generated set of 2D segments before (red) and after (green) the angle regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The following example demonstrates the usage of the shape regularization algorithm for angles on a set of 100 near orthogonal segments generated with the help of <ref refid="packages_1PkgGenerators" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL Geometric Object Generators</ref>. The entire <computeroutput>InputRange</computeroutput> is provided to the angle regularization class as a group. The maximum angle bound is set to 40 degrees.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_100_segments_angles_8cpp-example" kindref="compound">Shape_regularization/regularize_100_segments_angles.cpp</ref> <programlisting filename="Shape_regularization/regularize_100_segments_angles.cpp"><codeline><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Saver.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__segments_8h" kindref="compound">CGAL/Shape_regularization/regularize_segments.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Segments<sp/><sp/>=<sp/>std::vector&lt;Segment_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Neighbor_query<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Delaunay__neighbor__query__2" kindref="compound">CGAL::Shape_regularization::Segments::Delaunay_neighbor_query_2&lt;Kernel, Segments&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Angle_regularization<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Angle__regularization__2" kindref="compound">CGAL::Shape_regularization::Segments::Angle_regularization_2&lt;Kernel, Segments&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>we<sp/>want<sp/>to<sp/>save<sp/>the<sp/>result<sp/>in<sp/>a<sp/>file,<sp/>we<sp/>save<sp/>it<sp/>in<sp/>a<sp/>path.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>path<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>1)<sp/>path<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Saver&lt;Kernel&gt;<sp/>saver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Initialize<sp/>100<sp/>near-orthogonal<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment_2&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>create_example_angles(segments);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>input<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(path<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>path<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_100_segments_angles_before&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Angle<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_angle_2<sp/>=<sp/>FT(40);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>neighbor<sp/>query<sp/>and<sp/>angle-based<sp/>regularization<sp/>model.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Neighbor_query<sp/>neighbor_query(segments);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Angle_regularization<sp/>angle_regularization(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>CGAL::parameters::maximum_angle(max_angle_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefSegments_1ga3cde2421ff91530c13c9e8f1feaeae1c" kindref="member">CGAL::Shape_regularization::Segments::regularize_segments</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>neighbor_query,<sp/>angle_regularization);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>modified<sp/>segments<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>angle_regularization.number_of_modified_segments()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>regularized<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(path<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>path<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_100_segments_angles_after&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Segments_Offset">
+<title>Offset Regularization</title>
+<para>This class aligns 2D parallel segments in order to reinforce collinearity among them. To apply the offset regularization on a set of 2D segments, the user has to:<itemizedlist>
+<listitem><para>specify the maximum distance between two parallel segments that has to be within the interval [0, +inf). If no bound is provided, a bound of 0.5 unit length will be set as the default value.</para>
+</listitem><listitem><para>add groups of parallel segments through the <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Offset__regularization__2_1a8e9dbdec86eb77a43911699e59307865" kindref="member">Segments::Offset_regularization_2::add_group()</ref></computeroutput> method. If the user does not have these groups, they can be obtained from <ref refid="index_1QP_Regularization_Segments_Angles" kindref="member">Angle Regularization</ref> by orienting original segments or from the utility function <computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1gac72eca9b32b73a3713edffd2da5609f2" kindref="member">Segments::parallel_groups()</ref></computeroutput>. See more details <ref refid="index_1QP_Regularization_Segments_Groups" kindref="member">here</ref>.</para>
+</listitem></itemizedlist>
+</para>
+<para>After the optimization, each segment is translated along its orthogonal direction.</para>
+<para>Note that if the input segments within the same group are not exactly parallel, the distance, which is defined as the distance between the midpoint of one segment and the projection of this point onto the supporting line of another segment, is not a good metric to optimize positions of the segments that may lead to deviations in the result from what the user would expect in case of exactly parallel segments. The offset regularization does not internally orient segments to make them exactly parallel. This is what the <ref refid="index_1QP_Regularization_Segments_Angles" kindref="member">Angle Regularization</ref> class for. The utility function <computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1gac72eca9b32b73a3713edffd2da5609f2" kindref="member">Segments::parallel_groups()</ref></computeroutput> does not orient segments either, but only returns groups of near-parallel segments.</para>
+<para><anchor id="index_1fig__regularize_100_segments_offsets_example"/> <image type="html" name="regularize_100_segments_offsets.svg"></image>
+ <image type="latex" name="regularize_100_segments_offsets.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_100_segments_offsets_example" kindref="member">fig__regularize_100_segments_offsets_example</ref> A generated set of 2D segments before (red) and after (green) the offset regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The following example demonstrates the usage of the shape regularization algorithm for offsets on a set of 100 parallel segments located within a circle. The function <computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1gac72eca9b32b73a3713edffd2da5609f2" kindref="member">Segments::parallel_groups()</ref></computeroutput> is used to obtain the groups of parallel segments. The maximum offset bound is set to 0.25 unit length.</para>
+<para><anchor id="index_1QP_Parallel_Groups_Example"/><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_100_segments_offsets_8cpp-example" kindref="compound">Shape_regularization/regularize_100_segments_offsets.cpp</ref> <programlisting filename="Shape_regularization/regularize_100_segments_offsets.cpp"><codeline><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Saver.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__segments_8h" kindref="compound">CGAL/Shape_regularization/regularize_segments.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Segments<sp/><sp/>=<sp/>std::vector&lt;Segment_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Indices<sp/><sp/><sp/>=<sp/>std::vector&lt;std::size_t&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Neighbor_query<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Delaunay__neighbor__query__2" kindref="compound">CGAL::Shape_regularization::Segments::Delaunay_neighbor_query_2&lt;Kernel, Segments&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Offset_regularization<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Offset__regularization__2" kindref="compound">CGAL::Shape_regularization::Segments::Offset_regularization_2&lt;Kernel, Segments&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>we<sp/>want<sp/>to<sp/>save<sp/>the<sp/>result<sp/>in<sp/>a<sp/>file,<sp/>we<sp/>save<sp/>it<sp/>in<sp/>a<sp/>path.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>path<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>1)<sp/>path<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Saver&lt;Kernel&gt;<sp/>saver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Initialize<sp/>100<sp/>segments<sp/>in<sp/>a<sp/>fuzzy<sp/>circle.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment_2&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>create_example_offsets(segments);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>input<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(path<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>path<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_100_segments_offsets_before&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(100));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Find<sp/>groups<sp/>of<sp/>parallel<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_angle_2<sp/>=<sp/>FT(1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Indices&gt;<sp/>pgroups;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefSegments_1gac72eca9b32b73a3713edffd2da5609f2" kindref="member">CGAL::Shape_regularization::Segments::parallel_groups</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>std::back_inserter(pgroups),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::maximum_angle(max_angle_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Offset<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_offset_2<sp/>=<sp/>FT(1)<sp/>/<sp/>FT(4);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>neighbor<sp/>query<sp/>and<sp/>offset-based<sp/>regularization<sp/>model.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Neighbor_query<sp/>neighbor_query(segments);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Offset_regularization<sp/>offset_regularization(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>CGAL::parameters::maximum_offset(max_offset_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>each<sp/>group<sp/>of<sp/>parallel<sp/>segments<sp/>with<sp/>at<sp/>least<sp/>2<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>pgroup<sp/>:<sp/>pgroups)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>neighbor_query.add_group(pgroup);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>offset_regularization.add_group(pgroup);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefSegments_1ga3cde2421ff91530c13c9e8f1feaeae1c" kindref="member">CGAL::Shape_regularization::Segments::regularize_segments</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>neighbor_query,<sp/>offset_regularization);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>modified<sp/>segments<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>offset_regularization.number_of_modified_segments()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>regularized<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(path<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>path<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_100_segments_offsets_after&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(100));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Segments_Examples">
+<title>Angle + Offset Regularization</title>
+<para>The following examples demonstrate the usage of the shape regularization algorithm for both angles and offsets sequentially on a set of 2D segments.</para>
+<para>The first example contains 15 segments. The angle and offset regularizations are performed on these segments sequentially using the maximum bounds of 10 degrees and 0.1 unit length respectively. We also show here how to create and work with contextually similar groups of segments and regularize each group on its own. The defined groups are the outer boundary, top and bottom rhombus. Since the shape regularization algorithm on segments is based on the <ref refid="index_1QP_Regularization" kindref="member">QP Regularization</ref> framework, this example also shows how to use that framework directly instead of calling the function <computeroutput>regularize_segments()</computeroutput>.</para>
+<para><anchor id="index_1Regularize_15_Segments_Figure"/><anchor id="index_1fig__regularize_15_segments_example"/> <image type="html" name="regularize_15_segments.svg"></image>
+ <image type="latex" name="regularize_15_segments.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_15_segments_example" kindref="member">fig__regularize_15_segments_example</ref> A set of 2D segments before (red), after the angle (yellow), and the offset (green) regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_15_segments_8cpp-example" kindref="compound">Shape_regularization/regularize_15_segments.cpp</ref> <programlisting filename="Shape_regularization/regularize_15_segments.cpp"><codeline><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Saver.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Shape__regularization_8h" kindref="compound">CGAL/Shape_regularization.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Segments<sp/><sp/><sp/><sp/>=<sp/>std::vector&lt;Segment_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Indices<sp/><sp/><sp/><sp/><sp/>=<sp/>std::vector&lt;std::size_t&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Segment_map<sp/>=<sp/><ref refid="structCGAL_1_1Identity__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">CGAL::Identity_property_map&lt;Segment_2&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Neighbor_query<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Delaunay__neighbor__query__2" kindref="compound">CGAL::Shape_regularization::Segments::Delaunay_neighbor_query_2&lt;Kernel, Segments, Segment_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Angle_regularization<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Angle__regularization__2" kindref="compound">CGAL::Shape_regularization::Segments::Angle_regularization_2&lt;Kernel, Segments, Segment_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Offset_regularization<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Offset__regularization__2" kindref="compound">CGAL::Shape_regularization::Segments::Offset_regularization_2&lt;Kernel, Segments, Segment_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Quadratic__program" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/QP_solver.tag">Quadratic_program</ref><sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1OSQP__quadratic__program__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">CGAL::OSQP_quadratic_program_traits&lt;FT&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Quadratic_angle_regularizer<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1QP__regularization" kindref="compound">CGAL::Shape_regularization::QP_regularization</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>,<sp/>Segments,<sp/>Neighbor_query,<sp/>Angle_regularization,<sp/><ref refid="classCGAL_1_1Quadratic__program" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/QP_solver.tag">Quadratic_program</ref>&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Quadratic_offset_regularizer<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1QP__regularization" kindref="compound">CGAL::Shape_regularization::QP_regularization</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>,<sp/>Segments,<sp/>Neighbor_query,<sp/>Offset_regularization,<sp/><ref refid="classCGAL_1_1Quadratic__program" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/QP_solver.tag">Quadratic_program</ref>&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>we<sp/>want<sp/>to<sp/>save<sp/>the<sp/>result<sp/>in<sp/>a<sp/>file,<sp/>we<sp/>save<sp/>it<sp/>in<sp/>a<sp/>path.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>path<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>1)<sp/>path<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Saver&lt;Kernel&gt;<sp/>saver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Initialize<sp/>15<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment_2&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>create_example_15(segments);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>We<sp/>create<sp/>three<sp/>groups<sp/>of<sp/>segments:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>outer,<sp/>top<sp/>and<sp/>bottom<sp/>rhombuses.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Indices&gt;<sp/>groups(3);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>groups[0]<sp/>=<sp/>{0,<sp/>1,<sp/>2,<sp/>3,<sp/>4,<sp/>5,<sp/>6};<sp/></highlight><highlight class="comment">//<sp/>outer</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>groups[1]<sp/>=<sp/>{7,<sp/>8,<sp/>9,<sp/>10};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>top<sp/>rhombus</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>groups[2]<sp/>=<sp/>{11,<sp/>12,<sp/>13,<sp/>14};<sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>bottom<sp/>rhombus</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>input<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(path<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>path<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_15_segments_before&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(100));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Angle<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_angle_2<sp/>=<sp/>FT(10);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>qp<sp/>solver,<sp/>neighbor<sp/>query,<sp/>and<sp/>angle-based<sp/>regularization<sp/>model.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Quadratic_program<sp/>qp_angles;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Neighbor_query<sp/>neighbor_query(segments);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Angle_regularization<sp/>angle_regularization(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>CGAL::parameters::maximum_angle(max_angle_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>each<sp/>group<sp/>of<sp/>input<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>group<sp/>:<sp/>groups)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>neighbor_query.add_group(group);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>angle_regularization.add_group(group);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Quadratic_angle_regularizer<sp/>qp_angle_regularizer(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>neighbor_query,<sp/>angle_regularization,<sp/>qp_angles);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp_angle_regularizer.regularize();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>modified<sp/>segments<sp/>(angles)<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>angle_regularization.number_of_modified_segments()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Offset<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_offset_2<sp/>=<sp/>FT(1)<sp/>/<sp/>FT(10);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>groups<sp/>of<sp/>parallel<sp/>segments<sp/>after<sp/>angle<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Indices&gt;<sp/>pgroups;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>angle_regularization.parallel_groups(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::back_inserter(pgroups));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>qp<sp/>solver<sp/>and<sp/>offset-based<sp/>regularization<sp/>model.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Quadratic_program<sp/>qp_offsets;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Offset_regularization<sp/>offset_regularization(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>CGAL::parameters::maximum_offset(max_offset_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>each<sp/>group<sp/>of<sp/>parallel<sp/>segments<sp/>with<sp/>at<sp/>least<sp/>2<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>neighbor_query.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>pgroup<sp/>:<sp/>pgroups)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>neighbor_query.add_group(pgroup);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>offset_regularization.add_group(pgroup);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Quadratic_offset_regularizer<sp/>qp_offset_regularizer(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>neighbor_query,<sp/>offset_regularization,<sp/>qp_offsets);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp_offset_regularizer.regularize();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>modified<sp/>segments<sp/>(offsets)<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>offset_regularization.number_of_modified_segments()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>regularized<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(path<sp/>!=<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>path<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_15_segments_after&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(100));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The second example contains 65 segments, which are constructed from a set of input points. All points are organized into groups such that each group represents an approximate 2D line. Organizing points into such groups can be achieved with the <ref refid="packages_1PkgShapeDetection" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Shape Detection</ref> package. We fit a segment to each group of points using the <ref refid="packages_1PkgPrincipalComponentAnalysisD" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Principal Component Analysis</ref> package. The angle and offset regularizations are performed on these segments sequentially using the bounds of 80 degrees and 2 unit lengths respectively.</para>
+<para><anchor id="index_1fig__regularize_real_data_2_example"/> <image type="html" name="regularize_real_data_2.svg"></image>
+ <image type="latex" name="regularize_real_data_2.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_real_data_2_example" kindref="member">fig__regularize_real_data_2_example</ref> A set of 2D segments before (red), after the angle (yellow), and the offset (green) regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_real_data_2_8cpp-example" kindref="compound">Shape_regularization/regularize_real_data_2.cpp</ref> <programlisting filename="Shape_regularization/regularize_real_data_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Saver.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Eigen_diagonalize_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/linear_least_squares_fitting_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__segments_8h" kindref="compound">CGAL/Shape_regularization/regularize_segments.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Line__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Line_2</ref><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Line__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Line_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Points_2<sp/><sp/>=<sp/>std::vector&lt;Point_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Indices<sp/><sp/><sp/>=<sp/>std::vector&lt;std::size_t&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Segments<sp/><sp/>=<sp/>std::vector&lt;Segment_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Neighbor_query<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Delaunay__neighbor__query__2" kindref="compound">CGAL::Shape_regularization::Segments::Delaunay_neighbor_query_2&lt;Kernel, Segments&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Angle_regularization<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Angle__regularization__2" kindref="compound">CGAL::Shape_regularization::Segments::Angle_regularization_2&lt;Kernel, Segments&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Offset_regularization<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Segments_1_1Offset__regularization__2" kindref="compound">CGAL::Shape_regularization::Segments::Offset_regularization_2&lt;Kernel, Segments&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>we<sp/>want<sp/>to<sp/>load<sp/>a<sp/>different<sp/>file,<sp/>we<sp/>load<sp/>it<sp/>from<sp/>a<sp/>path.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Each<sp/>point<sp/>comes<sp/>with<sp/>the<sp/>index<sp/>of<sp/>the<sp/>corresponding<sp/>group.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>file<sp/>format:<sp/>x<sp/>y<sp/>z<sp/>i,<sp/>where<sp/>i<sp/>is<sp/>the<sp/>group<sp/>index.<sp/>The<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>are<sp/>2D<sp/>hence<sp/>z<sp/>=<sp/>0.<sp/>Each<sp/>group<sp/>contains<sp/>points,<sp/>which<sp/>form</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>an<sp/>approximate<sp/>line.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>path<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;data/real_data_2.xyzi&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>1)<sp/>path<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Saver&lt;Kernel&gt;<sp/>saver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Initialize<sp/>input<sp/>groups<sp/>with<sp/>points.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Points_2&gt;<sp/>groups;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>initialize_groups(path,<sp/>groups);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Fit<sp/>a<sp/>line<sp/>to<sp/>each<sp/>group<sp/>of<sp/>points.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Line__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Line_2</ref><sp/>line;<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">centroid</ref>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Line_2&gt;<sp/>lines;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>lines.reserve(groups.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>group<sp/>:<sp/>groups)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgPrincipalComponentAnalysisDLLSF2_1gaf0d4435db5901ebe10cafd7de7c077f3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Principal_component_analysis.tag">CGAL::linear_least_squares_fitting_2</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>group.begin(),<sp/>group.end(),<sp/>line,<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">centroid</ref>,<sp/><ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag&lt;0&gt;</ref>(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>(),<sp/><ref refid="classCGAL_1_1Eigen__diagonalize__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">CGAL::Eigen_diagonalize_traits&lt;FT, 2&gt;</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>lines.push_back(line);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Cut<sp/>each<sp/>line<sp/>at<sp/>the<sp/>ends<sp/>of<sp/>the<sp/>corresponding<sp/>group.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment_2&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.reserve(lines.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>source,<sp/>target;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>lines.size();<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boundary_points_on_line_2(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>groups[i],<sp/>lines[i],<sp/>source,<sp/>target);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(source,<sp/>target));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>input<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>2)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>std::string(argv[2])<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_real_data_2_before&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(3)<sp/>/<sp/>FT(2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Angle<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_angle_2<sp/>=<sp/>FT(80);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>neighbor<sp/>query<sp/>and<sp/>angle-based<sp/>regularization<sp/>model.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Neighbor_query<sp/>neighbor_query(segments);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Angle_regularization<sp/>angle_regularization(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>CGAL::parameters::maximum_angle(max_angle_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefSegments_1ga3cde2421ff91530c13c9e8f1feaeae1c" kindref="member">CGAL::Shape_regularization::Segments::regularize_segments</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>neighbor_query,<sp/>angle_regularization);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>modified<sp/>segments<sp/>(angles)<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>angle_regularization.number_of_modified_segments()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Offset<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_offset_2<sp/>=<sp/>FT(2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>groups<sp/>of<sp/>parallel<sp/>segments<sp/>after<sp/>angle<sp/>regularization.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Indices&gt;<sp/>pgroups;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>angle_regularization.parallel_groups(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::back_inserter(pgroups));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>offset-based<sp/>regularization<sp/>model.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Offset_regularization<sp/>offset_regularization(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>CGAL::parameters::maximum_offset(max_offset_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>each<sp/>group<sp/>of<sp/>parallel<sp/>segments<sp/>with<sp/>at<sp/>least<sp/>2<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>neighbor_query.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>pgroup<sp/>:<sp/>pgroups)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>neighbor_query.add_group(pgroup);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>offset_regularization.add_group(pgroup);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefSegments_1ga3cde2421ff91530c13c9e8f1feaeae1c" kindref="member">CGAL::Shape_regularization::Segments::regularize_segments</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments,<sp/>neighbor_query,<sp/>offset_regularization);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>modified<sp/>segments<sp/>(offsets)<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>offset_regularization.number_of_modified_segments()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>regularized<sp/>segments.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>2)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>std::string(argv[2])<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_real_data_2_after&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_segments(segments,<sp/>full_path,<sp/>FT(3)<sp/>/<sp/>FT(2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Segments_Utils">
+<title>Utility Functions</title>
+<para>In addition to the main algorithm, we also provide several utility functions, which are often used in conjunction with the algorithm.</para>
+<sect3 id="index_1QP_Regularization_Segments_Groups">
+<title>Grouping Segments</title>
+<para>This CGAL component also provides three ways to group segments:<itemizedlist>
+<listitem><para><computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1gac72eca9b32b73a3713edffd2da5609f2" kindref="member">Segments::parallel_groups()</ref></computeroutput> - organizes a set of unordered 2D segments into groups of parallel segments.</para>
+</listitem><listitem><para><computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1ga7fe1c4b39b16dee49ba9c41dc3c0b0f8" kindref="member">Segments::orthogonal_groups()</ref></computeroutput> - organizes a set of unordered 2D segments into groups of orthogonal segments.</para>
+</listitem><listitem><para><computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1ga7ade7f4682f9953fcf36669b2079f4d9" kindref="member">Segments::collinear_groups()</ref></computeroutput> - organizes a set of unordered 2D segments into groups of collinear segments.</para>
+</listitem></itemizedlist>
+</para>
+<para><anchor id="index_1fig__parallel_groups"/> <image type="html" name="groups.svg"></image>
+ <image type="latex" name="groups.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__parallel_groups" kindref="member">fig__parallel_groups</ref> Groups of near parallel (left), near orthogonal (center), and near collinear (right) segments. Red, green, blue colors indicate groups within each set of 2D segments. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The function <computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1gac72eca9b32b73a3713edffd2da5609f2" kindref="member">Segments::parallel_groups()</ref></computeroutput> enables users to form groups of parallel segments. For example, if you know that all your segments are already near parallel to each other within some tolerance error and you do not want to orient them by applying the <ref refid="index_1QP_Regularization_Segments_Angles" kindref="member">Angle Regularization</ref> algorithm, but you still need to make them collinear by minimizing the offset among parallel segments using the <ref refid="index_1QP_Regularization_Segments_Offset" kindref="member">Offset Regularization</ref> algorithm, you can create the groups of parallel segments by using this function and provide them as input to the offset regularization algorithm as we do it <ref refid="index_1QP_Parallel_Groups_Example" kindref="member">here</ref>.</para>
+<para>The other two functions serve a similar goal. The one <computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1ga7fe1c4b39b16dee49ba9c41dc3c0b0f8" kindref="member">Segments::orthogonal_groups()</ref></computeroutput> first creates groups of parallel segments and then merges them into groups, where all segments are either parallel or orthogonal to each other. The one <computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1ga7ade7f4682f9953fcf36669b2079f4d9" kindref="member">Segments::collinear_groups()</ref></computeroutput> first creates groups of parallel segments and then splits each of these groups into groups of collinear segments, if any.</para>
+<para><simplesect kind="note"><para>Note that none of these functions applies the regularization of the input segments. They only return groups of indices of segments with similar orientations and/or positions.</para>
+</simplesect>
+</para>
+</sect3>
+<sect3 id="index_1QP_Regularization_Segments_Simplification">
+<title>Simplifying Segments</title>
+<para>After regularizing angles and offsets, simplifying segments with similar properties is a common post-processing task. This CGAL component provides an utility function <computeroutput><ref refid="group__PkgShapeRegularizationRefSegments_1ga9312b7fea9ddc4beae7b166ccc4607df" kindref="member">Segments::unique_segments()</ref></computeroutput> that takes a set of input segments, groups them with respect to the collinearity property, and then returns for each group of collinear segments a segment that best fits this group (see the figure below).</para>
+<para><simplesect kind="note"><para>Even if the segments are far away from each other but close with respect to the orthogonal distance between them that is they are almost collinear, they will be merged as the blue segments in the figure.</para>
+</simplesect>
+<anchor id="index_1fig__unique_segments"/> <image type="html" name="unique_segments.svg"></image>
+ <image type="latex" name="unique_segments.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__unique_segments" kindref="member">fig__unique_segments</ref> Input segments with multiple collinear segments (left) are simplified into unique segments (right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+</sect2>
+<sect2 id="index_1QP_Regularization_Segments_Performance">
+<title>Performance</title>
+<para>The performance of the shape regularization algorithm mostly depends on the used QP solver. When using the <computeroutput><ref refid="classCGAL_1_1OSQP__quadratic__program__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">CGAL::OSQP_quadratic_program_traits</ref></computeroutput> model, we exploit and efficiently use the sparse nature of the related QP problem that leads to quick performances in practice.</para>
+<para>The plot (solid) below shows how the computation time depends on the number of input segments. We first observe that the most challenging step is angle regularization while the offset regularization is much faster. This is an effect of complexity reduction by segmenting the problem into groups for offset regularization. Since each group of parallel segments is much smaller than the original set of input segments, the total computation time is smaller, too. The same idea can be applied to accelerate the angle regularization. Splitting input segments into groups with contextually similar properties from the very beginning will lead to better performance as indicated in the plot (dashed). However, note that not each data set can be meaningfully split into such groups.</para>
+<para>To benchmark the algorithm, we used a MacBook Pro 2018 with 2.2 GHz Intel Core i7 processor (6 cores) and 32 GB 2400 MHz DDR4 memory. The installed operating system was OS X 10.15 Catalina. We first create a set of random segments in a square such that all segments are either parallel to the X axis or Y axis. We then slightly perturb all segments by a random angle within the interval [-15, 15] degrees and apply the regularization algorithm 10 times on the same input. The returned time is the average time over all iterations. In the pre-grouped version, we regroup all segments into groups of 10 segments and the regularization algorithm is applied to each group. For example, in case of 50 input segments, we will have 5 input groups. Since the groups are very small, there is no much difference in time between angle and offset regularizations. The results are shown in the figure below.</para>
+<para><anchor id="index_1fig__qp_segments_bench"/> <image type="html" name="qp_segments_bench.svg"></image>
+ <image type="latex" name="qp_segments_bench.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__qp_segments_bench" kindref="member">fig__qp_segments_bench</ref> Time in seconds to regularize angles (solid red) and offsets (solid green) without regrouping input segments and with the groups of 10 segments for angles (dashed red) and offsets (dashed green). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Contour_Regularization">
+<title>Contours</title>
+<para>Given a set of ordered 2D points connected by segments, which form a contour, closed or open, users can reinforce three types of regularities among consecutive edges of this contour:<itemizedlist>
+<listitem><para><emphasis>Parallelism</emphasis>: contour edges, which are detected as near parallel, are made exactly parallel.</para>
+</listitem><listitem><para><emphasis>Orthogonality</emphasis>: contour edges, which are detected as near orthogonal, are made exactly orthogonal.</para>
+</listitem><listitem><para><emphasis>Collinearity</emphasis>: parallel contour edges, which are detected as near collinear, are made exactly collinear.</para>
+</listitem></itemizedlist>
+</para>
+<para>A typical use of this algorithm consists of the following steps:<orderedlist>
+<listitem><para>Specify a type of the contour, open or closed;</para>
+</listitem><listitem><para>Create an instance of the class <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1ContourDirections" kindref="compound">ContourDirections</ref></computeroutput> with the proper parameters;</para>
+</listitem><listitem><para>Call the function <computeroutput>regularize_closed_contour()</computeroutput> or <computeroutput>regularize_open_contour()</computeroutput>.</para>
+</listitem></orderedlist>
+</para>
+<para>We assume that each contour has at least one principal direction that is a reference direction towards which the contour edges are rotated. Given a set of such directions either estimated or user-specified, each edge is made either parallel or orthogonal to these direction(s).</para>
+<para>To estimate principal directions of the contour, this component provides three models of the concept <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1ContourDirections" kindref="compound">ContourDirections</ref></computeroutput>:<itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Contours_1_1Longest__direction__2" kindref="compound">Contours::Longest_direction_2</ref></computeroutput> - sets the longest contour edge as the only principal direction.</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Contours_1_1Multiple__directions__2" kindref="compound">Contours::Multiple_directions_2</ref></computeroutput> - tries to estimate multiple principal directions in the contour based on the user-specified parameters (see the figure below).</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1Contours_1_1User__defined__directions__2" kindref="compound">Contours::User_defined_directions_2</ref></computeroutput> - sets the user-specified principal directions as contour directions.</para>
+</listitem></itemizedlist>
+</para>
+<para><anchor id="index_1fig__multiple_directions"/> <image type="html" name="multiple_directions.svg"></image>
+ <image type="latex" name="multiple_directions.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__multiple_directions" kindref="member">fig__multiple_directions</ref> A closed contour before (red) and after (green) the contour regularization. The found principal directions are marked yellow. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>After the directions are set, the algorithm is linear in the number of contour edges. It first goes through each contour edge and orients it towards the best-fit direction. In the second step, all parallel consecutive edges are merged if they are within a user-specified maximum tolerance distance. The distance here is defined as the distance between the midpoint of the first edge and the projection of this point onto the supporting line of the next edge. The position of the merged segment is optimized with respect to its neighbors. In the last steps, all segments are reconnected into a contour as shown in the figure below. Due to the merging step, the number of output edges in the contour is not necessarily the same as the number of input edges.</para>
+<para><anchor id="index_1fig__contours_pipeline"/> <image type="html" name="contours_pipeline.svg"></image>
+ <image type="latex" name="contours_pipeline.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__contours_pipeline" kindref="member">fig__contours_pipeline</ref> Steps of the contour regularization algorithm (from left to right): the closed contour before regularization; the disconnected contour with edges rotated towards the found principal directions, here we have only one direction; the optimized edges, blue edges were merged and their positions were optimized; and the final reconnected contour. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>If the user wants to rotate each contour edge on its own towards the best-fit direction without reconnecting them after into a closed/open contour, she can either use the <ref refid="index_1QP_Regularization_Segments" kindref="member">Segment Regularization</ref> algorithm or she can orient each segment by calling the <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1ContourDirections_1a07f23b0d134d1dfb32158f485aab15b8" kindref="member">ContourDirections::orient()</ref></computeroutput> method.</para>
+<para>The example below shows the most straightforward entry point to the algorithm, where we regularize a simple closed contour. The algorithm is called via the function <computeroutput>regularize_closed_contour()</computeroutput>.</para>
+<para><anchor id="index_1fig__regularize_contour_example"/> <image type="html" name="regularize_contour.svg"></image>
+ <image type="latex" name="regularize_contour.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_contour_example" kindref="member">fig__regularize_contour_example</ref> A closed contour before (red) and after (green) regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_contour_8cpp-example" kindref="compound">Shape_regularization/regularize_contour.cpp</ref> <programlisting filename="Shape_regularization/regularize_contour.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__contours_8h" kindref="compound">CGAL/Shape_regularization/regularize_contours.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>input<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;Point_2&gt;<sp/>contour<sp/>=<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0.00,<sp/><sp/>0.00),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0.50,<sp/>-0.05),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.00,<sp/><sp/>0.00),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.05,<sp/><sp/>0.50),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1.00,<sp/><sp/>1.00),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0.00,<sp/><sp/>1.00)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize<sp/>this<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>regularized;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefContours_1ga7e2f3e7e76c52a3acef42a0d413a17c6" kindref="member">CGAL::Shape_regularization::Contours::</ref></highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgShapeRegularizationRefContours_1ga7e2f3e7e76c52a3acef42a0d413a17c6" kindref="member">    regularize_closed_contour</ref>(contour,<sp/>std::back_inserter(regularized));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<sect2 id="index_1Contour_Regularization_Closed">
+<title>Closed Contours</title>
+<para>In the example below, we regularize a closed contour. We use multiple directions estimator, which returns only one direction, because the contour is quite rectilinear. In fact, the returned direction in this case coincides with the longest edge direction.</para>
+<para><anchor id="index_1fig__regularize_closed_contour_example"/> <image type="html" name="regularize_closed_contour.svg"></image>
+ <image type="latex" name="regularize_closed_contour.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_closed_contour_example" kindref="member">fig__regularize_closed_contour_example</ref> A closed contour before (red) and after (green) the contour regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_closed_contour_8cpp-example" kindref="compound">Shape_regularization/regularize_closed_contour.cpp</ref> <programlisting filename="Shape_regularization/regularize_closed_contour.cpp"><codeline><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Saver.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__contours_8h" kindref="compound">CGAL/Shape_regularization/regularize_contours.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Contour<sp/>=<sp/>std::vector&lt;Point_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Contour_directions<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Contours_1_1Multiple__directions__2" kindref="compound">CGAL::Shape_regularization::Contours::Multiple_directions_2&lt;Kernel, Contour&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>we<sp/>want<sp/>to<sp/>load<sp/>a<sp/>different<sp/>file,<sp/>we<sp/>load<sp/>it<sp/>from<sp/>a<sp/>path.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>path<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;data/contour.polylines&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>1)<sp/>path<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Saver&lt;Kernel&gt;<sp/>saver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Set<sp/>parameters.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>min_length_2<sp/>=<sp/>FT(2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/><sp/>max_angle_2<sp/>=<sp/>FT(20);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_offset_2<sp/>=<sp/>FT(2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Initialize<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>contour;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>initialize_contour(path,<sp/>contour);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>input<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>2)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>std::string(argv[2])<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_closed_contour_before&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_closed_contour(contour,<sp/>full_path,<sp/>FT(8));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="group__PkgBGLHelperFct_1gae04c8044cf1eee6a84baa5b79ab99fef" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_closed</ref><sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Contour_directions<sp/>directions(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>contour,<sp/><ref refid="group__PkgBGLHelperFct_1gae04c8044cf1eee6a84baa5b79ab99fef" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_closed</ref>,<sp/><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>::</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>minimum_length(min_length_2).maximum_angle(max_angle_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>regularized;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefContours_1ga7e2f3e7e76c52a3acef42a0d413a17c6" kindref="member">CGAL::Shape_regularization::Contours::regularize_closed_contour</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>contour,<sp/>directions,<sp/>std::back_inserter(regularized),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::maximum_offset(max_offset_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>directions<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>directions.number_of_directions()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>regularized<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>2)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>std::string(argv[2])<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_closed_contour_after&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_closed_contour(regularized,<sp/>full_path,<sp/>FT(8));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Contour_Regularization_Open">
+<title>Open Contours</title>
+<para>Open contours are contours where the head and tail of the contour are not connected. This case requires a special treatment, but the core of the algorithm is the same. In the example below, we regularize an open contour with respect to its longest edge. This example also shows how to provide a property map to the algorithm in order to give the algorithm access to the coordinates of the contour vertices.</para>
+<para><anchor id="index_1fig__regularize_open_contour_example"/> <image type="html" name="regularize_open_contour.svg"></image>
+ <image type="latex" name="regularize_open_contour.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__regularize_open_contour_example" kindref="member">fig__regularize_open_contour_example</ref> An open contour before (red) and after (green) the contour regularization. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_open_contour_8cpp-example" kindref="compound">Shape_regularization/regularize_open_contour.cpp</ref> <programlisting filename="Shape_regularization/regularize_open_contour.cpp"><codeline><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/Saver.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__contours_8h" kindref="compound">CGAL/Shape_regularization/regularize_contours.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Contour<sp/>=<sp/>std::vector&lt;Point_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Contour_directions<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Shape__regularization_1_1Contours_1_1Longest__direction__2" kindref="compound">CGAL::Shape_regularization::Contours::Longest_direction_2&lt;Kernel, Contour&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>we<sp/>want<sp/>to<sp/>load<sp/>a<sp/>different<sp/>file,<sp/>we<sp/>load<sp/>it<sp/>from<sp/>a<sp/>path.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>path<sp/>=<sp/></highlight><highlight class="stringliteral">&quot;data/contour.polylines&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>1)<sp/>path<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Saver&lt;Kernel&gt;<sp/>saver;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Set<sp/>parameters.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>max_offset_2<sp/>=<sp/>FT(2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Initialize<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>contour;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>initialize_contour(path,<sp/>contour);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>input<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>2)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>std::string(argv[2])<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_open_contour_before&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_open_contour(contour,<sp/>full_path,<sp/>FT(8));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/><ref refid="group__PkgBGLHelperFct_1gae04c8044cf1eee6a84baa5b79ab99fef" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_closed</ref><sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Contour_directions<sp/>directions(contour,<sp/><ref refid="group__PkgBGLHelperFct_1gae04c8044cf1eee6a84baa5b79ab99fef" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">is_closed</ref>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>regularized;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefContours_1gae860b28fa0fde23f6f6540f483b4ecff" kindref="member">CGAL::Shape_regularization::Contours::regularize_open_contour</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>contour,<sp/>directions,<sp/>std::back_inserter(regularized),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::maximum_offset(max_offset_2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>directions<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>directions.number_of_directions()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>regularized<sp/>contour.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>2)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>full_path<sp/>=<sp/>std::string(argv[2])<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;regularize_open_contour_after&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>saver.export_eps_open_contour(regularized,<sp/>full_path,<sp/>FT(8));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Contour_Regularization_Performance">
+<title>Performance</title>
+<para>The contour regularization algorithms, both closed and open, have, in practice, a linear time behavior with respect to the number of contour vertices. In fact, the time is not linear, as you can see in the plot below, due to the second step of merging consecutive collinear edges. For some polygons, the number of such edges is quite high and before merging them into one segment, we collect all of them into a group in order to find the best optimal position to place the final segment that may lead to a slower performance in some cases.</para>
+<para>To benchmark the algorithm, we used a MacBook Pro 2018 with 2.2 GHz Intel Core i7 processor (6 cores) and 32 GB 2400 MHz DDR4 memory. The installed operating system was OS X 10.15 Catalina. We first create a rectilinear polygon with the required number of edges. We then slightly perturb all edges by a random angle within the interval [-15, 15] degrees and apply the regularization algorithm 10 times on the same input. The returned time is the average time over all iterations. The results are shown in the figure below.</para>
+<para><anchor id="index_1fig__contours_bench"/> <image type="html" name="contours_bench.svg"></image>
+ <image type="latex" name="contours_bench.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__contours_bench" kindref="member">fig__contours_bench</ref> Time in seconds to regularize closed (red) and open (green) contours. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Plane_Regularization">
+<title>Planes</title>
+<para>Given a set of 3D planes with their corresponding inlier sets, users can reinforce four types of regularities among these planes using the function <computeroutput>regularize_planes()</computeroutput>:<itemizedlist>
+<listitem><para><emphasis>Parallelism</emphasis>: planes, which are detected as near parallel, are made exactly parallel.</para>
+</listitem><listitem><para><emphasis>Orthogonality</emphasis>: planes, which are detected as near orthogonal, are made exactly orthogonal.</para>
+</listitem><listitem><para><emphasis>Coplanarity</emphasis>: parallel planes, which are detected as near coplanar, are made exactly coplanar.</para>
+</listitem><listitem><para><emphasis>Axis-Symmetry</emphasis>: planes, which are detected as near symmetrical with respect to a user-specified axis, are made exactly symmetrical.</para>
+</listitem></itemizedlist>
+</para>
+<para>The user can choose to regularize only one or several of these four properties. The process is greedy and based on a hierarchical decomposition (coplanar clusters are subgroups of parallel clusters, which are subgroups of axis-symmetric and orthogonal clusters) as described by Verdie et al. in <ref refid="citelist_1CITEREF_cgal:vla-lod-15" kindref="member">[2]</ref>.</para>
+<para>The following example illustrates how to use the plane regularization function.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_planes_8cpp-example" kindref="compound">Shape_regularization/regularize_planes.cpp</ref> <programlisting filename="Shape_regularization/regularize_planes.cpp"><codeline><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Efficient__RANSAC_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL/Shape_detection/Efficient_RANSAC.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="regularize__planes_8h" kindref="compound">CGAL/Shape_regularization/regularize_planes.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_with_normal<sp/>=<sp/>std::pair&lt;Point_3,<sp/>Vector_3&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="structCGAL_1_1First__of__pair__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">CGAL::First_of_pair_property_map&lt;Point_with_normal&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Normal_map<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Second__of__pair__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">CGAL::Second_of_pair_property_map&lt;Point_with_normal&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Pwn_vector<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/>std::vector&lt;Point_with_normal&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Traits<sp/><sp/><sp/><sp/>=<sp/><ref refid="structCGAL_1_1Shape__detection_1_1Efficient__RANSAC__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Efficient_RANSAC_traits&lt;Kernel, Pwn_vector, Point_map, Normal_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">RANSAC<sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Efficient__RANSAC" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Efficient_RANSAC&lt;Traits&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Plane<sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Plane" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Plane&lt;Traits&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Plane_map<sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Plane__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Plane_map&lt;Traits&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>we<sp/>want<sp/>to<sp/>load<sp/>a<sp/>different<sp/>file,<sp/>we<sp/>load<sp/>it<sp/>from<sp/>a<sp/>path.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>path<sp/>=<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(argc<sp/>&gt;<sp/>1)<sp/>path<sp/>=<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Pwn_vector<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>file(path.c_str(),<sp/>std::ios_base::in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga7d51c854b865a7eb367e21fc43bd37b8" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::set_ascii_mode</ref>(file);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>file.precision(20);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!file<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>!CGAL::IO::read_XYZ(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>file,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(points),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>normal_map(Normal_map())))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>the<sp/>file<sp/>cube.pwn!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>file.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Call<sp/>RANSAC<sp/>shape<sp/>detection<sp/>with<sp/>planes.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RANSAC<sp/>efficient_ransac;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>efficient_ransac.set_input(points);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>efficient_ransac.add_shape_factory&lt;Plane&gt;();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>efficient_ransac.detect();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>planes<sp/>=<sp/>efficient_ransac.planes();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Regularize<sp/>detected<sp/>planes.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgShapeRegularizationRefPlanes_1ga9ace5aafd056ce9ccb348c96e38d361a" kindref="member">CGAL::Shape_regularization::Planes::regularize_planes</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>planes,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>::</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>plane_map(Plane_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>point_map(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>plane_index_map(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Shape__detection_1_1Point__to__shape__index__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Point_to_shape_index_map&lt;Traits&gt;</ref>(points,<sp/>planes)).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>regularize_coplanarity(</highlight><highlight class="keyword">false</highlight><highlight class="normal">).<sp/></highlight><highlight class="comment">//<sp/>do<sp/>not<sp/>regularize<sp/>coplanarity</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>maximum_angle(FT(10)));<sp/></highlight><highlight class="comment">//<sp/>10<sp/>degrees<sp/>of<sp/>tolerance<sp/>for<sp/>parallelism<sp/>/<sp/>orthogonality</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>all<sp/>detected<sp/>planes<sp/>are<sp/>regularized&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><simplesect kind="note"><para>Please note that this function used to be a part of the <ref refid="packages_1PkgShapeDetection" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Shape Detection</ref> package. You can still use the old API of that function, however to avoid parameters ambiguity, we strongly suggest to use the new API with the <ref refid="index_1BGLNamedParameters" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> mechanism.</para>
+</simplesect>
+</para>
+</sect1>
+<sect1 id="index_1QP_Regularization">
+<title>QP Regularization</title>
+<para>The shape regularization component is a generic framework that is based on the Quadratic Programming (QP) global regularization algorithm <ref refid="citelist_1CITEREF_cgal:bl-kippi-18" kindref="member">[1]</ref> by Bauchet et Lafarge. You should refer to this section only if you want to know details on how the shape regularization framework is organized internally or you want to extend that framework by implementing your own regularization types.</para>
+<para><ref refid="index_1QP_Regularization_Segments_Angles" kindref="member">Angle Regularization</ref> and <ref refid="index_1QP_Regularization_Segments_Offset" kindref="member">Offset Regularization</ref> that we presented before are two particular instances of this algorithm. Other instances can be added by the user, as explained <ref refid="index_1QP_Regularization_Implementation" kindref="member">here</ref>.</para>
+<sect2 id="index_1QP_Regularization_Framework">
+<title>Framework</title>
+<para>This framework follows Section 3 from <ref refid="citelist_1CITEREF_cgal:bl-kippi-18" kindref="member">[1]</ref>, however the algorithm from that paper was extended and generalized. The idea behind the main algorithm is to minimize the energy</para>
+<para><center> <formula id="0">$U(x) = (1 - \lambda) D(x) + \lambda V(x)$</formula>,</center></para>
+<para>where <formula id="1">$x = (x_1, \dots, x_n)$</formula> is a configuration of perturbations operated on <formula id="2">$n$</formula> input items, <formula id="3">$D(x)$</formula> and <formula id="4">$V(x)$</formula> represent a data term and pairwise potential respectively, and <formula id="5">$\lambda \in [0, 1]$</formula> is a parameter weighting these two terms. By setting up the correct types of <formula id="3">$D(x)$</formula> and <formula id="4">$V(x)$</formula>, the problem can be reformulated into a quadratic optimization problem with <formula id="6">$(n + m)$</formula> variables and <formula id="7">$2(n + m)$</formula> linear constraints, where <formula id="8">$m$</formula> is the number of unique pairs formed by connecting an item to one of its closest neighbors. Let us explain how it all works when the input items are segments and we want to regularize their orientations in order to reinforce parallelism and orthogonality among them.</para>
+<para>To set up the framework, we first need to find closest neighbors for each segment. These neighbors are provided via the concept <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery" kindref="compound">NeighborQuery</ref></computeroutput>. Internally, we create a graph based on these neighbors. Every edge <formula id="9">$\{i, j\}$</formula>, where <formula id="10">$i$</formula> is the index of the ith segment and <formula id="11">$j$</formula> is the index of the jth segment is inserted in the graph whenever <formula id="12">$i &lt; j$</formula>. This way each pair is inserted only once. The neighbors are found via the <ref refid="index_1QP_Regularization_Segments_Delaunay" kindref="member">Delaunay Neighbor Query</ref>.</para>
+<para>When we have the graph, we fill in the terms <formula id="3">$D(x)$</formula> and <formula id="4">$V(x)$</formula> via the concept <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput>. First, we obtain a maximum perturbation bound for each segment via the method <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType_1a6425688d6368960b0aa5bfd0e6e13541" kindref="member">RegularizationType::bound()</ref></computeroutput>. Since we want to rotate segments, we return here the maximum allowed angle deviation for each segment with respect to its original orientation, lets say 25 degrees.</para>
+<para>Next, for every edge <formula id="9">$\{i, j\}$</formula> in the graph, we compute the perturbation difference between two segments <formula id="10">$i$</formula> and <formula id="11">$j$</formula> via the method <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType_1ac5bd68e930f080c0b619b3541c5fad9c" kindref="member">RegularizationType::target()</ref></computeroutput>. For example, that could be a difference of segment orientations with respect to <formula id="13">$90$</formula> or <formula id="14">$180$</formula> degrees. Lets say an angle between two segments is <formula id="15">$85$</formula> degrees then we return <formula id="16">$90 - 85 = 5$</formula> degrees since this is what we should minimize in order to make the two segments orthogonal to each other.</para>
+<para>Then we set up the quadratic programming problem that is solved via the <computeroutput><ref refid="classQuadraticProgramTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">QuadraticProgramTraits</ref></computeroutput> concept. The returned result is stored as a vector of the length <formula id="6">$(n + m)$</formula> with the updated perturbation values, where the first <formula id="2">$n$</formula> values are the values that should be added to the original orientations of the input segments in order to update them and the last <formula id="8">$m$</formula> values are minimized to zeros. The update is achieved via the method <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType_1a5fa1b89221a8d2515acff817ceeb6946" kindref="member">RegularizationType::update()</ref></computeroutput>.</para>
+<para>Overall, the class <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1QP__regularization" kindref="compound">QP_regularization</ref></computeroutput> is parameterized by:<itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery" kindref="compound">NeighborQuery</ref></computeroutput> that provides the means for accessing local neighbors of an item,</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> that determines a regularization type to be applied, and</para>
+</listitem><listitem><para><computeroutput><ref refid="classQuadraticProgramTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">QuadraticProgramTraits</ref></computeroutput> that is used to solve the corresponding QP problem.</para>
+</listitem></itemizedlist>
+</para>
+<para>Within this generic framework, users can regularize any set of input items provided their own neighbor search, regularization type, and QP solver.</para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Neighborhood">
+<title>Neighborhood</title>
+<para>The concept <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery" kindref="compound">NeighborQuery</ref></computeroutput> provides the means for accessing local neighbors of an item. To create a model that respects this concept, the user has to provide an overload of the operator:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery_1afe9ac86f81427f217a72ee74523e4ade" kindref="member">NeighborQuery::operator()()</ref></computeroutput> that has to fill in a vector with indices of all items, which are neighbors of the query item.</para>
+</listitem></itemizedlist>
+</para>
+<para>For example, given a segment, this operator may return a vector with indices of some other input segments, which are within a certain distance from this segment, however this distance is measured. See above and <ref refid="index_1QP_Regularization_Segments_Delaunay" kindref="member">this section</ref> for more details.</para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Type">
+<title>Regularization</title>
+<para>The concept <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> determines a type of regularization to be applied. To create a model that respects this concept, three functions have to be defined:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType_1ac5bd68e930f080c0b619b3541c5fad9c" kindref="member">RegularizationType::target()</ref></computeroutput> a function that estimates a type of regularity between two neighbors,</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType_1a6425688d6368960b0aa5bfd0e6e13541" kindref="member">RegularizationType::bound()</ref></computeroutput> a function that returns a maximum bound on the allowed regularity change, and</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType_1a5fa1b89221a8d2515acff817ceeb6946" kindref="member">RegularizationType::update()</ref></computeroutput> a function that updates input items with respect to the modified regularities.</para>
+</listitem></itemizedlist>
+</para>
+<para>For example, if we want to regularize segment orientations, that is to make segments parallel and orthogonal to each other, the first function should return an angle perturbation between a query segment and each of its neighbors; the second function should return a maximum angle within which a rotation of the query segment is accepted; and the third function should update original orientations of the input segments. See above and <ref refid="index_1QP_Regularization_Segments_Angles" kindref="member">this section</ref> for more details.</para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Solvers">
+<title>Solvers</title>
+<para>In order to solve the associated QP problem of the algorithm above, CGAL provides a wrapper <computeroutput><ref refid="classCGAL_1_1OSQP__quadratic__program__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">CGAL::OSQP_quadratic_program_traits</ref></computeroutput> of the external <ref refid="thirdparty_1thirdpartyOSQP" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">OSQP solver</ref> that is a model of the concept <computeroutput><ref refid="classQuadraticProgramTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">QuadraticProgramTraits</ref></computeroutput>.</para>
+<para>Alternatively, the internal <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL</ref> solver from the package <ref refid="packages_1PkgQPSolver" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Linear and Quadratic Programming Solver</ref> can be used, however we do not recommend applying it. The internal quadratic program that has to be solved for shape regularization is sparse. The CGAL version will internally convert this problem into a dense one that takes considerable effort to solve, while the OSQP version takes a special care of the sparse nature of the problem that leads to better performance. Since the class <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1QP__regularization" kindref="compound">QP_regularization</ref></computeroutput> is parameterized by the general concept <computeroutput><ref refid="classQuadraticProgramTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">QuadraticProgramTraits</ref></computeroutput>, the users are also welcome to provide their own version of the solver.</para>
+</sect2>
+<sect2 id="index_1QP_Regularization_Implementation">
+<title>Implementation</title>
+<para>If you want to implement your own regularization approach that follows the same framework, for example to reinforce a different type of regularity than is already provided, you have to implement your own model of the <ref refid="index_1QP_Regularization_Type" kindref="member">RegularizationType</ref> concept and possibly a model of the <ref refid="index_1QP_Regularization_Neighborhood" kindref="member">NeighborQuery</ref> concept. These concepts are used to parameterize the main <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1QP__regularization" kindref="compound">QP_regularization</ref></computeroutput> algorithm:<orderedlist>
+<listitem><para>Use <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1NeighborQuery" kindref="compound">NeighborQuery</ref></computeroutput> to find local neighbors of each input item;</para>
+</listitem><listitem><para>Use <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> to estimate current regularities among these neighbors;</para>
+</listitem><listitem><para>Use <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> to set maximum bounds on the allowed regularity changes;</para>
+</listitem><listitem><para>Use <computeroutput><ref refid="classQuadraticProgramTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">QuadraticProgramTraits</ref></computeroutput> to solve the quadratic programming problem;</para>
+</listitem><listitem><para>Use <computeroutput><ref refid="classCGAL_1_1Shape__regularization_1_1RegularizationType" kindref="compound">RegularizationType</ref></computeroutput> to update input items with respect to the modified regularities.</para>
+</listitem></orderedlist>
+</para>
+<para>In addition, the user may also want to change a <ref refid="index_1QP_Regularization_Solvers" kindref="member">QP solver</ref> if he knows how to optimize it for a specific type of input data. To do that, the user has to implement a model of the <computeroutput><ref refid="classQuadraticProgramTraits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">QuadraticProgramTraits</ref></computeroutput> concept.</para>
+<para>An example below shows how to define your own type of the above concepts and how to choose among available solvers.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Shape_regularization_2regularize_framework_8cpp-example" kindref="compound">Shape_regularization/regularize_framework.cpp</ref> <programlisting filename="Shape_regularization/regularize_framework.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Shape__regularization_8h" kindref="compound">CGAL/Shape_regularization.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Custom_object<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>name;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Custom_object(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>name_)<sp/>:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>name(name_)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>define<sp/>your<sp/>object<sp/>here</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Custom_neighbor_query_2<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>query_index,<sp/>std::vector&lt;std::size_t&gt;&amp;<sp/>neighbors)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>neighbors.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(query_index<sp/>==<sp/>0)<sp/>{<sp/>neighbors.push_back(1);<sp/>}<sp/></highlight><highlight class="comment">//<sp/>first<sp/><sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(query_index<sp/>==<sp/>1)<sp/>{<sp/>neighbors.push_back(0);<sp/>}<sp/></highlight><highlight class="comment">//<sp/>second<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Custom_regularization_2<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>bound(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>FT(5);<sp/></highlight><highlight class="comment">//<sp/>maximum<sp/>angle<sp/>change</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>target(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>FT(0);<sp/></highlight><highlight class="comment">//<sp/>0<sp/>angle<sp/>change</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>update(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;FT&gt;&amp;<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>skip<sp/>update</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>NT&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Custom_quadratic_program_traits<sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/>set_P(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/>set_q(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/>set_r(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/>set_A(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/>set_l(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><sp/>set_u(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>resize(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>OutputIterator&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>solve(<ref refid="classOutputIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">OutputIterator</ref><sp/>solution)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>3<sp/>=<sp/>2<sp/>objects<sp/>+<sp/>1<sp/>edge<sp/>between<sp/>them</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>3;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>*(++solution)<sp/>=<sp/>NT(0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Objects<sp/>=<sp/>std::vector&lt;Custom_object&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Neighbor_query<sp/>=<sp/>Custom_neighbor_query_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Regularization_type<sp/>=<sp/>Custom_regularization_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Quadratic_program<sp/>=<sp/>Custom_quadratic_program_traits&lt;FT&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Regularizer<sp/>=<sp/><ref refid="classCGAL_1_1Shape__regularization_1_1QP__regularization" kindref="compound">CGAL::Shape_regularization::QP_regularization</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>,<sp/>Objects,<sp/>Neighbor_query,<sp/>Regularization_type,<sp/>Quadratic_program&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Neighbor_query<sp/>neighbor_query;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Regularization_type<sp/>regularization_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Quadratic_program<sp/>quadratic_program;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Custom_object&gt;<sp/>objects<sp/>=<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Custom_object(</highlight><highlight class="stringliteral">&quot;first&quot;</highlight><highlight class="normal">),<sp/>Custom_object(</highlight><highlight class="stringliteral">&quot;second&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Regularizer<sp/>regularizer(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>objects,<sp/>neighbor_query,<sp/>regularization_type,<sp/>quadratic_program);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>regularizer.regularize();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>regularized<sp/>2<sp/>objects&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Shape_Regularization_History">
+<title>History</title>
+<para>The shape regularization algorithm for 2D segments was first implemented by Jean-Philippe Bauchet under the supervision of Florent Lafarge and then generalized by Gennadii Sytov during the Google Summer of Code 2019 under the supervision of Dmitry Anisimov. The contour regularization algorithm was developed and implemented by Dmitry Anisimov and Simon Giraudot. Plane regularization was added by Simon Giraudot based on the prototype version developed by Florent Lafarge.</para>
+</sect1>
+<sect1 id="index_1Shape_Regularization_Acknowledgements">
+<title>Acknowledgments</title>
+<para>We wish to thank Andreas Fabri and Marc Pouget for useful discussions and reviews. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Shape_regularization.txt"/>
+  </compounddef>
+</doxygen>

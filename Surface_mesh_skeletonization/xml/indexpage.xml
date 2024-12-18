@@ -1,0 +1,359 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_3D_Surface_mesh_skeletonization"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Xiang Gao, Sébastien Loriot and Andrea Tagliasacchi</para>
+</simplesect>
+</para>
+<sect1 id="index_1MCFSkelSecMot">
+<title>Introduction</title>
+<para><anchor id="index_1fig__Main_image_suggestion"/> <image type="html" name="main_image_suggestion.png"></image>
+ <image type="latex" name="main_image_suggestion.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Main_image_suggestion" kindref="member">fig__Main_image_suggestion</ref> Curve skeleton of a horse model. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Skeletons are effective shape abstractions used in segmentation, shape matching, reconstruction, virtual navigation, etc. As the name implies, a curve skeleton is a graph of curvilinear structures (1D). It is not a medial axis that for a 3D geometry is composed of surfaces (2D). As illustrated in <ref refid="index_1fig__Main_image_suggestion" kindref="member">fig__Main_image_suggestion</ref>, the curve skeleton of a shape captures its essential topology. In this package, we implement the <emphasis>Mean Curvature Skeleton</emphasis> algorithm described in <ref refid="citelist_1CITEREF_tagliasacchi2012mean" kindref="member">[1]</ref> that extracts a curve skeleton from a triangulated surface mesh without borders by iteratively contracting the input triangulated surface mesh.</para>
+</sect1>
+<sect1 id="index_1MCFSkelSecAPI">
+<title>User Interface Description</title>
+<sect2 id="index_1MCFSkelSecAPI-IO">
+<title>Input and Output</title>
+<para>The input is a triangulated surface mesh, model of the <computeroutput><ref refid="classFaceListGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceListGraph</ref></computeroutput> concept (<computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3</ref></computeroutput>, ...) that has no boundary and that has only one connected component. The skeleton is provided as a graph of type <ulink url="https://www.boost.org/doc/libs/release/libs/graph/doc/adjacency_list.html"><computeroutput>boost::adjacency_list</computeroutput></ulink>. Each vertex of the skeleton is associated to a 3D location point and to the set of input vertices that contracted to that skeleton vertex. Note that due to the construction process of the skeleton, a skeleton vertex might have no corresponding input vertex.</para>
+<para>This package needs a sparse linear solver and we recommend the use of <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen</ref> 3.2 or later.</para>
+<para>The input and output are illustrated in <ref refid="index_1fig__MCFInputOutput" kindref="member">fig__MCFInputOutput</ref>.</para>
+<para><anchor id="index_1fig__MCFInputOutput"/> <image type="html" name="correspondence.png"></image>
+ <image type="latex" name="correspondence.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__MCFInputOutput" kindref="member">fig__MCFInputOutput</ref> Left: An input triangulated surface mesh model of an octopus; Middle: The mean curvature flow skeleton extracted using this package; Right: Each vertex of the input surface is associated to a skeleton vertex. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1MCFSkelSecAPI-FF">
+<title>Free Function</title>
+<para>If a CGAL model of the <computeroutput><ref refid="classFaceListGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceListGraph</ref></computeroutput> concept such as <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh</ref></computeroutput> or <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3</ref></computeroutput> is used as triangulated input surface mesh, <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen</ref> 3.2 or later is available and <computeroutput>CGAL_EIGEN3_ENABLED</computeroutput> is defined, the function <computeroutput><ref refid="group__PkgSurfaceMeshSkeletonizationRef_1gaf4b49adaa500340ce11630f91b320aec" kindref="member">CGAL::extract_mean_curvature_flow_skeleton()</ref></computeroutput> can be used to extract a mean curvature flow skeleton from the input surface mesh using the default parameters, which work well in most cases.</para>
+<para>The following example shows how to extract a skeleton out of a triangulated surface mesh and how to access the point of each skeleton vertex and the set of input vertices associated.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_skeletonization_2simple_mcfskel_example_8cpp-example" kindref="compound">Surface_mesh_skeletonization/simple_mcfskel_example.cpp</ref> <programlisting filename="Surface_mesh_skeletonization/simple_mcfskel_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/extract_mean_curvature_flow_skeleton.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/graph/split_graph_into_polylines.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization" kindref="compound">CGAL::Mean_curvature_flow_skeletonization&lt;Polyhedron&gt;</ref><sp/>Skeletonization;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeletonization::Skeleton<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeleton::vertex_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton_vertex;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeleton::edge_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton_edge;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//only<sp/>needed<sp/>for<sp/>the<sp/>display<sp/>of<sp/>the<sp/>skeleton<sp/>as<sp/>maximal<sp/>polylines</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Display_polylines{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Skeleton&amp;<sp/>skeleton;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream&amp;<sp/>out;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>polyline_size;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::stringstream<sp/>sstr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Display_polylines(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Skeleton&amp;<sp/>skeleton,<sp/>std::ofstream&amp;<sp/>out)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>skeleton(skeleton),<sp/>out(out)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>start_new_polyline(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polyline_size=0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sstr.str(</highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sstr.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>add_node(Skeleton_vertex<sp/>v){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>++polyline_size;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sstr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>skeleton[v].point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>end_polyline()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out<sp/>&lt;&lt;<sp/>polyline_size<sp/>&lt;&lt;<sp/>sstr.str()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>This<sp/>example<sp/>extracts<sp/>a<sp/>medially<sp/>centered<sp/>skeleton<sp/>from<sp/>a<sp/>given<sp/>mesh.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Input<sp/>geometry<sp/>is<sp/>not<sp/>triangulated.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Skeleton<sp/>skeleton;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMeshSkeletonizationRef_1gaf4b49adaa500340ce11630f91b320aec" kindref="member">CGAL::extract_mean_curvature_flow_skeleton</ref>(tmesh,<sp/>skeleton);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>of<sp/>the<sp/>skeleton:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>boost::num_vertices(skeleton)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>edges<sp/>of<sp/>the<sp/>skeleton:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>boost::num_edges(skeleton)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Output<sp/>all<sp/>the<sp/>edges<sp/>of<sp/>the<sp/>skeleton.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;skel-poly.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Display_polylines<sp/>display(skeleton,output);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgBGLPartition_1ga99ea6bf193f1194db5e523e713c82fb9" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::split_graph_into_polylines</ref>(skeleton,<sp/>display);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Output<sp/>skeleton<sp/>points<sp/>and<sp/>the<sp/>corresponding<sp/>surface<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.open(</highlight><highlight class="stringliteral">&quot;correspondance-poly.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Skeleton_vertex<sp/>v<sp/>:<sp/><ref refid="namespaceCGAL_1ac87cfb03dd80e388d2fe53af9e53e9ed" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::make_range</ref>(vertices(skeleton)))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>skeleton[v].vertices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>skeleton[v].point<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>get(CGAL::vertex_point,<sp/>tmesh,<sp/>vd)<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1MCFSkelSecAPI-AUUFO">
+<title>Advanced Usage with the Function Object</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization" kindref="compound">CGAL::Mean_curvature_flow_skeletonization</ref></computeroutput> enables the usage of low level functions such as <ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization_1a64419fbc0d958665302ecc308df3850c" kindref="member"><computeroutput>contract_geometry()</computeroutput></ref> and <ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization_1a6d8ee83dde7082566572363601638fb5" kindref="member"><computeroutput>collapse_edges()</computeroutput></ref>. The class further enables to change the parameters of the algorithm, for example by calling <ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization_1a10be44e07ff248c963368eb46b3f343a" kindref="member"><computeroutput>set_is_medially_centered()</computeroutput></ref>. The class gives the user full control over each step of the algorithm as well as the intermediate contracted mesh (called <emphasis>meso-skeleton</emphasis>) as illustrated by <ref refid="index_1fig__MCFMesoSkel" kindref="member">fig__MCFMesoSkel</ref>.</para>
+<para><anchor id="index_1fig__MCFMesoSkel"/> <image type="html" name="iterations.png"></image>
+ <image type="latex" name="iterations.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__MCFMesoSkel" kindref="member">fig__MCFMesoSkel</ref> Three iterations of the mean curvature flow contraction of the horse of <ref refid="index_1fig__Main_image_suggestion" kindref="member">fig__Main_image_suggestion</ref>. The red points indicate vertices where the surface has locally degenerated to a curvilinear structure. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>In this example, we show how to use the API of the class <computeroutput><ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization" kindref="compound">CGAL::Mean_curvature_flow_skeletonization</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_skeletonization_2MCF_Skeleton_sm_example_8cpp-example" kindref="compound">Surface_mesh_skeletonization/MCF_Skeleton_sm_example.cpp</ref> <programlisting filename="Surface_mesh_skeletonization/MCF_Skeleton_sm_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mean_curvature_flow_skeletonization.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization" kindref="compound">CGAL::Mean_curvature_flow_skeletonization&lt;Triangle_mesh&gt;</ref><sp/>Skeletonization;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeletonization::Skeleton<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeleton::vertex_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton_vertex;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeleton::edge_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton_edge;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Input<sp/>geometry<sp/>is<sp/>not<sp/>triangulated.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Skeleton<sp/>skeleton;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Skeletonization<sp/>mcs(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>1.<sp/>Contract<sp/>the<sp/>mesh<sp/>by<sp/>mean<sp/>curvature<sp/>flow.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mcs.contract_geometry();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>2.<sp/>Collapse<sp/>short<sp/>edges<sp/>and<sp/>split<sp/>bad<sp/>triangles.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mcs.collapse_edges();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mcs.split_faces();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>3.<sp/>Fix<sp/>degenerate<sp/>vertices.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mcs.detect_degeneracies();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Perform<sp/>the<sp/>above<sp/>three<sp/>steps<sp/>in<sp/>one<sp/>iteration.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mcs.contract();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Iteratively<sp/>apply<sp/>step<sp/>1<sp/>to<sp/>3<sp/>until<sp/>convergence.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mcs.contract_until_convergence();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Convert<sp/>the<sp/>contracted<sp/>mesh<sp/>into<sp/>a<sp/>curve<sp/>skeleton<sp/>and</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>get<sp/>the<sp/>correspondent<sp/>surface<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>mcs.convert_to_skeleton(skeleton);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>of<sp/>the<sp/>skeleton:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>boost::num_vertices(skeleton)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>edges<sp/>of<sp/>the<sp/>skeleton:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>boost::num_edges(skeleton)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Output<sp/>all<sp/>the<sp/>edges<sp/>of<sp/>the<sp/>skeleton.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;skel-sm.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Skeleton_edge<sp/>e<sp/>:<sp/><ref refid="namespaceCGAL_1ac87cfb03dd80e388d2fe53af9e53e9ed" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::make_range</ref>(edges(skeleton)))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>s<sp/>=<sp/>skeleton[source(e,<sp/>skeleton)].point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>t<sp/>=<sp/>skeleton[target(e,<sp/>skeleton)].point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;<sp/>s<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>t<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Output<sp/>skeleton<sp/>points<sp/>and<sp/>the<sp/>corresponding<sp/>surface<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.open(</highlight><highlight class="stringliteral">&quot;correspondance-sm.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Skeleton_vertex<sp/>v<sp/>:<sp/><ref refid="namespaceCGAL_1ac87cfb03dd80e388d2fe53af9e53e9ed" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::make_range</ref>(vertices(skeleton)))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>skeleton[v].vertices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;2<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>skeleton[v].point<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(CGAL::vertex_point,<sp/>tmesh,<sp/>vd)<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Mesh">
+<title>Segmentation through Skeletonization</title>
+<para>As a proof of concept, we show how to use the skeleton and the association of input vertices to skeleton to compute a segmentation of the input triangulated surface mesh using the package <ref refid="packages_1PkgSurfaceMeshSegmentation" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Segmentation</ref>. The segmentation algorithm consists in computing a <emphasis>shape diameter function</emphasis> for each face of the input mesh, followed by solving a graph cut problem. Here we use the skeleton to define a new shape diameter function. Specifically, for each face we compute the diameter value as the average distance between its three incident vertices and their corresponding skeletal point. The result of this segmentation is shown in <ref refid="index_1fig__Segmentation" kindref="member">fig__Segmentation</ref>.</para>
+<para><anchor id="index_1fig__Segmentation"/> <image type="html" name="segmentation.png"></image>
+ <image type="latex" name="segmentation.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Segmentation" kindref="member">fig__Segmentation</ref> Left: Curve skeleton extracted of a triangulated surface mesh; Right: Segmentation using the skeleton to compute a shape diameter function. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_skeletonization_2segmentation_example_8cpp-example" kindref="compound">Surface_mesh_skeletonization/segmentation_example.cpp</ref> <programlisting filename="Surface_mesh_skeletonization/segmentation_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_items_with_id_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/extract_mean_curvature_flow_skeleton.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/mesh_segmentation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel, CGAL::Polyhedron_items_with_id_3&gt;</ref><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::face_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Mean__curvature__flow__skeletonization" kindref="compound">CGAL::Mean_curvature_flow_skeletonization&lt;Polyhedron&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeletonization;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeletonization::Skeleton<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skeleton::vertex_descriptor<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Skeleton_vertex;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Property<sp/>map<sp/>associating<sp/>a<sp/>facet<sp/>with<sp/>an<sp/>integer<sp/>as<sp/>id<sp/>to<sp/>an</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>element<sp/>in<sp/>a<sp/>vector<sp/>stored<sp/>internally</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>ValueType&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Facet_with_id_pmap</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>boost::put_get_helper&lt;ValueType&amp;,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Facet_with_id_pmap&lt;ValueType&gt;<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>face_descriptor<sp/>key_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>ValueType<sp/>value_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>value_type&amp;<sp/>reference;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::lvalue_property_map_tag<sp/>category;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Facet_with_id_pmap(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::vector&lt;ValueType&gt;&amp;<sp/>internal_vector</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>)<sp/>:<sp/>internal_vector(internal_vector)<sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>reference<sp/>operator[](key_type<sp/>key)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/><sp/><sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>internal_vector[key-&gt;id()];<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;ValueType&gt;&amp;<sp/>internal_vector;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/bear.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Input<sp/>geometry<sp/>is<sp/>not<sp/>triangulated.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>extract<sp/>the<sp/>skeleton</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Skeleton<sp/>skeleton;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMeshSkeletonizationRef_1gaf4b49adaa500340ce11630f91b320aec" kindref="member">CGAL::extract_mean_curvature_flow_skeleton</ref>(tmesh,<sp/>skeleton);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>init<sp/>the<sp/>polyhedron<sp/>simplex<sp/>indices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__BGLGraphExternalIndices_1ga0660924a1aa87e8be5cccbc261e931c7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::set_halfedgeds_items_id</ref>(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//for<sp/>each<sp/>input<sp/>vertex<sp/>compute<sp/>its<sp/>distance<sp/>to<sp/>the<sp/>skeleton</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;double&gt;<sp/>distances(num_vertices(tmesh));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Skeleton_vertex<sp/>v<sp/>:<sp/><ref refid="namespaceCGAL_1ac87cfb03dd80e388d2fe53af9e53e9ed" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::make_range</ref>(vertices(skeleton))<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>skel_pt<sp/>=<sp/>skeleton[v].point;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>mesh_v<sp/>:<sp/>skeleton[v].vertices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>mesh_pt<sp/>=<sp/>mesh_v-&gt;point();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>distances[mesh_v-&gt;id()]<sp/>=<sp/>std::sqrt(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(skel_pt,<sp/>mesh_pt));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>create<sp/>a<sp/>property-map<sp/>for<sp/>sdf<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;double&gt;<sp/><ref refid="group__PkgSurfaceMeshSegmentationRef_1ga455877137a269a61c1b980609adeac78" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh_segmentation.tag">sdf_values</ref>(<sp/>num_faces(tmesh)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Facet_with_id_pmap&lt;double&gt;<sp/>sdf_property_map(<ref refid="group__PkgSurfaceMeshSegmentationRef_1ga455877137a269a61c1b980609adeac78" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh_segmentation.tag">sdf_values</ref>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>compute<sp/>sdf<sp/>values<sp/>with<sp/>skeleton</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(face_descriptor<sp/>f<sp/>:<sp/>faces(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>dist<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(halfedge_descriptor<sp/>hd<sp/>:<sp/><ref refid="group__PkgBGLIterators_1gaf157993cd9a52470eb96b12bcc0b67ab" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">halfedges_around_face</ref>(halfedge(f,<sp/>tmesh),<sp/>tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dist+=distances[target(hd,<sp/>tmesh)-&gt;id()];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sdf_property_map[f]<sp/>=<sp/>dist<sp/>/<sp/>3.;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>post-process<sp/>the<sp/>sdf<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMeshSegmentationRef_1gaf57d1108ef1f1a6315e5e406006a4a3d" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh_segmentation.tag">CGAL::sdf_values_postprocessing</ref>(tmesh,<sp/>sdf_property_map);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>create<sp/>a<sp/>property-map<sp/>for<sp/>segment-ids<sp/>(it<sp/>is<sp/>an<sp/>adaptor<sp/>for<sp/>this<sp/>case)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::size_t&gt;<sp/>segment_ids(<sp/>num_faces(tmesh)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Facet_with_id_pmap&lt;std::size_t&gt;<sp/>segment_property_map(segment_ids);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>segment<sp/>the<sp/>mesh<sp/>using<sp/>default<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>segments:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/><ref refid="group__PkgSurfaceMeshSegmentationRef_1ga8a429857a748922d0e8460619db69764" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh_segmentation.tag">CGAL::segmentation_from_sdf_values</ref>(tmesh,<sp/>sdf_property_map,<sp/>segment_property_map)<sp/>&lt;&lt;</highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1MCFSkelSecEvaluation">
+<title>Performance</title>
+<para>The elephant model is used to illustrate the performance of the mean curvature flow skeletonization procedure. Different resolutions of the model obtained by loop subdivision are used.</para>
+<para>As can be seen on <ref refid="index_1fig__MCFBenchComp" kindref="member">fig__MCFBenchComp</ref>, the more sampled the surface is, the better the skeleton is inside the model.</para>
+<para><anchor id="index_1fig__MCFBenchComp"/> <image type="html" name="comparison.png"></image>
+ <image type="latex" name="comparison.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__MCFBenchComp" kindref="member">fig__MCFBenchComp</ref> Skeleton of the head of the elephant model. Left: Using the original mesh (2,775 vertices); Middle: After one loop subdivision step (11,112 vertices); Right: After two loops subdivision steps (44,460 vertices). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Runtime in milliseconds of <computeroutput><ref refid="group__PkgSurfaceMeshSkeletonizationRef_1gaf4b49adaa500340ce11630f91b320aec" kindref="member">extract_mean_curvature_flow_skeleton()</ref></computeroutput> using <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref>&lt;<ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref>&lt;double&gt; &gt;</computeroutput> as input data structure. The runtimes are similar if <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref>&lt;<ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref>&lt;double&gt;::Point_3&gt;</computeroutput> is used instead. The solver used is the default one when <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen</ref> is available. The code was compiled using CGAL 4.7 with g++ 4.8.4 with <computeroutput>-O3 -DNDEBUG</computeroutput> as compiling flags and was run on a Intel(R) Core(TM) i7-2820QM CPU @ 2.30GHz</para>
+<para><center> <table rows="5" cols="3"><row>
+<entry thead="yes" align='right'><para>Number of loop subdivision of <computeroutput>elephant.off</computeroutput>   </para>
+</entry><entry thead="yes" align='right'><para>Number of vertices   </para>
+</entry><entry thead="yes" align='right'><para>Runtime in s    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>0   </para>
+</entry><entry thead="no" align='right'><para>2,775   </para>
+</entry><entry thead="no" align='right'><para>0.46    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>1   </para>
+</entry><entry thead="no" align='right'><para>11,112   </para>
+</entry><entry thead="no" align='right'><para>1.26    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>2   </para>
+</entry><entry thead="no" align='right'><para>44,460   </para>
+</entry><entry thead="no" align='right'><para>5.64    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>3   </para>
+</entry><entry thead="no" align='right'><para>177,852   </para>
+</entry><entry thead="no" align='right'><para>26.26   </para>
+</entry></row>
+</table>
+</center></para>
+</sect1>
+<sect1 id="index_1MCFSkelSecDesign">
+<title>Design and Implementation History</title>
+<para>The initial implementation of this package is the result of the work of Xiang Gao during the 2013 season of the Google Summer of Code mentored by Andrea Tagliasacchi and Sébastien Loriot. It was finalized by Andreas Fabri and Sébastien Loriot. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Surface_mesh_skeletonization.txt"/>
+  </compounddef>
+</doxygen>

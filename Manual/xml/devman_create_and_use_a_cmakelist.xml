@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_create_and_use_a_cmakelist" kind="page">
+    <compoundname>devman_create_and_use_a_cmakelist</compoundname>
+    <title>How to use CGAL with CMake</title>
+    <innerpage refid="thirdparty">Compilers and Third Party Dependencies</innerpage>
+    <briefdescription>
+<para>This page will explain how to manually create a <computeroutput>CMakeLists.txt</computeroutput> file to link a custom program with CGAL. </para>
+    </briefdescription>
+    <detaileddescription>
+<para>A base can be created using the script <computeroutput>cgal_create_CMakeLists</computeroutput>. Its usage is detailed in Section <ref refid="devman_create_cgal_CMakeLists" kindref="compound">Creating a CMake Script for a Program Using CGAL</ref>. </para>
+<sect1 id="devman_create_and_use_a_cmakelist_1seclink">
+<title>Linking with CGAL</title>
+<para>To link with the CGAL library, use the following: <programlisting><codeline><highlight class="normal">find_package(<ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref><sp/>REQUIRED)</highlight></codeline>
+<codeline><highlight class="normal">add_executable(my_executable<sp/>my_source_file.cpp)</highlight></codeline>
+<codeline><highlight class="normal">target_link_libraries(my_executable<sp/>CGAL::CGAL)</highlight></codeline>
+</programlisting></para>
+<para>Other CGAL libraries are linked similarly. For example, with <computeroutput>CGAL_Core</computeroutput>:</para>
+<para><programlisting><codeline><highlight class="normal">find_package(<ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref><sp/>REQUIRED<sp/>COMPONENTS<sp/>Core)</highlight></codeline>
+<codeline><highlight class="normal">target_link_libraries(my_executable<sp/>CGAL::CGAL<sp/>CGAL::CGAL_Core)</highlight></codeline>
+</programlisting></para>
+<para>There are also imported targets to link with CGAL dependencies that can be found in the section <ref refid="thirdparty" kindref="compound">Compilers and Third Party Dependencies</ref>.</para>
+<para><simplesect kind="note"><para>The CGAL targets define the following compiler flags:<itemizedlist>
+<listitem><para><computeroutput>-frounding-math</computeroutput> with gcc</para>
+</listitem><listitem><para><computeroutput>/fp:strict /fp:except-</computeroutput> with MSVC</para>
+</listitem></itemizedlist>
+</para>
+</simplesect>
+</para>
+</sect1>
+<sect1 id="devman_create_and_use_a_cmakelist_1secexample">
+<title>Minimal Example Using Qt6</title>
+<para>This section describes a minimal example of a program that uses CGAL and Qt6 for some GUI features.</para>
+<sect2 id="devman_create_and_use_a_cmakelist_1subcmake">
+<title>CMakeLists.txt</title>
+<para> <programlisting filename="Surface_mesh/CMakeLists.txt"><codeline><highlight class="normal">cmake_minimum_required(VERSION<sp/>3.12...3.29)</highlight></codeline>
+<codeline><highlight class="normal">project(Surface_mesh_Examples)</highlight></codeline>
+</programlisting></para>
+<para><programlisting filename="Surface_mesh/CMakeLists.txt"><codeline><highlight class="preprocessor">#CGAL_Qt6<sp/>is<sp/>needed<sp/>for<sp/>the<sp/>drawing.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">find_package(<ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref><sp/>REQUIRED<sp/>OPTIONAL_COMPONENTS<sp/>Qt6)</highlight></codeline>
+</programlisting></para>
+<para><programlisting filename="Surface_mesh/CMakeLists.txt"><codeline><highlight class="preprocessor">#create<sp/>the<sp/>executable<sp/>of<sp/>the<sp/>application</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">create_single_source_cgal_program(</highlight><highlight class="stringliteral">&quot;draw_surface_mesh.cpp&quot;</highlight><highlight class="normal">)</highlight></codeline>
+</programlisting></para>
+<para><programlisting filename="Surface_mesh/CMakeLists.txt"><codeline><highlight class="keywordflow">if</highlight><highlight class="normal">(CGAL_Qt6_FOUND)</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor"><sp/><sp/>#link<sp/>it<sp/>with<sp/>the<sp/>required<sp/>CGAL<sp/>libraries</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>target_link_libraries(draw_surface_mesh<sp/>PUBLIC<sp/>CGAL::CGAL_Basic_viewer)</highlight></codeline>
+<codeline><highlight class="normal">endif()</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#end<sp/>of<sp/>the<sp/>file</highlight></codeline>
+</programlisting> </para>
+</sect2>
+<sect2 id="devman_create_and_use_a_cmakelist_1subexcpp">
+<title>draw_surface_mesh.cpp</title>
+<para><programlisting filename="Surface_mesh/draw_surface_mesh.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/>CGAL::data_file_path(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>filename<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Internal<sp/>color<sp/>property<sp/>maps<sp/>are<sp/>used<sp/>if<sp/>they<sp/>exist<sp/>and<sp/>are<sp/>called<sp/>&quot;v:color&quot;,<sp/>&quot;e:color&quot;<sp/>and<sp/>&quot;f:color&quot;.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>vcm<sp/>=<sp/>sm.<ref refid="classCGAL_1_1Surface__mesh_1aaff08db9680674e0a16803b77721a356" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">add_property_map</ref>&lt;Mesh::Vertex_index,<sp/><ref refid="classCGAL_1_1IO_1_1Color" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::Color</ref>&gt;(</highlight><highlight class="stringliteral">&quot;v:color&quot;</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>ecm<sp/>=<sp/>sm.add_property_map&lt;Mesh::Edge_index,<sp/><ref refid="classCGAL_1_1IO_1_1Color" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::Color</ref>&gt;(</highlight><highlight class="stringliteral">&quot;e:color&quot;</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>fcm<sp/>=<sp/>sm.add_property_map&lt;Mesh::Face_index&gt;(</highlight><highlight class="stringliteral">&quot;f:color&quot;</highlight><highlight class="normal">,<sp/>CGAL::IO::white()<sp/></highlight><highlight class="comment">/*default*/</highlight><highlight class="normal">).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>v<sp/>:<sp/>vertices(sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(v.idx()%2)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>put(vcm,<sp/>v,<sp/>CGAL::IO::black());<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>put(vcm,<sp/>v,<sp/>CGAL::IO::blue());<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>e<sp/>:<sp/>edges(sm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{<sp/>put(ecm,<sp/>e,<sp/>CGAL::IO::gray());<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>put(fcm,<sp/>*(sm.faces().begin()),<sp/>CGAL::IO::red());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Draw!</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawPolygon2_1ga56a8df4559b043b885be909514e6069f" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::draw</ref>(sm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/create_and_use_a_cmakelist.txt"/>
+  </compounddef>
+</doxygen>

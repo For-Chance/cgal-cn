@@ -1,0 +1,732 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_and_Surface_Function_Interpolation"/><anchor id="index_1chapinterpolation"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Julia Fl<oumlaut/>totto</para>
+</simplesect>
+This package implements various neighbor coordinate computation functions as well as different methods for scattered data interpolation. Computation of natural and regular neighbor coordinates in 2D Euclidean space is described in Section <ref refid="index_1seccoordinates" kindref="member">Natural Neighbor Coordinates</ref>. Coordinate and neighbor computations on surfaces are discussed in Section <ref refid="index_1secsurface" kindref="member">Surface Natural Neighbor Coordinates and Surface Neighbors</ref>. Finally, we describe the different interpolation methods offered by this package in Section <ref refid="index_1secinterpolation" kindref="member">Interpolation Methods</ref>.</para>
+<para>Scattered data interpolation solves the following problem: given measures of a function on a set of discrete data points, how to interpolate this function at an arbitrary query point. More formally, let <formula id="5">$ \mathcal{P}=\{\mathbf{p_1},\ldots ,\mathbf{p_n}\}$</formula> be a set of <formula id="6">$ n$</formula> points in <formula id="7">$ \mathbb{R}^2$</formula> or <formula id="8">$ \mathbb{R}^3$</formula> and <formula id="9">$ \Phi$</formula> be a scalar function defined on the convex hull of <formula id="2">$ \mathcal{P}$</formula>. We assume that the function values are known at the points of <formula id="2">$ \mathcal{P}$</formula>, i.e. to each <formula id="10">$ \mathbf{p_i} \in \mathcal{P}$</formula>, we associate <formula id="11">$ z_i =
+\Phi(\mathbf{p_i})$</formula>. Knowledge of the gradient of <formula id="9">$ \Phi$</formula> at <formula id="12">$ \mathbf{p_i}$</formula> is also sometimes required. It is then denoted <formula id="13">$ \mathbf{g_i}= \nabla
+\Phi(\mathbf{p_i})$</formula>. The interpolation is carried out at an arbitrary query point <formula id="14">$ \mathbf{x}$</formula> on the convex hull of <formula id="2">$ \mathcal{P}$</formula>.</para>
+<sect1 id="index_1seccoordinates">
+<title>Natural Neighbor Coordinates</title>
+<para>Most interpolation methods offered by this package rely on 2D natural and regular neighbor coordinates, which we describe in this section.</para>
+<sect2 id="index_1InterpolationIntroduction">
+<title>Introduction</title>
+<para>Natural neighbor interpolation was introduced by Sibson <ref refid="citelist_1CITEREF_s-bdnni-81" kindref="member">[9]</ref> to interpolate multivariate scattered data. Given a set of data points <formula id="2">$ \mathcal{P}$</formula>, the natural neighbor coordinates associated to <formula id="2">$ \mathcal{P}$</formula> are defined from the Voronoi diagram of <formula id="2">$ \mathcal{P}$</formula>. When simulating the insertion of a query point <formula id="14">$ \mathbf{x}$</formula> into the Voronoi diagram of <formula id="2">$ \mathcal{P}$</formula>, the potential Voronoi cell of <formula id="14">$ \mathbf{x}$</formula> &quot;steals&quot; some parts from neighboring existing cells.</para>
+<para><anchor id="index_1fig__fignn_coords"/> <image type="html" name="nn_coords.svg"></image>
+ <image type="latex" name="nn_coords.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__fignn_coords" kindref="member">fig__fignn_coords</ref> 2D example: <formula id="14">$ \mathbf{x}$</formula> has five natural neighbors <formula id="15">$ \mathbf{p_1},\ldots, \mathbf{p_5}$</formula>. The natural neighbor coordinate <formula id="16">$ \lambda_3(\mathbf{x})$</formula> is the ratio of the area of the purple polygon, <formula id="17">$ \pi_3(\mathbf{x})$</formula>, over the area of the total highlighted zone. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Let <formula id="18">$ \pi(\mathbf{x})$</formula> denote the volume of the potential Voronoi cell of <formula id="14">$ \mathbf{x}$</formula> and <formula id="19">$ \pi_i(\mathbf{x})$</formula> denote the volume of the sub-cell that would be stolen from the cell of <formula id="12">$ \mathbf{p_i}$</formula> by the cell of <formula id="14">$ \mathbf{x}$</formula>. The natural neighbor coordinate of <formula id="14">$ \mathbf{x}$</formula> with respect to the data point <formula id="20">$ \mathbf{p_i}\in \mathcal{P}$</formula> is defined by  <formula id="21">\[
+\lambda_i(\mathbf{x}) =
+\frac{\pi_i(\mathbf{x})}{\pi(\mathbf{x})}. \]</formula> A two-dimensional example is depicted in <ref refid="index_1fig__fignn_coords" kindref="member">fig__fignn_coords</ref>.</para>
+<para>Various papers (<ref refid="citelist_1CITEREF_b-scaps-97" kindref="member">[3]</ref>, <ref refid="citelist_1CITEREF_f-sodt-90" kindref="member">[4]</ref>, <ref refid="citelist_1CITEREF_hs-vbihc-00" kindref="member">[6]</ref>, <ref refid="citelist_1CITEREF_cgal:p-plcbd-93" kindref="member">[7]</ref>, <ref refid="citelist_1CITEREF_s-vidt-80" kindref="member">[8]</ref>) show that the natural neighbor coordinates exhibit the following properties:<itemizedlist>
+<listitem><para><formula id="22">$ \mathbf{x} = \sum_{i=1}^n \lambda_i(\mathbf{x}) \mathbf{p_i}$</formula> (barycentric coordinate property).</para>
+</listitem><listitem><para>For any <formula id="23">$ i,j \leq n, \lambda_i(\mathbf{p_j}) =
+\delta_{ij}$</formula>, where <formula id="24">$ \delta_{ij}$</formula> is the Kronecker symbol.</para>
+</listitem><listitem><para><formula id="25">$ \sum_{i=1}^n \lambda_i(\mathbf{x}) = 1$</formula> (partition of unity property).</para>
+</listitem></itemizedlist>
+</para>
+<para>When the query point x is located on the envelope of the convex hull of <formula id="2">$ \mathcal{P}$</formula>, the potential Voronoi cell of x becomes infinite and:<itemizedlist>
+<listitem><para><formula id="26">$ \pi(\mathbf{x}) = \infty$</formula></para>
+</listitem><listitem><para><formula id="27">$ \lambda_i(\mathbf{x}) = 0 $</formula>, for all data point <formula id="12">$ \mathbf{p_i}$</formula> of <formula id="2">$ \mathcal{P}$</formula> except for the two endpoints <ndash/> say <formula id="28">$ \mathbf{p}$</formula> and <formula id="29">$ \mathbf{q}$</formula> <ndash/> of the edge where <formula id="30">$ x$</formula> lies.</para>
+</listitem></itemizedlist>
+</para>
+<para>The natural neighbor coordinate of <formula id="14">$ \mathbf{x}$</formula> with respect to these endpoints <formula id="28">$ \mathbf{p}$</formula> and <formula id="29">$ \mathbf{q}$</formula> will be:<itemizedlist>
+<listitem><para><formula id="31">$ \lambda_p(\mathbf{x}) = \frac{\|\mathbf{x} - \mathbf{q}\| }{ \|\mathbf{q} - \mathbf{p}\|} $</formula></para>
+</listitem><listitem><para><formula id="32">$ \lambda_q(\mathbf{x}) = \frac{\|\mathbf{x} - \mathbf{p}\| }{ \|\mathbf{q} - \mathbf{p}\|} $</formula></para>
+</listitem></itemizedlist>
+</para>
+<para>Furthermore, Piper <ref refid="citelist_1CITEREF_cgal:p-plcbd-93" kindref="member">[7]</ref> shows that the coordinate functions are continuous in the convex hull of <formula id="2">$ \mathcal{P}$</formula> and continuously differentiable except on the data points <formula id="2">$ \mathcal{P}$</formula>.<linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1InterpolationIntroductionRegular">
+<title>Regular Neighbor Coordinates</title>
+<para>The previous definition naturally extends to weighted Voronoi diagrams. These diagrams, also known as <emphasis>power diagrams</emphasis>, are obtained by considering weighted points (the weight being a scalar) and considering a weighted distance, the <emphasis>power distance</emphasis>, defined between two weighted points <formula id="33">$ (p, \omega_p) $</formula> and <formula id="34">$ (q, \omega_q) $</formula> by <formula id="35">$ \Pi( (p, \omega_p), (q, \omega_q) ) = pq^2 - \omega_p - \omega_q $</formula>. See <ref refid="index_1Subsection_2D_Triangulations_Regular_Description" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">this section</ref> of the package <ref refid="packages_1PkgTriangulation2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D Triangulations</ref> for an in-depth description of power diagrams.</para>
+<para><anchor id="index_1fig__figrn_coords"/> <image type="html" name="rn_coords.svg"></image>
+ <image type="latex" name="rn_coords.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figrn_coords" kindref="member">fig__figrn_coords</ref> Illustration of regular neighbor coordinates. The point set is the same as in <ref refid="index_1fig__fignn_coords" kindref="member">fig__fignn_coords</ref> but weights have been added. These weights are shown using circles, with the radius of each circle being equal to the square root of the weight of the point. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><simplesect kind="warning"><para>Contrary to Voronoi diagrams, a weighted point <formula id="36">$ p_i$</formula> does not necessarily possess a non-empty cell in the power diagram of <formula id="2">$ \mathcal{P}$</formula> (with <formula id="37">$ p_i\in\mathcal{P}$</formula>). When this is the case, that point is then said to be <emphasis>hidden</emphasis> and all of its regular neighbor coordinates are null.</para>
+</simplesect>
+</para>
+</sect2>
+<sect2 id="index_1InterpolationImplementation">
+<title>Implementation</title>
+<para>The interpolation package of CGAL provides functions to compute natural and regular neighbor coordinates for <formula id="38">$ 2D$</formula> points. Refer to the reference pages <computeroutput><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">natural_neighbor_coordinates_2()</ref></computeroutput> and <computeroutput><ref refid="group__PkgInterpolationRegularNeighborCoordinates2_1ga8fc26e371da4e18ee766d68b22af4106" kindref="member">regular_neighbor_coordinates_2()</ref></computeroutput>. In addition, the package provides functions to compute natural neighbor coordinates on well sampled point set surfaces. See Section <ref refid="index_1secsurface" kindref="member">Surface Natural Neighbor Coordinates and Surface Neighbors</ref> and the reference page <computeroutput><ref refid="group__PkgInterpolationSurfaceNeighborCoordinates3_1ga07c7f1c1efbbbe293fcb2835ca39ed0f" kindref="member">surface_neighbor_coordinates_3()</ref></computeroutput> for further information.</para>
+<sect3 id="index_1InterpolationCoordinateComputationApproach">
+<title>Computation of the Coordinates</title>
+<para>Given a Delaunay triangulation or a regular triangulation, our implementation computes natural and regular neighbor coordinates in two steps. Firstly, the vertices in conflict with the query point (that is, the vertices from which the query point will &quot;steal&quot;) are determined. Then, the areas <formula id="19">$ \pi_i(\mathbf{x})$</formula> are computed by triangulating the Voronoi sub-cells. The output is threefold:<itemizedlist>
+<listitem><para>points (or vertices) with a non-null coordinate along with these coordinates <formula id="19">$ \pi_i(\mathbf{x})$</formula>,</para>
+</listitem><listitem><para>the normalization factor <formula id="18">$ \pi(\mathbf{x})$</formula>,</para>
+</listitem><listitem><para>a Boolean indicator on whether the coordinate computation was successful (which is equivalent to a Boolean indicating whether the query point lies in the convex hull or not).</para>
+</listitem></itemizedlist>
+</para>
+<para>Note that if the query point has already been located in the triangulation (for example using functions such as <ref refid="classCGAL_1_1Triangulation__2_1a940567120751e7864c7b345eaf756642" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">locate()</ref>) and/or the boundary edges of the conflict zone are already determined, alternative functions allow to avoid the re-computation (see <ref refid="group__PkgInterpolationNaturalNeighborCoordinates2" kindref="compound">CGAL::natural_neighbor_coordinates_2()</ref> and <ref refid="group__PkgInterpolationRegularNeighborCoordinates2" kindref="compound">CGAL::regular_neighbor_coordinates_2()</ref>).</para>
+</sect3>
+</sect2>
+<sect2 id="index_1InterpolationExampleforCoordinates">
+<title>Examples</title>
+<para>This section presents some examples of utilization of the natural and regular neighbor coordinates computation methods. Sections <ref refid="index_1InterpolationExampleforNaturalNeighborCoordinates" kindref="member">Example for Natural Neighbor Coordinates</ref> and <ref refid="index_1InterpolationExampleforRegularNeighborCoordinates" kindref="member">Example for Regular Neighbor Coordinates</ref> show basic examples of the computation of natural and regular neighbor coordinates. Section <ref refid="index_1InterpolationExampleforRegularNeighborCoordinates" kindref="member">Example for Regular Neighbor Coordinates</ref> shows a more advanced use case of the API, where a functor is passed to change the output.</para>
+<sect3 id="index_1InterpolationExampleforNaturalNeighborCoordinates">
+<title>Example for Natural Neighbor Coordinates</title>
+<para>The signature of all coordinate computation functions is about the same. <linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2nn_coordinates_2_8cpp-example" kindref="compound">Interpolation/nn_coordinates_2.cpp</ref> <programlisting filename="Interpolation/nn_coordinates_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/natural_neighbor_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Delaunay_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Resulting<sp/>points-coordinates<sp/>pairs<sp/>will<sp/>be<sp/>stored<sp/>in<sp/>an<sp/>object<sp/>of<sp/>this<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;std::pair&lt;Point,<sp/>Coord_type&gt;<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_coordinate_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Delaunay_triangulation<sp/>dt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y=0;<sp/>y&lt;3;<sp/>++y)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x=0;<sp/>x&lt;3;<sp/>++x)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dt.<ref refid="classCGAL_1_1Delaunay__triangulation__2_1a81efeca7e8a7605aba1d3b4f951a96dc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">insert</ref>(K::Point_2(x,<sp/>y));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>coordinates<sp/>computation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Point_2<sp/>p(1.2,<sp/>0.7);<sp/></highlight><highlight class="comment">//<sp/>query<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_coordinate_vector<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Triple" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Triple&lt;std::back_insert_iterator&lt;Point_coordinate_vector&gt;</ref>,<sp/>K::FT,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">&gt;<sp/>result<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">CGAL::natural_neighbor_coordinates_2</ref>(dt,<sp/>p,<sp/>std::back_inserter(coords));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!result.<ref refid="classCGAL_1_1Triple_1a259acf3abe5295dedc2f575236646339" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">third</ref>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>coordinate<sp/>computation<sp/>was<sp/>not<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>point<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>lies<sp/>outside<sp/>the<sp/>convex<sp/>hull.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::FT<sp/>norm<sp/>=<sp/>result.<ref refid="classCGAL_1_1Triple_1a6421bcd4889c6e4035ff5ac0ef330f09" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">second</ref>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Coordinate<sp/>computation<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Normalization<sp/>factor:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>norm<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Coordinates<sp/>for<sp/>point:<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>are<sp/>the<sp/>following:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;coords.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>Point:<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>coords[i].first<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>coeff:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>coords[i].second<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1InterpolationExampleforRegularNeighborCoordinates">
+<title>Example for Regular Neighbor Coordinates</title>
+<para>For regular neighbor coordinates, it is sufficient to replace the name of the function and the type of triangulation passed as parameter, as shown in the example below:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2rn_coordinates_2_8cpp-example" kindref="compound">Interpolation/rn_coordinates_2.cpp</ref> <programlisting filename="Interpolation/rn_coordinates_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Regular_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/regular_neighbor_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Regular__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Regular_triangulation_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Regular_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Regular_triangulation::Bare_point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Bare_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Regular_triangulation::Weighted_point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Weighted_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;std::pair&lt;Weighted_point,<sp/>FT&gt;<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_coordinate_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Regular_triangulation<sp/>rt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y=0;<sp/>y&lt;3;<sp/>++y)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x=0;<sp/>x&lt;3;<sp/>++x)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>rt.<ref refid="classCGAL_1_1Regular__triangulation__2_1af7c85fa190b96836fb6c6a8704a0171c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">insert</ref>(Weighted_point(Bare_point(x,<sp/>y),<sp/>0.<sp/></highlight><highlight class="comment">/*weight*/</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>coordinate<sp/>computation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Weighted_point<sp/>wp(Bare_point(1.2,<sp/>0.7),<sp/>2.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_coordinate_vector<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Triple" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Triple&lt;std::back_insert_iterator&lt;Point_coordinate_vector&gt;</ref>,<sp/>K::FT,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">&gt;<sp/>result<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgInterpolationRegularNeighborCoordinates2_1ga8fc26e371da4e18ee766d68b22af4106" kindref="member">CGAL::regular_neighbor_coordinates_2</ref>(rt,<sp/>wp,<sp/>std::back_inserter(coords));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!result.<ref refid="classCGAL_1_1Triple_1a259acf3abe5295dedc2f575236646339" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">third</ref>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>coordinate<sp/>computation<sp/>was<sp/>not<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>point<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;wp.point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>lies<sp/>outside<sp/>the<sp/>convex<sp/>hull.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::FT<sp/>norm<sp/>=<sp/>result.<ref refid="classCGAL_1_1Triple_1a6421bcd4889c6e4035ff5ac0ef330f09" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">second</ref>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Coordinate<sp/>computation<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Normalization<sp/>factor:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>norm<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Coordinates<sp/>for<sp/>point:<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>wp<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>are<sp/>the<sp/>following:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;coords.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>Point:<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>coords[i].first<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>coeff:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>coords[i].second<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1InterpolationExampleforOutputFunctor">
+<title>Formatting the Output Coordinates</title>
+<para>Internally, natural or regular neighbor coordinates are associated to the vertices of the triangulation via objects of type <computeroutput>std::pair&lt;Vertex_handle, Coord_type&gt;</computeroutput>, where <computeroutput>Coord_type</computeroutput> is the number type of the coordinates. By default and for backward compatibility reasons, this output is converted into objects of type <computeroutput>std::pair&lt;Point, Coord_type&gt;</computeroutput>, where <computeroutput>Point</computeroutput> is a bare (weightless) point.</para>
+<para>It is however possible to collect the output as objects of any desired type, for example the simple <computeroutput>Point</computeroutput> type, by passing a functor as extra parameter of the coordinates computation function. The argument type of this functor must be <computeroutput>std::pair&lt;Vertex_handle, Coord_type&gt;</computeroutput> and the result type is chosen by the user, but must be consistent with the output iterator. Usage of this parameter is demonstrated in the example below, where the output is kept as objects of type <computeroutput>std::pair&lt;Vertex_handle, Coord_type&gt;</computeroutput>, which allows us to then store the coordinate in the vertex, using the class <computeroutput><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_with_info_2</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2nn_coordinates_with_info_2_8cpp-example" kindref="compound">Interpolation/nn_coordinates_with_info_2.cpp</ref> <programlisting filename="Interpolation/nn_coordinates_with_info_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/natural_neighbor_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_vertex_base_with_info_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_with_info_2&lt;Coord_type, K&gt;</ref><sp/><sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2&lt;K, Tds&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Delaunay_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>The<sp/>functor<sp/>&apos;Identity&apos;<sp/>matches<sp/>anything<sp/>to<sp/>itself</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Delaunay_triangulation::Vertex_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Identity" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Identity&lt;std::pair&lt;Vertex_handle, Coord_type&gt;</ref><sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structCGAL_1_1Identity" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Identity</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Resulting<sp/>points-coordinates<sp/>pairs<sp/>are<sp/>here<sp/>stored<sp/>in<sp/>an<sp/>object<sp/>of<sp/>this<sp/>type:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;std::pair&lt;Vertex_handle,<sp/>Coord_type&gt;<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_coordinate_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Delaunay_triangulation<sp/>dt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y=0;<sp/>y&lt;3;<sp/>++y)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x=0;<sp/>x&lt;3;<sp/>++x)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dt.insert(K::Point_2(x,<sp/>y));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>coordinates<sp/>computation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Point_2<sp/>p(1.2,<sp/>0.7);<sp/></highlight><highlight class="comment">//<sp/>query<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_coordinate_vector<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>functor<sp/>Identity<sp/>is<sp/>passed<sp/>to<sp/>the<sp/>method</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Triple" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Triple&lt;std::back_insert_iterator&lt;Point_coordinate_vector&gt;</ref>,<sp/>K::FT,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">&gt;<sp/>result<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">CGAL::natural_neighbor_coordinates_2</ref>(dt,<sp/>p,<sp/>std::back_inserter(coords),<sp/><ref refid="structCGAL_1_1Identity" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Identity</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!result.<ref refid="classCGAL_1_1Triple_1a259acf3abe5295dedc2f575236646339" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">third</ref>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>coordinate<sp/>computation<sp/>was<sp/>not<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>point<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>lies<sp/>outside<sp/>the<sp/>convex<sp/>hull.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Assign<sp/>the<sp/>coordinates<sp/>to<sp/>the<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Coordinates<sp/>for<sp/>point:<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>are<sp/>the<sp/>following:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i=0;<sp/>i&lt;coords.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vertex_handle<sp/>vh<sp/>=<sp/>coords[i].first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vh-&gt;info()<sp/>=<sp/>coords[i].second;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>Vertex:<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>vh-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>coeff:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>vh-&gt;info()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+</sect2>
+</sect1>
+<sect1 id="index_1secsurface">
+<title>Surface Natural Neighbor Coordinates and Surface Neighbors</title>
+<para>This section introduces functions to compute natural neighbor coordinates and surface neighbors associated to a set of sample points issued from a surface <formula id="39">$ \mathcal{S}$</formula> and given a query point <formula id="14">$ \mathbf{x}$</formula> on <formula id="39">$ \mathcal{S}$</formula>. We assume that <formula id="39">$ \mathcal{S}$</formula> is a closed and compact surface of <formula id="8">$ \mathbb{R}^3$</formula>, and let <formula id="40">$ \mathcal{P}=
+\{\mathbf{p_1}, \ldots,\mathbf{p_n}\}$</formula> be an <formula id="41">$ \epsilon$</formula>-sample of <formula id="39">$ \mathcal{S}$</formula> (refer to Amenta and Bern <ref refid="citelist_1CITEREF_ab-srvf-99" kindref="member">[1]</ref>). The concepts are based on the definition of Boissonnat and Fl<oumlaut/>totto <ref refid="citelist_1CITEREF_bf-lcss-02" kindref="member">[2]</ref>, <ref refid="citelist_1CITEREF_cgal:f-csapc-03" kindref="member">[5]</ref>. Both references contain a thorough description of the requirements and the mathematical properties.</para>
+<sect2 id="index_1InterpolationIntroduction_1">
+<title>Introduction</title>
+<para>Two observations lead to the definition of surface neighbors and surface neighbor coordinates: First, it is clear that the tangent plane <formula id="42">$ \mathcal{T}_x$</formula> of the surface <formula id="39">$ \mathcal{S}$</formula> at the point <formula id="43">$ \mathbf{x} \in \mathcal{S}$</formula> approximates <formula id="39">$ \mathcal{S}$</formula> in the neighborhood of <formula id="14">$ \mathbf{x}$</formula>. It has been shown in <ref refid="citelist_1CITEREF_bf-lcss-02" kindref="member">[2]</ref> that, if the surface <formula id="39">$ \mathcal{S}$</formula> is well sampled with respect to the curvature and the local thickness of <formula id="39">$ \mathcal{S}$</formula>, i.e. it is an <formula id="41">$ \epsilon$</formula>-sample, then the intersection of the tangent plane <formula id="42">$ \mathcal{T}_x$</formula> with the Voronoi cell of <formula id="14">$ \mathbf{x}$</formula> in the Voronoi diagram of <formula id="44">$ \mathcal{P} \cup
+\{\mathbf{x}\}$</formula> has a small diameter. Consequently, inside this Voronoi cell, the tangent plane <formula id="42">$ \mathcal{T}_x$</formula> is a reasonable approximation of <formula id="39">$ \mathcal{S}$</formula>. Furthermore, the second observation allows to compute this intersection diagram easily: one can show using Pythagoras&apos; Theorem that the intersection of a three-dimensional Voronoi diagram with a plane <formula id="45">$ \mathcal{H}$</formula> is a two-dimensional power diagram. The points defining the power diagram are the projections of the points in <formula id="2">$ \mathcal{P}$</formula> onto <formula id="45">$ \mathcal{H}$</formula>, each point weighted with its negative square distance to <formula id="45">$ \mathcal{H}$</formula>. Algorithms for the computation of power diagrams via the dual regular triangulation are well known and for example provided by CGAL in the class <computeroutput><ref refid="classCGAL_1_1Regular__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Regular_triangulation_2</ref>&lt;Gt, Tds&gt;</computeroutput>.</para>
+</sect2>
+<sect2 id="index_1InterpolationImplementation_1">
+<title>Implementation</title>
+<sect3 id="index_1InterpolationVoronoiIntersectionDiagrams">
+<title>Voronoi Intersection Diagrams</title>
+<para>In CGAL, the regular triangulation dual to the intersection of a <formula id="46">$ 3D$</formula> Voronoi diagram with a plane <formula id="45">$ \mathcal{H}$</formula> can be computed by instantiating the <computeroutput><ref refid="classCGAL_1_1Regular__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Regular_triangulation_2</ref>&lt;Gt, Tds&gt;</computeroutput> class with the traits class <computeroutput><ref refid="classCGAL_1_1Voronoi__intersection__2__traits__3" kindref="compound">Voronoi_intersection_2_traits_3</ref>&lt;K&gt;</computeroutput>. This traits class contains a point and a vector as class member which define the plane <formula id="45">$ \mathcal{H}$</formula>. All predicates and constructions used by <computeroutput><ref refid="classCGAL_1_1Regular__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Regular_triangulation_2</ref>&lt;Gt, Tds&gt;</computeroutput> are replaced by the corresponding operators on three-dimensional points. For example, the power test predicate (which takes three weighted <formula id="38">$ 2D$</formula> points <formula id="47">$ p&apos;$</formula>, <formula id="48">$ q&apos;$</formula>, <formula id="49">$ r&apos;$</formula> of the regular triangulation and tests the power distance of a fourth point <formula id="50">$ t&apos;$</formula> with respect to the power circle orthogonal to <formula id="51">$ p$</formula>, <formula id="52">$ q$</formula>, <formula id="53">$ r$</formula>) is replaced by a <computeroutput>Side_of_plane_centered_sphere_2_3</computeroutput> predicate that tests the position of a <formula id="46">$ 3D$</formula> point <formula id="54">$ t$</formula> with respect to the sphere centered on the plane <formula id="45">$ \mathcal{H}$</formula> passing through the <formula id="46">$ 3D$</formula> points <formula id="51">$ p$</formula>, <formula id="52">$ q$</formula>, <formula id="53">$ r$</formula>. This approach allows to avoid the explicit construction of the projected points and the weights, operations which are very prone to rounding errors.</para>
+</sect3>
+<sect3 id="index_1InterpolationNaturalNeighborCoordinateson">
+<title>Natural Neighbor Coordinates on Surfaces</title>
+<para>The computation of natural neighbor coordinates on surfaces is based upon the computation of regular neighbor coordinates with respect to the regular triangulation that is dual to <formula id="55">$ {\rm Vor}(\mathcal{P}) \cap
+\mathcal{T}_x$</formula>, the intersection of <formula id="42">$ \mathcal{T}_x$</formula> and the Voronoi diagram of <formula id="2">$ \mathcal{P}$</formula>, via the function <computeroutput><ref refid="group__PkgInterpolationRegularNeighborCoordinates2_1ga8fc26e371da4e18ee766d68b22af4106" kindref="member">regular_neighbor_coordinates_2()</ref></computeroutput>.</para>
+<para>Of course, we might introduce all data points <formula id="2">$ \mathcal{P}$</formula> into this regular triangulation. However, this is not necessary because we are only interested in the cell of <formula id="14">$ \mathbf{x}$</formula>. It is sufficient to guarantee that all surface neighbors of the query point <formula id="14">$ \mathbf{x}$</formula> are among the input points that are passed as argument to the function. The sample points <formula id="2">$ \mathcal{P}$</formula> can be filtered for example by distance, e.g. using range search or <formula id="56">$ k$</formula>-nearest neighbor queries, or with the help of the <formula id="46">$ 3D$</formula> Delaunay triangulation since the surface neighbors are necessarily a subset of the natural neighbors of the query point in this triangulation. CGAL provides a function that encapsulates the filtering based on the <formula id="46">$ 3D$</formula> Delaunay triangulation. For input points filtered by distance, functions are provided that indicate whether or not points that lie outside the input range (i.e.\ points that are further from <formula id="14">$ \mathbf{x}$</formula> than the furthest input point) can still influence the result. This allows to iteratively enlarge the set of input points until the range is sufficient to certify the result.</para>
+</sect3>
+<sect3 id="index_1InterpolationSurfaceNeighbors">
+<title>Surface Neighbors</title>
+<para>The surface neighbors of the query point are its neighbors in the regular triangulation that is dual to <formula id="55">$ {\rm Vor}(\mathcal{P}) \cap
+\mathcal{T}_x$</formula>, the intersection of <formula id="42">$ \mathcal{T}_x$</formula> and the Voronoi diagram of <formula id="2">$ \mathcal{P}$</formula>. As for surface neighbor coordinates, this regular triangulation is computed and the same kind of filtering of the data points as well as the certification described above is provided.</para>
+</sect3>
+</sect2>
+<sect2 id="index_1InterpolationExampleforSurfaceNeighborCoordinates">
+<title>Example for Surface Neighbor Coordinates</title>
+<para>The example below describes the usage of the function <computeroutput><ref refid="group__PkgInterpolationSurfaceNeighborCoordinates3_1ga07c7f1c1efbbbe293fcb2835ca39ed0f" kindref="member">CGAL::surface_neighbor_coordinates_3()</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2surface_neighbor_coordinates_3_8cpp-example" kindref="compound">Interpolation/surface_neighbor_coordinates_3.cpp</ref> <programlisting filename="Interpolation/surface_neighbor_coordinates_3.cpp"><codeline><highlight class="comment">//<sp/>example<sp/>with<sp/>random<sp/>points<sp/>on<sp/>a<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/algorithm.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Origin.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/surface_neighbor_coordinates_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;<sp/>std::pair&lt;<sp/>Point_3,<sp/>K::FT<sp/>&gt;<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_coordinate_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>n<sp/>=<sp/>100;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;<sp/>Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.reserve(n);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Generate<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>n<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>random<sp/>points<sp/>on<sp/>a<sp/>sphere.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_on_sphere_3&lt;Point_3&gt;<sp/>g(1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy_n(g,<sp/>n,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>p(1,<sp/>0,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref><sp/><ref refid="group__normal__grp_1gafe43c91d0ec7130cb673402cf8227dff" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">normal</ref>(p<sp/>-<sp/><ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Compute<sp/>surface<sp/>neighbor<sp/>coordinates<sp/>for<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_coordinate_vector<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Triple" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Triple&lt;std::back_insert_iterator&lt;Point_coordinate_vector&gt;</ref>,<sp/>K::FT,<sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">&gt;<sp/>result<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgInterpolationSurfaceNeighborCoordinates3_1ga07c7f1c1efbbbe293fcb2835ca39ed0f" kindref="member">CGAL::surface_neighbor_coordinates_3</ref>(points.begin(),<sp/>points.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>p,<sp/><ref refid="group__normal__grp_1gafe43c91d0ec7130cb673402cf8227dff" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">normal</ref>,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(coords),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!result.<ref refid="classCGAL_1_1Triple_1a259acf3abe5295dedc2f575236646339" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">third</ref>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//Undersampling:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>coordinate<sp/>computation<sp/>was<sp/>not<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::FT<sp/>norm<sp/>=<sp/>result.<ref refid="classCGAL_1_1Triple_1a6421bcd4889c6e4035ff5ac0ef330f09" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">second</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Testing<sp/>the<sp/>barycentric<sp/>property<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_3<sp/>b(0,<sp/>0,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::pair&lt;<sp/>Point_3,<sp/>Coord_type<sp/>&gt;&amp;<sp/>pc<sp/>:<sp/>coords)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>b<sp/>=<sp/>b<sp/>+<sp/>(pc.second/norm)<sp/>*<sp/>(pc.first<sp/>-<sp/><ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>weighted<sp/>barycenter:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>b<sp/>&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>squared<sp/>distance:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(p,b)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1secinterpolation">
+<title>Interpolation Methods</title>
+<para>We describe in this section the different interpolation methods offered by this package. These can be regrouped into two large classes: values and gradient interpolation methods.</para>
+<sect2 id="index_1InterpolationIntroduction_2">
+<title>Interpolation of Function Values</title>
+<para>The interpolation functions presented below are used to interpolate function values.</para>
+<sect3 id="index_1InterpolationLinearPrecisionInterpolation">
+<title>Linear Precision Interpolation</title>
+<para>Sibson <ref refid="citelist_1CITEREF_s-bdnni-81" kindref="member">[9]</ref> defines a very simple interpolant that re-produces linear functions exactly. The interpolation of <formula id="57">$ \Phi(\mathbf{x})$</formula> is given as the linear combination of the neighbors&apos; function values weighted by the coordinates:  <formula id="58">\[
+Z^0(\mathbf{x}) = \ccSum{i}{}{ \lambda_i(\mathbf{x}) z_i}.
+\]</formula> Indeed, if <formula id="59">$ z_i=a + \mathbf{b}^t \mathbf{p_i}$</formula> for all natural neighbors of <formula id="14">$ \mathbf{x}$</formula>, we have <formula id="60">\[ Z^0(\mathbf{x}) = \ccSum{i}{}{ \lambda_i(\mathbf{x}) (a + \mathbf{b}^t\mathbf{p_i})} = a+\mathbf{b}^t \mathbf{x} \]</formula> by the barycentric coordinate property.</para>
+<para>This interpolation is implemented through the function <computeroutput><ref refid="group__PkgInterpolation2Interpolation_1ga2f8a2f88b5b91b9f3db2d5e40bfa1df7" kindref="member">CGAL::linear_interpolation()</ref></computeroutput>. The first example in Subsection <ref refid="index_1subsecinterpol_examples" kindref="member">Example for Linear Interpolation</ref> shows how the function is called.</para>
+</sect3>
+<sect3 id="index_1InterpolationSibson">
+<title>Sibson&apos;s C^1 Continuous Interpolant</title>
+<para>In <ref refid="citelist_1CITEREF_s-bdnni-81" kindref="member">[9]</ref>, Sibson describes a second interpolation method that relies also on the function gradient <formula id="61">$ \mathbf{g_i}$</formula> for all <formula id="10">$ \mathbf{p_i} \in \mathcal{P}$</formula>. It is <formula id="62">$ C^1$</formula> continuous with gradient <formula id="61">$ \mathbf{g_i}$</formula> at <formula id="12">$ \mathbf{p_i}$</formula>. Spherical quadrics of the form <formula id="63">$ \Phi(\mathbf{x}) =a +
+\mathbf{b}^t \mathbf{x} +\gamma\ \mathbf{x}^t\mathbf{x}$</formula> are reproduced exactly. The proof relies on the barycentric coordinate property of the natural neighbor coordinates and assumes that the gradient of <formula id="9">$ \Phi$</formula> at the data points is known or approximated from the function values as described in <ref refid="citelist_1CITEREF_s-bdnni-81" kindref="member">[9]</ref> (see Section <ref refid="index_1sgradient_fitting" kindref="member">Gradient Fitting</ref>).</para>
+<para>Sibson&apos;s <formula id="1">$ Z^1$</formula> interpolant is a combination of the linear interpolant <formula id="64">$ Z^0$</formula> and an interpolant <formula id="65">$ \xi$</formula> which is the weighted sum of the first degree functions  <formula id="66">\[ \xi_i(\mathbf{x}) = z_i
++\mathbf{g_i}^t(\mathbf{x}-\mathbf{p_i}),\qquad \xi(\mathbf{x})= \frac{\ccSum{i}{}{ \frac{\lambda_i(\mathbf{x})}
+{\|\mathbf{x}-\mathbf{p_i}\|}\xi_i(\mathbf{x}) } }{\ccSum{i}{}{
+\frac{\lambda_i(\mathbf{x})}{\|\mathbf{x}-\mathbf{p_i}\|}}}. \]</formula> Sibson observed that the combination of <formula id="64">$ Z^0$</formula> and <formula id="65">$ \xi$</formula> reconstructs exactly a spherical quadric if they are mixed as follows:  <formula id="67">\[
+Z^1(\mathbf{x}) = \frac{\alpha(\mathbf{x}) Z^0(\mathbf{x}) +
+\beta(\mathbf{x}) \xi(\mathbf{x})}{\alpha(\mathbf{x}) +
+\beta(\mathbf{x})} \mbox{ where } \alpha(\mathbf{x}) =
+\frac{\ccSum{i}{}{ \lambda_i(\mathbf{x}) \frac{\|\mathbf{x} -
+\mathbf{p_i}\|^2}{f(\|\mathbf{x} - \mathbf{p_i}\|)}}}{\ccSum{i}{}{
+\frac{\lambda_i(\mathbf{x})} {f(\|\mathbf{x} - \mathbf{p_i}\|)}}}
+\mbox{ and } \beta(\mathbf{x})= \ccSum{i}{}{ \lambda_i(\mathbf{x})
+\|\mathbf{x} - \mathbf{p_i}\|^2}, \]</formula> where in Sibson&apos;s original work, <formula id="68">$ f(\|\mathbf{x} - \mathbf{p_i}\|) = \|\mathbf{x} - \mathbf{p_i}\|$</formula>.</para>
+<para>This interpolation method can be used by calling <computeroutput><ref refid="group__PkgInterpolation2Interpolation_1ga79d301865904d46b1fd247594a07db55" kindref="member">CGAL::sibson_c1_interpolation()</ref></computeroutput>.</para>
+<para>CGAL contains a second implementation using <formula id="69">$ f(\|\mathbf{x} -
+\mathbf{p_i}\|) = \|\mathbf{x} - \mathbf{p_i}\|^2$</formula>, <computeroutput><ref refid="group__PkgInterpolation2Interpolation_1ga1f84e03a02a6602d45c26f600a6d225b" kindref="member">CGAL::sibson_c1_interpolation_square()</ref></computeroutput>, which is less demanding on the number type because it avoids the square-root computation needed to compute the distance <formula id="70">$ \|\mathbf{x} -
+\mathbf{p_i}\|$</formula>. The theoretical guarantees are the same (see <ref refid="citelist_1CITEREF_cgal:f-csapc-03" kindref="member">[5]</ref>). Simply, the smaller the slope of <formula id="71">$ f$</formula> around <formula id="72">$ f(0)$</formula>, the faster the interpolant approaches <formula id="73">$ \xi_i$</formula> as <formula id="74">$ \mathbf{x} $</formula> goes to <formula id="12">$ \mathbf{p_i}$</formula>.</para>
+</sect3>
+<sect3 id="index_1InterpolationFarin">
+<title>Farin&apos;s C^1 Continuous Interpolant</title>
+<para>Farin <ref refid="citelist_1CITEREF_f-sodt-90" kindref="member">[4]</ref> extended Sibson&apos;s work and realizes a <formula id="62">$ C^1$</formula> continuous interpolant by embedding natural neighbor coordinates in the Bernstein-B<eacute/>zier representation of a cubic simplex. If the gradient of <formula id="9">$ \Phi$</formula> at the data points is known, this interpolant reproduces quadratic functions exactly. The function gradient can be approximated from the function values by Sibson&apos;s method <ref refid="citelist_1CITEREF_s-bdnni-81" kindref="member">[9]</ref> (see Section <ref refid="index_1sgradient_fitting" kindref="member">Gradient Fitting</ref>) which is exact only for spherical quadrics.</para>
+<para>The Farin <formula id="62">$ C^1$</formula>-continuous interpolant is implemented in the function <computeroutput><ref refid="group__PkgInterpolation2Interpolation_1ga40856de51734ae1b1882cb46e8195c93" kindref="member">CGAL::farin_c1_interpolation()</ref></computeroutput>.</para>
+</sect3>
+<sect3 id="index_1InterpolationQuadraticPrecisionInterpolants">
+<title>Quadratic Precision Interpolants</title>
+<para>Knowing the gradient <formula id="61">$ \mathbf{g_i}$</formula> for all <formula id="75">$ \mathbf{p_i} \in
+\mathcal{P}$</formula>, we formulate a very simple interpolant that reproduces exactly quadratic functions. This interpolant is not <formula id="62">$ C^1$</formula> continuous in general. It is defined as follows:  <formula id="76">\[
+I^1(\mathbf{x}) = \ccSum{i}{}{ \lambda_i(\mathbf{x})
+(z_i + \frac{1}{2} \mathbf{g_i}^t (\mathbf{x} - \mathbf{p_i}))}
+\]</formula></para>
+<para>This interpolation can be used with the method <computeroutput><ref refid="group__PkgInterpolation2Interpolation_1ga50aa68e988b099a99533f26872c639f5" kindref="member">CGAL::quadratic_interpolation()</ref></computeroutput>.</para>
+</sect3>
+</sect2>
+<sect2 id="index_1sgradient_fitting">
+<title>Gradient Fitting</title>
+<para>Sibson describes a method to approximate the gradient of the function <formula id="71">$ f$</formula> from the function values on the data sites. For the data point <formula id="12">$ \mathbf{p_i}$</formula>, we determine  <formula id="77">\[ \mathbf{g_i}
+= \min_{\mathbf{g}}
+\ccSum{j}{}{
+\frac{\lambda_j(\mathbf{p_i})}{\|\mathbf{p_i} - \mathbf{p_j}\|^2}
+\left( z_j - (z_i + \mathbf{g}^t (\mathbf{p_j} -\mathbf{p_i})) \right)},
+\]</formula> where <formula id="78">$ \lambda_j(\mathbf{p_i})$</formula> is the natural neighbor coordinate of <formula id="12">$ \mathbf{p_i}$</formula> with respect to <formula id="12">$ \mathbf{p_i}$</formula> associated to <formula id="79">$ \mathcal{P} \setminus \{\mathbf{p_i}\}$</formula>. For spherical quadrics, the result is exact.</para>
+<para>CGAL provides functions to approximate the gradients of all data points that are inside the convex hull. There is one function for each type of neighbor coordinates:<itemizedlist>
+<listitem><para><computeroutput><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">natural_neighbor_coordinates_2()</ref></computeroutput>: <computeroutput><ref refid="group__PkgInterpolationSibsonGradientFitting_1ga2063ef2d118d601f4d0789ffcf2c191f" kindref="member">CGAL::sibson_gradient_fitting_nn_2()</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="group__PkgInterpolationRegularNeighborCoordinates2_1ga8fc26e371da4e18ee766d68b22af4106" kindref="member">regular_neighbor_coordinates_2()</ref></computeroutput>: <computeroutput><ref refid="group__PkgInterpolationSibsonGradientFitting_1gadd232ce2ff777c055c039aa9bcff7e90" kindref="member">CGAL::sibson_gradient_fitting_rn_2()</ref></computeroutput>.</para>
+</listitem></itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1subsecinterpol_examples">
+<title>Example for Linear Interpolation</title>
+<para>The example below shows a typical example of the usage of <computeroutput><ref refid="group__PkgInterpolation2Interpolation_1ga2f8a2f88b5b91b9f3db2d5e40bfa1df7" kindref="member">CGAL::linear_interpolation()</ref></computeroutput>. Note the use of <computeroutput><ref refid="structCGAL_1_1Data__access" kindref="compound">CGAL::Data_access</ref></computeroutput> to transform the <computeroutput>std::map</computeroutput> in a functor compatible with the function.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2linear_interpolation_2_8cpp-example" kindref="compound">Interpolation/linear_interpolation_2.cpp</ref> <programlisting filename="Interpolation/linear_interpolation_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Interpolation_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/natural_neighbor_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/interpolation_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Delaunay_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Interpolation__traits__2" kindref="compound">CGAL::Interpolation_traits_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Delaunay_triangulation<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;Point,<sp/>Coord_type,<sp/>K::Less_xy_2&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Data__access" kindref="compound">CGAL::Data_access&lt;Coord_map&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Value_access;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_map<sp/>value_function;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_type<sp/>a(0.25),<sp/>bx(1.3),<sp/>by(-0.7);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y=0<sp/>;<sp/>y&lt;3<sp/>;<sp/>y++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x=0<sp/>;<sp/>x&lt;3<sp/>;<sp/>x++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>K::Point_2<sp/>p(x,y);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>T.insert(p);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>value_function.insert(std::make_pair(p,<sp/>a<sp/>+<sp/>bx*x<sp/>+<sp/>by*y));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//coordinate<sp/>computation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Point_2<sp/>p(1.3,<sp/>0.34);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::pair&lt;Point,<sp/>Coord_type&gt;<sp/>&gt;<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_type<sp/>norm<sp/>=<sp/><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">CGAL::natural_neighbor_coordinates_2</ref>(T,<sp/>p,<sp/>std::back_inserter(coords)).second;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_type<sp/>res<sp/>=<sp/><sp/><ref refid="group__PkgInterpolation2Interpolation_1ga2f8a2f88b5b91b9f3db2d5e40bfa1df7" kindref="member">CGAL::linear_interpolation</ref>(coords.begin(),<sp/>coords.end(),<sp/>norm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Value_access(value_function));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Tested<sp/>interpolation<sp/>on<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>interpolation:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>res<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>exact:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>a<sp/>+<sp/>bx*p.x()<sp/>+<sp/>by*p.y()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The next example shows the interpolation of non-scalar values, namely <computeroutput><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref></computeroutput>. It may be any type <computeroutput>T</computeroutput> which provides a multiplication operator with a scalar, and the addition operator for <computeroutput>T</computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2linear_interpolation_of_vector_3_8cpp-example" kindref="compound">Interpolation/linear_interpolation_of_vector_3.cpp</ref> <programlisting filename="Interpolation/linear_interpolation_of_vector_3.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Interpolation_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/natural_neighbor_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/interpolation_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Delaunay_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Interpolation__traits__2" kindref="compound">CGAL::Interpolation_traits_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Delaunay_triangulation<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;Point_2,<sp/>Vector_3,<sp/>K::Less_xy_2&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Data__access" kindref="compound">CGAL::Data_access&lt;Coord_map&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Value_access;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_map<sp/>value_function;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y=0<sp/>;<sp/>y&lt;255<sp/>;<sp/>y++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x=0<sp/>;<sp/>x&lt;255<sp/>;<sp/>x++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>K::Point_2<sp/>p(x,y);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>T.insert(p);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>value_function.insert(std::make_pair(p,<sp/><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref>(x,y,1)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//coordinate<sp/>computation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Point_2<sp/>p(1.3,<sp/>0.34);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::pair&lt;Point_2,<sp/>double&gt;<sp/>&gt;<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>norm<sp/>=<sp/><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">CGAL::natural_neighbor_coordinates_2</ref>(T,<sp/>p,<sp/>std::back_inserter(coords)).second;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vector_3<sp/>res<sp/>=<sp/><sp/><ref refid="group__PkgInterpolation2Interpolation_1ga2f8a2f88b5b91b9f3db2d5e40bfa1df7" kindref="member">CGAL::linear_interpolation</ref>(coords.begin(),<sp/>coords.end(),<sp/>norm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Value_access(value_function));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Tested<sp/>interpolation<sp/>on<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>interpolation:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>res<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1InterpolationExampleSibson">
+<title>Example for Sibson&apos;s C^1 Interpolation Scheme with Gradient Estimation</title>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2sibson_interpolation_2_8cpp-example" kindref="compound">Interpolation/sibson_interpolation_2.cpp</ref> <programlisting filename="Interpolation/sibson_interpolation_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/natural_neighbor_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Interpolation_gradient_fitting_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/sibson_gradient_fitting.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/interpolation_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Delaunay_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Interpolation__gradient__fitting__traits__2" kindref="compound">CGAL::Interpolation_gradient_fitting_traits_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;Point,<sp/>Coord_type,<sp/>K::Less_xy_2&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_value_map<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;Point,<sp/>K::Vector_2<sp/>,<sp/>K::Less_xy_2&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_vector_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Delaunay_triangulation<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_value_map<sp/>value_function;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_vector_map<sp/>gradient_function;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//parameters<sp/>for<sp/>spherical<sp/>function:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_type<sp/>a(0.25),<sp/>bx(1.3),<sp/>by(-0.7),<sp/>c(0.2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y=0;<sp/>y&lt;4;<sp/>y++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x=0;<sp/>x&lt;4;<sp/>x++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>K::Point_2<sp/>p(x,y);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>T.insert(p);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>value_function.insert(std::make_pair(p,a<sp/>+<sp/>bx*<sp/>x+<sp/>by*y<sp/>+<sp/>c*(x*x+y*y)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgInterpolationSibsonGradientFitting_1ga2063ef2d118d601f4d0789ffcf2c191f" kindref="member">sibson_gradient_fitting_nn_2</ref>(T,<sp/>std::inserter(gradient_function,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>gradient_function.begin()),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::<sp/>Data_access&lt;Point_value_map&gt;(value_function),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_vector_map::value_type&amp;<sp/>pv<sp/>:<sp/>gradient_function)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>pv.first<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>&quot;</highlight><highlight class="normal"><sp/><sp/>&lt;&lt;<sp/>pv.second<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>coordinate<sp/>computation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Point_2<sp/>p(1.6,<sp/>1.4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;<sp/>std::pair&lt;<sp/>Point,<sp/>Coord_type<sp/>&gt;<sp/>&gt;<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_type<sp/>norm<sp/>=<sp/><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">CGAL::natural_neighbor_coordinates_2</ref>(T,<sp/>p,<sp/>std::back_inserter(coords)).second;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Sibson<sp/>interpolant:<sp/>version<sp/>without<sp/>sqrt:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::pair&lt;Coord_type,<sp/>bool&gt;<sp/>res<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgInterpolation2Interpolation_1ga1f84e03a02a6602d45c26f600a6d225b" kindref="member">CGAL::sibson_c1_interpolation_square</ref>(coords.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>coords.end(),<sp/>norm,<sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structCGAL_1_1Data__access" kindref="compound">CGAL::Data_access&lt;Point_value_map&gt;</ref>(value_function),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structCGAL_1_1Data__access" kindref="compound">CGAL::Data_access&lt;Point_vector_map&gt;</ref>(gradient_function),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(res.second)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Tested<sp/>interpolation<sp/>on<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>interpolation:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>res.first<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>exact:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>a<sp/>+<sp/>bx*p.x()<sp/>+<sp/>by*p.y()<sp/>+<sp/>c*(p.x()*p.x()+p.y()*p.y())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;C^1<sp/>Interpolation<sp/>not<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>not<sp/>all<sp/>gradients<sp/>are<sp/>provided.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>You<sp/>may<sp/>resort<sp/>to<sp/>linear<sp/>interpolation.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The example <ref refid="Interpolation_2interpolation_2_8cpp-example" kindref="compound">interpolation_2.cpp </ref> compares numerically the errors of the different interpolation functions with respect to a known function.</para>
+</sect2>
+<sect2 id="index_1InterpolationExampleVertices">
+<title>Example for Storing Values and Gradients in Vertices</title>
+<para>In the previous examples, we have stored the values and gradients in a <computeroutput>std::map</computeroutput> and wrapped them in a <computeroutput><ref refid="structCGAL_1_1Data__access" kindref="compound">CGAL::Data_access</ref></computeroutput> object. We can avoid this &quot;external&quot; storage by using the class <computeroutput><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Triangulation_vertex_base_with_info_2</ref></computeroutput> provided by the triangulation package: values and gradients can be stored directly in the vertices of the triangulation. Functors and output iterators requested by the gradient fitting and interpolation functions are then simply wrappers providing read/write accesses to the <computeroutput>info</computeroutput> member of the vertices. This approach is shown in the example below.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Interpolation_2sibson_interpolation_vertex_with_info_2_8cpp-example" kindref="compound">Interpolation/sibson_interpolation_vertex_with_info_2.cpp</ref> <programlisting filename="Interpolation/sibson_interpolation_vertex_with_info_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_vertex_base_with_info_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_data_structure_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/natural_neighbor_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Interpolation_gradient_fitting_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/sibson_gradient_fitting.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/interpolation_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;utility&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Interpolation__gradient__fitting__traits__2" kindref="compound">CGAL::Interpolation_gradient_fitting_traits_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Coord_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>V,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>G&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Value_and_gradient</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Value_and_gradient()<sp/>:<sp/>value(),<sp/>gradient(<ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL</ref>::<ref refid="group__kernel__enums_1ga4a98ec6bd9dfd8fe8c46fea553b5d238" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">NULL_VECTOR</ref>)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V<sp/>value;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>G<sp/>gradient;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_with_info_2</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Value_and_gradient&lt;Coord_type,<sp/>Vector&gt;,<sp/>K&gt;<sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2&lt;K,Tds&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Delaunay_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Delaunay_triangulation::Vertex_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>V,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Value_function</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>V<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>argument_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;T,<sp/>bool&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>result_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>operation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>result_type<sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>argument_type&amp;<sp/>a)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>result_type(a-&gt;info().value,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>V,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>G&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Gradient_function</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>value_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Distance;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Pointer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>Reference;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::output_iterator_tag<sp/>category;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>V<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>argument_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;G,<sp/>bool&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>result_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>operation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>result_type<sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>argument_type&amp;<sp/>a)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>std::make_pair(a-&gt;info().gradient,<sp/>a-&gt;info().gradient<sp/>!=<sp/><ref refid="group__kernel__enums_1ga4a98ec6bd9dfd8fe8c46fea553b5d238" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::NULL_VECTOR</ref>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>write<sp/>operation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Gradient_function&amp;<sp/>operator=(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::pair&lt;V,<sp/>G&gt;&amp;<sp/>p)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>p.first-&gt;info().gradient<sp/>=<sp/>p.second;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Gradient_function&amp;<sp/>operator++(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Gradient_function&amp;<sp/><ref refid="group__Kernel__operator__prod_1ga8427cff04588dc338b8acf3e1b116dce" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">operator*</ref>()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Delaunay_triangulation<sp/>dt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>a<sp/>supported<sp/>alternative<sp/>to<sp/>creating<sp/>the<sp/>functors<sp/>below<sp/>is<sp/>to<sp/>use<sp/>lambdas</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Value_function&lt;Vertex_handle,<sp/>Coord_type&gt;<sp/>value_function;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Gradient_function&lt;Vertex_handle,<sp/>Vector&gt;<sp/>gradient_function;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>parameters<sp/>for<sp/>spherical<sp/>function:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_type<sp/>a(0.25),<sp/>bx(1.3),<sp/>by(-0.7),<sp/>c(0.2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>y=0<sp/>;<sp/>y&lt;4<sp/>;<sp/>++y)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x=0<sp/>;<sp/>x&lt;4<sp/>;<sp/>++x)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>K::Point_2<sp/>p(x,y);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_handle<sp/>vh<sp/>=<sp/>dt.insert(p);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Coord_type<sp/>value<sp/>=<sp/>a<sp/>+<sp/>bx*<sp/>x+<sp/>by*y<sp/>+<sp/>c*(x*x+y*y);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>vh-&gt;info().value<sp/>=<sp/>value;<sp/></highlight><highlight class="comment">//<sp/>store<sp/>the<sp/>value<sp/>directly<sp/>in<sp/>the<sp/>vertex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgInterpolationSibsonGradientFitting_1ga2063ef2d118d601f4d0789ffcf2c191f" kindref="member">CGAL::sibson_gradient_fitting_nn_2</ref>(dt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>gradient_function,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="structCGAL_1_1Identity" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Identity</ref>&lt;std::pair&lt;Vertex_handle,<sp/>Vector&gt;<sp/>&gt;(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>value_function,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>coordinate<sp/>computation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>K::Point_2<sp/>p(1.6,<sp/>1.4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::pair&lt;Vertex_handle,<sp/>Coord_type&gt;<sp/>&gt;<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Identity" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Identity&lt;std::pair&lt;Vertex_handle, Coord_type&gt;</ref><sp/>&gt;<sp/>Identity;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Coord_type<sp/>norm<sp/>=<sp/><ref refid="group__PkgInterpolationNaturalNeighborCoordinates2_1ga25b17c97b024672227dacf7283e2c485" kindref="member">CGAL::natural_neighbor_coordinates_2</ref>(dt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(coords),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Identity()).second;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Sibson<sp/>interpolant:<sp/>version<sp/>without<sp/>sqrt:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::pair&lt;Coord_type,<sp/>bool&gt;<sp/>res<sp/>=<sp/><ref refid="group__PkgInterpolation2Interpolation_1ga1f84e03a02a6602d45c26f600a6d225b" kindref="member">CGAL::sibson_c1_interpolation_square</ref>(coords.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>coords.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>norm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>value_function,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>gradient_function,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(res.second)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Tested<sp/>interpolation<sp/>on<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>interpolation:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>res.first<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>exact:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>a<sp/>+<sp/>bx*p.x()<sp/>+<sp/>by*p.y()<sp/>+<sp/>c*(p.x()*p.x()<sp/>+<sp/>p.y()*p.y())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;C^1<sp/>Interpolation<sp/>not<sp/>successful.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>not<sp/>all<sp/>function_gradients<sp/>are<sp/>provided.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>You<sp/>may<sp/>resort<sp/>to<sp/>linear<sp/>interpolation.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Interpolation">
+<title>Design and Implementation History</title>
+<para>The original version was written by Julia Fl<oumlaut/>totto, while working towards her PhD thesis at Inria. The possibility to use values and gradients in a <computeroutput><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Triangulation_vertex_base_with_info_2</ref></computeroutput> was introduced by Andreas Fabri and Mael Rouxel-Labb<eacute/> working at GeometryFactory. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Interpolation.txt"/>
+  </compounddef>
+</doxygen>

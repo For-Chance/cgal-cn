@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Box_intersection_d_2custom_box_grid_8cpp-example" kind="example">
+    <compoundname>Box_intersection_d/custom_box_grid.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Box_intersection_d/custom_box_grid.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/box_intersection_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Box<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>NT;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::ptrdiff_t<sp/>ID;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>lo[2],<sp/>hi[2];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Box(<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>lo0,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>lo1,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>hi0,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>hi1)<sp/>{<sp/>lo[0]=lo0;<sp/>lo[1]=lo1;<sp/>hi[0]=hi0;<sp/>hi[1]=hi1;}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>dimension()<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>2;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>min_coord(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>dim)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>lo[dim];<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>max_coord(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>dim)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>hi[dim];<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>id-function<sp/>using<sp/>address<sp/>of<sp/>current<sp/>box,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>requires<sp/>to<sp/>work<sp/>with<sp/>pointers<sp/>to<sp/>boxes<sp/>later</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::ptrdiff_t<sp/>id()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(std::ptrdiff_t)(</highlight><highlight class="keyword">this</highlight><highlight class="normal">);<sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>9<sp/>boxes<sp/>of<sp/>a<sp/>grid</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Box<sp/>boxes[9]<sp/>=<sp/>{<sp/>Box(<sp/>0,0,1,1),<sp/><sp/>Box(<sp/>1,0,2,1),<sp/><sp/>Box(<sp/>2,0,3,1),<sp/></highlight><highlight class="comment">//<sp/>low</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Box(<sp/>0,1,1,2),<sp/><sp/>Box(<sp/>1,1,2,2),<sp/><sp/>Box(<sp/>2,1,3,2),<sp/></highlight><highlight class="comment">//<sp/>middle</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Box(<sp/>0,2,1,3),<sp/><sp/>Box(<sp/>1,2,2,3),<sp/><sp/>Box(<sp/>2,2,3,3)};</highlight><highlight class="comment">//<sp/>upper</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>2<sp/>selected<sp/>boxes<sp/>as<sp/>query;<sp/>center<sp/>and<sp/>upper<sp/>right</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Box<sp/>query[2]<sp/>=<sp/>{<sp/>Box(<sp/>1,1,2,2),<sp/><sp/>Box(<sp/>2,2,3,3)};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>With<sp/>the<sp/>special<sp/>id-function<sp/>we<sp/>need<sp/>to<sp/>work<sp/>on<sp/>box<sp/>pointers</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Box*<sp/>b_ptr[9]<sp/>=<sp/>{<sp/>boxes,<sp/><sp/><sp/>boxes+1,<sp/>boxes+2,<sp/>boxes+3,<sp/>boxes+4,<sp/>boxes+5,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boxes+6,<sp/>boxes+7,<sp/>boxes+8};</highlight></codeline>
+<codeline><highlight class="normal">Box*<sp/>q_ptr[2]<sp/>=<sp/>{<sp/>query,<sp/><sp/><sp/>query+1};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>callback<sp/>function<sp/>object<sp/>writing<sp/>results<sp/>to<sp/>an<sp/>output<sp/>iterator</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>OutputIterator&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Report<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">OutputIterator</ref><sp/>it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Report(<sp/><ref refid="classOutputIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">OutputIterator</ref><sp/>i)<sp/>:<sp/>it(i)<sp/>{}<sp/></highlight><highlight class="comment">//<sp/>store<sp/>iterator<sp/>in<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>We<sp/>write<sp/>the<sp/>position<sp/>with<sp/>respect<sp/>to<sp/>&apos;boxes&apos;<sp/>to<sp/>the<sp/>output<sp/>iterator</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>assuming<sp/>that<sp/>box<sp/>b<sp/>(the<sp/>query<sp/>box)<sp/>is<sp/>not<sp/>interesting<sp/>in<sp/>the<sp/>result.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Box*<sp/>a,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Box*)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*it++<sp/>=<sp/>(<sp/></highlight><highlight class="keyword">reinterpret_cast&lt;</highlight><highlight class="normal">Box*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(a-&gt;id())<sp/>-<sp/>boxes);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Iter&gt;<sp/></highlight><highlight class="comment">//<sp/>helper<sp/>function<sp/>to<sp/>create<sp/>the<sp/>function<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Report&lt;Iter&gt;<sp/>report(<sp/>Iter<sp/>it)<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Report&lt;Iter&gt;(it);<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>run<sp/>the<sp/>intersection<sp/>algorithm<sp/>and<sp/>store<sp/>results<sp/>in<sp/>a<sp/>vector</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;std::size_t&gt;<sp/>result;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgBoxIntersectionD__box__intersection__d_1ga7ac96673d25a437c98e8abb864a3362d" kindref="member">CGAL::box_intersection_d</ref>(<sp/>b_ptr,<sp/>b_ptr+9,<sp/>q_ptr,<sp/>q_ptr+2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>report(<sp/>std::back_inserter(<sp/>result)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::ptrdiff_t(0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort<sp/>and<sp/>check<sp/>result</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::sort(<sp/>result.begin(),<sp/>result.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::size_t<sp/>chk[13]<sp/>=<sp/>{0,1,2,3,4,4,5,5,6,7,7,8,8};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(<sp/>result.size()==13<sp/>&amp;&amp;<sp/>std::equal(chk,chk+13,result.begin()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

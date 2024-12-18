@@ -1,0 +1,804 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_3D_Periodic_Triangulations"/><anchor id="index_1chapterP3Triangulation3"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Manuel Caroli, Aymeric Pell<eacute/>, Mael Rouxel-Labb<eacute/> and Monique Teillaud</para>
+</simplesect>
+<image type="html" name="p3Delaunay3.jpg"></image>
+ <image type="latex" name="p3Delaunay3.jpg"></image>
+</para>
+<para>The periodic 3D-triangulation class of CGAL is designed to represent the triangulations of a set of points in the three-dimensional flat torus. The triangulation forms a partition of the space it is computed in. It is a simplicial complex, i.e. it contains all incident <formula id="27">$ j$</formula>-simplices ( <formula id="28">$ j&lt;k$</formula>) of any <formula id="17">$ k$</formula>-simplex and two <formula id="17">$ k$</formula>-simplices either do not intersect or share a common <formula id="27">$ j$</formula>-face, <formula id="28">$ j&lt;k$</formula>. The occurring simplices of dimension up to three are called <emphasis>vertex</emphasis>, <emphasis>edge</emphasis>, <emphasis>facet</emphasis>, and <emphasis>cell</emphasis>, respectively.</para>
+<sect1 id="index_1P3Triangulation3secspace">
+<title>The Flat Torus</title>
+<para>The 3D Periodic Triangulation package computes triangulations in the space <formula id="8">$ \mathbb T_c^3$</formula>, which is defined as follows: Let <formula id="29">$ c\in\mathbb
+R\setminus\{0\}$</formula> and <formula id="30">$ G$</formula> be the group <formula id="31">$ (c\cdot\mathbb Z^3, +)$</formula>, where <formula id="32">$ c\cdot\mathbb Z$</formula> denotes the set containing all integer multiples of <formula id="33">$ c$</formula>. The flat torus is the quotient space: <formula id="34">$ \mathbb T_c^3:=\mathbb
+R^3/G$</formula>. The parameter <formula id="33">$ c$</formula> defines the period.</para>
+<para>The elements of <formula id="8">$ \mathbb T_c^3$</formula> are the equivalence classes of sets of points in <formula id="3">$ \mathbb R^3$</formula>. We call these points <emphasis>representatives</emphasis> of an element of <formula id="35">$ \mathbb
+T_c^3$</formula>. The implementation works not directly on elements of <formula id="35">$ \mathbb
+T_c^3$</formula> but on some representatives in <formula id="3">$ \mathbb R^3$</formula>. So there need to be distinguished representatives to work on. Given <formula id="36">$ \alpha$</formula>, <formula id="37">$ \beta$</formula>, and <formula id="38">$ \gamma$</formula>, the cube <formula id="39">$ [\alpha,\alpha+c)\times[\beta,\beta+c)\times[\gamma,\gamma+c)$</formula> contains exactly one representative of each element in <formula id="35">$ \mathbb
+T_c^3$</formula>. We call it <emphasis>original domain</emphasis>. From now on, when we talk about <emphasis>points</emphasis>, we generally mean representatives of elements of <formula id="8">$ \mathbb T_c^3$</formula> that lie inside the original domain. Note that any input point is required to be an element of the half-open cube representing the original domain as defined above.</para>
+<para>There are simplices containing points inside the original domain but also points outside it. The points outside the original domain are periodic copies of points inside the original domain. So, to specify a simplex we need points together with some additional information that determines the respective periodic copy of each point. The set of representatives of an element of <formula id="8">$ \mathbb T_c^3$</formula> is a cubic point grid. We address each representative by a three-dimensional integer vector <formula id="40">$ (o_x,o_y,o_z)$</formula>, called <emphasis>offset</emphasis>. It represents the number of periods a representative in the original domain must be translated in <formula id="23">$ x$</formula>-, <formula id="24">$ y$</formula>-, and <formula id="25">$ z$</formula>-direction. The vector <formula id="41">$ (0,0,0)$</formula> corresponds to the representative in the original domain. To specify a <formula id="17">$ k$</formula>-simplex we need <formula id="42">$ k+1$</formula> point-offset pairs (cf. <ref refid="index_1fig__P3Triangulation3figoffsets" kindref="member">fig__P3Triangulation3figoffsets</ref>).</para>
+<para><anchor id="index_1fig__P3Triangulation3figoffsets"/> <image type="html" name="offsets.png"></image>
+ <image type="latex" name="offsets.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__P3Triangulation3figoffsets" kindref="member">fig__P3Triangulation3figoffsets</ref> Offsets in a cell. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1P3Triangulation3secintro">
+<title>Representation</title>
+<para>A triangulation is a collection of vertices and cells that are linked together through incidence and adjacency relations. Each cell gives access to its four incident vertices, their corresponding offsets, and to its four adjacent cells. Each vertex gives access to one of its incident cells.</para>
+<para>The four vertices of a cell are indexed with 0, 1, 2 and 3 in positive orientation. The orientation of a simplex in <formula id="8">$ \mathbb T_c^3$</formula> is defined as the orientation of the corresponding simplex in <formula id="43">$ \mathbb
+R^3$</formula> given by representatives determined by the respective offsets (see <ref refid="index_1fig__P3Triangulation3figorient" kindref="member">fig__P3Triangulation3figorient</ref>).</para>
+<para><anchor id="index_1fig__P3Triangulation3figorient"/> <image type="html" name="orient.png"></image>
+ <image type="latex" name="orient.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__P3Triangulation3figorient" kindref="member">fig__P3Triangulation3figorient</ref> Orientation of a cell. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>As in the underlying combinatorial triangulation (see Chapter <ref refid="index_1chapterTDS3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">3D Triangulation Data Structure</ref>), the neighbors of a cell are indexed with 0, 1, 2, 3 in such a way that the neighbor indexed by <formula id="13">$ i$</formula> is opposite to the vertex with the same index. Also edges ( <formula id="11">$ 1$</formula>-faces) and facets ( <formula id="12">$ 2$</formula>-faces) are not explicitly represented: a facet is given by a cell and an index (the facet <computeroutput>i</computeroutput> of a cell <computeroutput>c</computeroutput> is the facet of <computeroutput>c</computeroutput> that is opposite to the vertex with index <computeroutput>i</computeroutput>) and an edge is given by a cell and two indices (the edge <computeroutput>(i,j)</computeroutput> of a cell <computeroutput>c</computeroutput> is the edge whose endpoints are the vertices of <computeroutput>c</computeroutput> with indices <computeroutput>i</computeroutput> and <computeroutput>j</computeroutput>). See <ref refid="index_1fig__TDS3figrepres" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">fig__TDS3figrepres</ref> of chapter 3D Triangulation Data Structure.</para>
+<para>Some point sets do not admit a triangulation in <formula id="8">$ \mathbb T_c^3$</formula>. In this case we use 27 periodic copies of the point set arranged in a cube of edge length <formula id="44">$ 3c$</formula>. Any point set constructed in this way has a triangulation in <formula id="45">$ \mathbb R^3/G&apos;$</formula> with <formula id="46">$ G&apos;=((3c\cdot\mathbb Z)^3,+)$</formula> <ref refid="citelist_1CITEREF_cgal:ct-c3pt-09" kindref="member">[1]</ref>. So we compute the triangulation in this space, which is a <emphasis>27-sheeted covering space</emphasis> of <formula id="8">$ \mathbb T_c^3$</formula> (see <ref refid="index_1fig__P3Triangulation3figcovering" kindref="member">fig__P3Triangulation3figcovering</ref>).</para>
+<para><anchor id="index_1fig__P3Triangulation3figcovering"/> <image type="html" name="it_UNIQUE_small.jpg"></image>
+ <image type="latex" name="it_UNIQUE_small.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__P3Triangulation3figcovering" kindref="member">fig__P3Triangulation3figcovering</ref> The same periodic triangulation in the 1-sheeted covering space and the 27-sheeted covering space. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The machinery that manages the copies is largely hidden from the user. However there are some effects that cannot be ignored. For example if the point set does not permit a triangulation in <formula id="35">$ \mathbb
+T_c^3$</formula> then the combinatorial iterators (<computeroutput>Cell_iterator</computeroutput>, <computeroutput>Facet_iterator</computeroutput>, <computeroutput>Edge_iterator</computeroutput>, and <computeroutput>Vertex_iterator</computeroutput>) return all simplices that are internally stored, which correspond to 27 periodic copies of each geometric primitive (Tetrahedron, Triangle, Segment, and Point). This is necessary to ensure consistency in the adjacency relations. In case it is desired to have only one periodic copy of each primitive, we provide <emphasis>geometric</emphasis> iterators. They return geometric primitives of the triangulation without relations between them. Another effect is that when the algorithm switches from the 27-sheeted covering space to the 1-sheeted covering space, the <computeroutput>Vertex_handle</computeroutput>s and <computeroutput>Cell_handle</computeroutput>s referencing deleted items become invalid.</para>
+<para>In the data structure each vertex stores the input point it corresponds to. If we are computing in the 27-sheeted covering space, each vertex stores the representative <emphasis>inside</emphasis> the original domain it corresponds to. So, the 27 vertices corresponding to the same element of <formula id="8">$ \mathbb T_c^3$</formula> all store the same representative in <formula id="3">$ \mathbb R^3$</formula>, and not different periodic copies.</para>
+<para><bold>Validity</bold></para>
+<para>A periodic triangulation is said to be <computeroutput>locally valid</computeroutput> iff</para>
+<para><bold>(a)-(b)</bold> Its underlying combinatorial graph, the triangulation data structure, is <computeroutput>locally valid</computeroutput> (see Section <ref refid="index_1TDS3secintro" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">Representation</ref> of Chapter <ref refid="index_1chapterTDS3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">3D Triangulation Data Structure</ref>)</para>
+<para><bold>(c)</bold> Any cell has its vertices ordered according to positive orientation. See <ref refid="index_1fig__P3Triangulation3figorient" kindref="member">fig__P3Triangulation3figorient</ref>.</para>
+</sect1>
+<sect1 id="index_1Periodic_3_triangulation_3Delaunay">
+<title>Delaunay Triangulation</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">Periodic_3_Delaunay_triangulation_3</ref></computeroutput> implements Delaunay triangulations of point sets in <formula id="8">$ \mathbb T_c^3$</formula>.</para>
+<para>Delaunay triangulations have the <emphasis>empty sphere property</emphasis>, that is, the circumscribing sphere of each cell does not contain any other vertex of the triangulation in its interior. These triangulations are uniquely defined except in degenerate cases where five points are co-spherical. Note however that the CGAL implementation computes a uniquely defined triangulation even in these cases <ref refid="citelist_1CITEREF_cgal:dt-pvr3d-03" kindref="member">[2]</ref>.</para>
+<para>This implementation is fully dynamic: it supports both point insertion and vertex removal.</para>
+</sect1>
+<sect1 id="index_1Periodic_3_triangulation_3regular">
+<title>Regular Triangulation</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">Periodic_3_regular_triangulation_3</ref></computeroutput> implements regular triangulations, also known as weighted Delaunay triangulations, of point sets in <formula id="8">$ \mathbb T_c^3$</formula>.</para>
+<para>A regular triangulation is a triangulation in which the power sphere of each simplex is regular. See Section <ref refid="index_1Triangulation3secclassRegulartriangulation" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Regular Triangulation</ref> for a complete definition. As for Delaunay triangulations, CGAL computes a uniquely defined regular triangulation even in degenerate cases <ref refid="citelist_1CITEREF_cgal:dt-pvrdr-06" kindref="member">[3]</ref>.</para>
+<para>The implementation is fully dynamic: it supports both point insertion and vertex removal.</para>
+</sect1>
+<sect1 id="index_1Periodic_3_triangulation_3Triangulation">
+<title>Triangulation Hierarchy</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__hierarchy__3" kindref="compound">Periodic_3_triangulation_hierarchy_3</ref></computeroutput> is the adaptation of the hierarchical structure described in chapter <ref refid="index_1chapterTriangulation3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">3D Triangulations</ref> to the periodic case.</para>
+</sect1>
+<sect1 id="index_1P3Triangulation3secdesign">
+<title>Software Design</title>
+<para>We have chosen the prefix &quot;Periodic_3&quot; to emphasize that the triangulation is periodic in all three directions of space.</para>
+<para>The main classes <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__3" kindref="compound">Periodic_3_triangulation_3</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">Periodic_3_Delaunay_triangulation_3</ref></computeroutput>, and <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">Periodic_3_regular_triangulation_3</ref></computeroutput> provide high-level geometric functionality and are responsible for the geometric validity. They are built as layers on top of a triangulation data structure, which stores their combinatorial structure. This separation between the geometry and the combinatorics is reflected in the software design by the fact that the triangulation classes take two template parameters: <itemizedlist>
+<listitem>
+<para>the <bold>geometric traits</bold> class, which provides the type of points to use as well as the elementary operations on them (predicates and constructions). Furthermore it contains the offset type. The concept and models for this parameter are described in more detail in Section <ref refid="index_1P3Triangulation3secTraits" kindref="member">The Geometric Traits Parameter</ref>. </para>
+</listitem>
+<listitem>
+<para>the <bold>triangulation data structure</bold> class, which stores the combinatorial structure, described in Section <ref refid="index_1P3Triangulation3sectds" kindref="member">The Triangulation Data Structure Parameter</ref>. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__3" kindref="compound">Periodic_3_triangulation_3</ref></computeroutput> contains all the functionality that is common to triangulations in general, such as location of a point in the triangulation <ref refid="citelist_1CITEREF_cgal:dpt-wt-02" kindref="member">[4]</ref>, access functions, geometric queries like the orientation test etc. The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">Periodic_3_Delaunay_triangulation_3</ref></computeroutput> contains all the functionality that is specific to Delaunay triangulations, such as point insertion and vertex removal, the side-of-sphere test, finding the conflicting region of a given point, computation of dual functions, etc. The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">Periodic_3_regular_triangulation_3</ref></computeroutput> does the same for regular triangulations.</para>
+<sect2 id="index_1P3Triangulation3secTraits">
+<title>The Geometric Traits Parameter</title>
+<sect3 id="index_1P3Triangulation3secTraitsP3T3">
+<title>Traits for Periodic Triangulations</title>
+<para>The first template parameter of the triangulation class <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__3" kindref="compound">Periodic_3_triangulation_3</ref>&lt;<ref refid="classPeriodic__3TriangulationTraits__3" kindref="compound">Periodic_3TriangulationTraits_3</ref>, <ref refid="classTriangulationDataStructure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">TriangulationDataStructure_3</ref>&gt;</computeroutput> is the geometric traits class, described by the concept <computeroutput><ref refid="classPeriodic__3TriangulationTraits__3" kindref="compound">Periodic_3TriangulationTraits_3</ref></computeroutput>. It is different to the <computeroutput><ref refid="classTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">TriangulationTraits_3</ref></computeroutput> (see chapter <ref refid="index_1Triangulation3secTraits" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">3D Triangulations</ref>) in that it implements all objects, predicates and constructions using offsets.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_triangulation_traits_3</ref>&lt;<ref refid="classTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">TriangulationTraits_3</ref>,<ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref>&gt;</computeroutput> provides the required functionality. It expects two template parameters: a model of the concept <computeroutput><ref refid="classTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">TriangulationTraits_3</ref></computeroutput> and a model of the concept <computeroutput><ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref></computeroutput>.</para>
+<para>The second parameter <computeroutput><ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref></computeroutput> defaults to <computeroutput><ref refid="classCGAL_1_1Periodic__3__offset__3" kindref="compound">CGAL::Periodic_3_offset_3</ref></computeroutput>.</para>
+</sect3>
+<sect3 id="index_1P3Triangulation3secTraitsP3DT3">
+<title>Traits for Periodic Delaunay Triangulations</title>
+<para>The first template parameter of the Delaunay triangulation class <computeroutput><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">Periodic_3_Delaunay_triangulation_3</ref>&lt;<ref refid="classPeriodic__3DelaunayTriangulationTraits__3" kindref="compound">Periodic_3DelaunayTriangulationTraits_3</ref>, <ref refid="classTriangulationDataStructure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">TriangulationDataStructure_3</ref>&gt;</computeroutput> is the geometric traits class, described by the concept <computeroutput><ref refid="classPeriodic__3DelaunayTriangulationTraits__3" kindref="compound">Periodic_3DelaunayTriangulationTraits_3</ref></computeroutput>. It is different to the <computeroutput><ref refid="classDelaunayTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">DelaunayTriangulationTraits_3</ref></computeroutput> (see chapter <ref refid="index_1Triangulation3secTraits" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">3D Triangulations</ref>) in that it implements all objects, predicates and constructions using offsets.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__traits__3" kindref="compound">Periodic_3_Delaunay_triangulation_traits_3</ref>&lt;<ref refid="classDelaunayTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">DelaunayTriangulationTraits_3</ref>,<ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref>&gt;</computeroutput> provides the required functionality. It expects two template parameters: a model of the concept <computeroutput><ref refid="classDelaunayTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">DelaunayTriangulationTraits_3</ref></computeroutput> and a model of the concept <computeroutput><ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref></computeroutput>.</para>
+<para>The second parameter <computeroutput><ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref></computeroutput> defaults to <computeroutput><ref refid="classCGAL_1_1Periodic__3__offset__3" kindref="compound">CGAL::Periodic_3_offset_3</ref></computeroutput>.</para>
+</sect3>
+<sect3 id="index_1P3Triangulation3secTraitsP3regularT3">
+<title>Traits for Periodic Regular Triangulations</title>
+<para>The first template parameter of the regular triangulation class <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">Periodic_3_regular_triangulation_3</ref>&lt;<ref refid="classPeriodic__3RegularTriangulationTraits__3" kindref="compound">Periodic_3RegularTriangulationTraits_3</ref>, <ref refid="classTriangulationDataStructure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">TriangulationDataStructure_3</ref>&gt;</computeroutput> is the geometric traits class, described by the concept <computeroutput><ref refid="classPeriodic__3RegularTriangulationTraits__3" kindref="compound">Periodic_3RegularTriangulationTraits_3</ref></computeroutput>. It is different to the <ref refid="classRegularTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">RegularTriangulationTraits_3</ref> (see chapter <ref refid="index_1Triangulation3secTraits" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">3D Triangulations</ref>) in that it implements all objects, predicates and constructions using offsets.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__traits__3" kindref="compound">Periodic_3_regular_triangulation_traits_3</ref>&lt;<ref refid="classRegularTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">RegularTriangulationTraits_3</ref>,<ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref>&gt;</computeroutput> provides the required functionality. It expects two template parameters: a model of the concept <computeroutput><ref refid="classRegularTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">RegularTriangulationTraits_3</ref></computeroutput> and a model of the concept <computeroutput><ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref></computeroutput>.</para>
+<para>The second parameter <computeroutput><ref refid="classPeriodic__3Offset__3" kindref="compound">Periodic_3Offset_3</ref></computeroutput> defaults to <computeroutput><ref refid="classCGAL_1_1Periodic__3__offset__3" kindref="compound">Periodic_3_offset_3</ref></computeroutput>.</para>
+</sect3>
+<sect3 id="index_1P3Triangulation3secTraitsK">
+<title>Compatible Kernels</title>
+<para>The kernels <computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref></computeroutput>, <computeroutput><ref refid="structCGAL_1_1Homogeneous" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Homogeneous</ref></computeroutput>, <computeroutput><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref></computeroutput>, <computeroutput><ref refid="structCGAL_1_1Simple__homogeneous" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_homogeneous</ref></computeroutput> and <computeroutput><ref refid="structCGAL_1_1Filtered__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Filtered_kernel</ref></computeroutput> can all be used as models of the concepts <computeroutput><ref refid="classTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">TriangulationTraits_3</ref></computeroutput>, <computeroutput><ref refid="classDelaunayTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">DelaunayTriangulationTraits_3</ref></computeroutput>, and <computeroutput><ref refid="classRegularTriangulationTraits__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">RegularTriangulationTraits_3</ref></computeroutput>. The periodic triangulation classes provide exact predicates and exact constructions if these respective template parameters do. They provide exact predicates but not exact constructions if <computeroutput><ref refid="structCGAL_1_1Filtered__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Filtered_kernel</ref>&lt;CK&gt;</computeroutput> with <computeroutput>CK</computeroutput> an inexact kernel is used as template parameter. Using <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_inexact_constructions_kernel</ref></computeroutput> provides fast and exact predicates and not exact constructions, using <computeroutput><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_exact_constructions_kernel</ref></computeroutput> provides fast and exact predicates and exact constructions. The latter is recommended if the dual constructions and constructions of points, segments, triangles, and tetrahedra are used.</para>
+</sect3>
+</sect2>
+<sect2 id="index_1P3Triangulation3sectds">
+<title>The Triangulation Data Structure Parameter</title>
+<para>The second template parameter of the periodic triangulation classes is a triangulation data structure class. This parameter must meet the requirements described in the concept <computeroutput><ref refid="classTriangulationDataStructure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">TriangulationDataStructure_3</ref></computeroutput>, for which CGAL offers the model <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">CGAL::Triangulation_data_structure_3</ref></computeroutput>. To represent periodic triangulations, the face and vertex of the triangulation data structure must be also be models of extended concepts. The model <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">CGAL::Triangulation_data_structure_3</ref></computeroutput> is parameterized by a vertex base class and a face base class, which gives the possibility to customize the vertices and faces used by the triangulation data structure.</para>
+<para>A default value for the triangulation data structure parameter is provided in all the triangulation classes, so it does not need to be specified by the user unless he wants to use a different triangulation data structure or a different vertex or cell base class.</para>
+</sect2>
+<sect2 id="index_1Periodic_3_triangulation_3Flexibilityofthe">
+<title>Flexibility of the Design</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__3" kindref="compound">Periodic_3_triangulation_3</ref></computeroutput> uses the <computeroutput><ref refid="classTriangulationDataStructure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">TriangulationDataStructure_3</ref></computeroutput> in essentially the same way as the class <computeroutput><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref></computeroutput> and the flexibility described in <ref refid="index_1Triangulation3secdesign" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Software Design</ref> is therefore applicable in exactly the same way. Furthermore, the classes <computeroutput><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_vertex_base_with_info_3</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Triangulation__cell__base__with__info__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_cell_base_with_info_3</ref></computeroutput> can be reused directly, see Example <ref refid="index_1P3Triangulation3secexamplescolor" kindref="member">Adding a Color</ref>.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1P3Triangulation3secexamples">
+<title>Examples</title>
+<sect2 id="index_1Periodic_3_triangulation_3BasicExample">
+<title>Basic Example</title>
+<para>This example shows the incremental construction of a 3D Delaunay triangulation, the location of a point and how to perform elementary operations on indices in a cell. It uses the default parameter of the class <computeroutput><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">Periodic_3_Delaunay_triangulation_3</ref></computeroutput> for the triangulation data structure.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2simple_example_8cpp-example" kindref="compound">Periodic_3_triangulation_3/simple_example.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/simple_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/periodic_3_triangulation_3_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_3&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3DT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Iso_cuboid<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Iso_cuboid;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Vertex_handle<sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Cell_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/>Cell_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Locate_type<sp/><sp/><sp/><sp/><sp/><sp/><sp/>Locate_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Iso_cuboid<sp/>domain(-1,-1,-1,2,2,2);<sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>fundamental<sp/>domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construction<sp/>from<sp/>a<sp/>list<sp/>of<sp/>points<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Point&gt;<sp/>L;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>L.push_front(Point(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>L.push_front(Point(1,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>L.push_front(Point(0,1,0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3<sp/>T(L.begin(),<sp/>L.end(),<sp/>domain);<sp/></highlight><highlight class="comment">//<sp/>put<sp/>the<sp/>domain<sp/>with<sp/>the<sp/>constructor</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3::size_type<sp/>n<sp/>=<sp/>T.number_of_vertices();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>insertion<sp/>from<sp/>a<sp/>vector<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>V(3);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[0]<sp/>=<sp/>Point(0,0,1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[1]<sp/>=<sp/>Point(1,1,1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[2]<sp/>=<sp/>Point(-1,-1,-1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>n<sp/>=<sp/>n<sp/>+<sp/>T.insert(V.begin(),<sp/>V.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>n<sp/>==<sp/>6<sp/>);<sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>6<sp/>points<sp/>have<sp/>been<sp/>inserted</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T.is_valid()<sp/>);<sp/></highlight><highlight class="comment">//<sp/>checking<sp/>validity<sp/>of<sp/>T</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Locate_type<sp/>lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>li,<sp/>lj;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>p(0,0,0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Cell_handle<sp/>c<sp/>=<sp/>T.locate(p,<sp/>lt,<sp/>li,<sp/>lj);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>p<sp/>is<sp/>the<sp/>vertex<sp/>of<sp/>c<sp/>of<sp/>index<sp/>li<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>lt<sp/>==<sp/>P3DT3::VERTEX<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>c-&gt;vertex(li)-&gt;point()<sp/>==<sp/>p<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v<sp/>=<sp/>c-&gt;vertex(<sp/>(li+1)&amp;3<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>v<sp/>is<sp/>another<sp/>vertex<sp/>of<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Cell_handle<sp/>nc<sp/>=<sp/>c-&gt;neighbor(li);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>nc<sp/>=<sp/>neighbor<sp/>of<sp/>c<sp/>opposite<sp/>to<sp/>the<sp/>vertex<sp/>associated<sp/>with<sp/>p</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>nc<sp/>must<sp/>have<sp/>vertex<sp/>v<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nli;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>nc-&gt;has_vertex(<sp/>v,<sp/>nli<sp/>)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>nli<sp/>is<sp/>the<sp/>index<sp/>of<sp/>v<sp/>in<sp/>nc</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>writing<sp/>file<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>oFileT(</highlight><highlight class="stringliteral">&quot;output.tri&quot;</highlight><highlight class="normal">,<sp/>std::ios::out);<sp/></highlight><highlight class="comment">//<sp/>as<sp/>a<sp/>.tri<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>oFileT<sp/>&lt;&lt;<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>to_off(</highlight><highlight class="stringliteral">&quot;output_regular.off&quot;</highlight><highlight class="normal">);<sp/></highlight><highlight class="comment">//<sp/>as<sp/>a<sp/>.off<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::write_triangulation_to_off(to_off,<sp/>T);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>d_to_off(</highlight><highlight class="stringliteral">&quot;output_dual.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>draw_dual_to_off(d_to_off,<sp/>T);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>reading<sp/>file<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3<sp/>T1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>iFileT(</highlight><highlight class="stringliteral">&quot;output.tri&quot;</highlight><highlight class="normal">,std::ios::in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>iFileT<sp/>&gt;&gt;<sp/>T1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T1.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T1.number_of_vertices()<sp/>==<sp/>T.number_of_vertices()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T1.number_of_cells()<sp/>==<sp/>T.number_of_cells()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Periodic_3_triangulation_3ChangingtheVertex">
+<title>Changing the Vertex Base</title>
+<para>The following two examples show how the user can plug his own vertex base in a triangulation. Changing the cell base is similar.</para>
+<sect3 id="index_1P3Triangulation3secexamplescolor">
+<title>Adding a Color</title>
+<para>If the user does not need to add a type in a vertex that depends on the <computeroutput><ref refid="classTriangulationDataStructure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">TriangulationDataStructure_3</ref></computeroutput> (e.g. a <computeroutput>Vertex_handle</computeroutput> or <computeroutput>Cell_handle</computeroutput>), then he can use the <computeroutput><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_vertex_base_with_info_3</ref></computeroutput> class to add his own information easily in the vertices. The example below shows how to add a <computeroutput>Color</computeroutput> this way.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2colored_vertices_8cpp-example" kindref="compound">Periodic_3_triangulation_3/colored_vertices.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/colored_vertices.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_vertex_base_with_info_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/Color.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_traits_3&lt;K&gt;</ref><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__vertex__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_vertex_base_3&lt;&gt;</ref><sp/>VbDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_vertex_base_3&lt;Gt, VbDS&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__cell__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_cell_base_3&lt;&gt;</ref><sp/>CbDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__cell__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_cell_base_3&lt;Gt, CbDS&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Cb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__with__info__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_vertex_base_with_info_3&lt;CGAL::IO::Color, Gt, Vb&gt;</ref><sp/>VbInfo;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">CGAL::Triangulation_data_structure_3&lt;VbInfo, Cb&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_3&lt;Gt, TDS&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3DT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Point<sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.<ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3_1a00517885761d298a85ecccf15f8a9559" kindref="member">insert</ref>(Point(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(.1,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(0,.1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(0,0,.1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(.2,.2,.2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(.9,0,.1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Set<sp/>the<sp/>color<sp/>of<sp/>finite<sp/>vertices<sp/>of<sp/>degree<sp/>6<sp/>to<sp/>red.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3::Vertex_iterator<sp/>vit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(vit<sp/>=<sp/>T.vertices_begin();<sp/>vit<sp/>!=<sp/>T.vertices_end();<sp/>++vit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(T.degree(vit)<sp/>==<sp/>16)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>vit-&gt;info()<sp/>=<sp/>CGAL::IO::red();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Periodic_3_triangulation_3AddingHandles">
+<title>Adding Handles</title>
+<para>If the user needs to add a type in a vertex that depends on the <computeroutput><ref refid="classTriangulationDataStructure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">TriangulationDataStructure_3</ref></computeroutput> (e.g. a <computeroutput>Vertex_handle</computeroutput> or <computeroutput>Cell_handle</computeroutput>), then he has to derive his own vertex base class, as the following example shows.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2periodic_adding_handles_8cpp-example" kindref="compound">Periodic_3_triangulation_3/periodic_adding_handles.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/periodic_adding_handles.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_triangulation_ds_vertex_base_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_vertex_base_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;<sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Gt,<sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">VbDS,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Vb<sp/>=<sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_vertex_base_3&lt;Gt,VbDS&gt;</ref><sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">My_vertex_base</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>Vb</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Vb::Vertex_handle<sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Vb::Cell_handle<sp/><sp/><sp/><sp/>Cell_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Vb::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>TDS2<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Rebind_TDS<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Vb::template<sp/>Rebind_TDS&lt;TDS2&gt;::Other<sp/><sp/>Vb2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>My_vertex_base&lt;Gt,<sp/>Vb2&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Other;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>My_vertex_base()<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>My_vertex_base(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>p)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>Vb(p)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>My_vertex_base(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>p,<sp/>Cell_handle<sp/>c)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>Vb(p,<sp/>c)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/><sp/><sp/>vh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Cell_handle<sp/><sp/><sp/><sp/><sp/>ch;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_traits_3&lt;K&gt;</ref><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__vertex__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_vertex_base_3&lt;&gt;</ref><sp/><sp/>VbDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__cell__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_cell_base_3&lt;&gt;</ref><sp/><sp/><sp/><sp/>CbDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__cell__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_cell_base_3&lt;Gt,CbDS&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Cb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">CGAL::Triangulation_data_structure_3&lt;My_vertex_base&lt;Gt, VbDS&gt;</ref>,<sp/>Cb&gt;<sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_3&lt;Gt, TDS&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3DT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Vertex_handle<sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v0<sp/>=<sp/>T.<ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3_1a00517885761d298a85ecccf15f8a9559" kindref="member">insert</ref>(Point(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v1<sp/>=<sp/>T.insert(Point(.1,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v2<sp/>=<sp/>T.insert(Point(0,.1,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v3<sp/>=<sp/>T.insert(Point(0,0,.1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v4<sp/>=<sp/>T.insert(Point(.2,.2,.2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v5<sp/>=<sp/>T.insert(Point(.9,0,.1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Now<sp/>we<sp/>can<sp/>link<sp/>the<sp/>vertices<sp/>as<sp/>we<sp/>like.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v0-&gt;vh<sp/>=<sp/>v1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v1-&gt;vh<sp/>=<sp/>v2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v2-&gt;vh<sp/>=<sp/>v3;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v3-&gt;vh<sp/>=<sp/>v4;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v4-&gt;vh<sp/>=<sp/>v5;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>v5-&gt;vh<sp/>=<sp/>v0;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+</sect2>
+<sect2 id="index_1Periodic_3_triangulation_3The27sheetedCovering">
+<title>The 27-sheeted Covering Space</title>
+<para>The user can check at any time whether a triangulation would be a simplicial complex in <formula id="8">$ \mathbb T_c^3$</formula> and force a conversion if so. However, this should be done very carefully in order to ensure that the internal structure always remains a simplicial complex and thus a triangulation.</para>
+<para>In this example, we construct a triangulation that can be converted to the 1-sheeted covering space. However, we can insert new points such that the point set does not have a Delaunay triangulation in the 1-sheeted covering space anymore, rendering the triangulation not <emphasis>extensible</emphasis>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2covering_8cpp-example" kindref="compound">Periodic_3_triangulation_3/covering.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/covering.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_3&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3DT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Covering_sheets<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Covering_sheets;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Input<sp/>point<sp/>grid<sp/>(27<sp/>points)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>x=0.<sp/>;<sp/>x<sp/>&lt;<sp/>.9<sp/>;<sp/>x<sp/>+=<sp/>0.33)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>y=0.<sp/>;<sp/>y<sp/>&lt;<sp/>.9<sp/>;<sp/>y<sp/>+=<sp/>0.33)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>z=0.<sp/>;<sp/>z<sp/>&lt;<sp/>.9<sp/>;<sp/>z<sp/>+=<sp/>0.33)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>T.<ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3_1a00517885761d298a85ecccf15f8a9559" kindref="member">insert</ref>(Point(x,y,z));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Covering_sheets<sp/>cs<sp/>=<sp/>T.number_of_sheets();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;Current<sp/>covering:<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;cs[0]&lt;&lt;</highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal">&lt;&lt;cs[1]&lt;&lt;</highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal">&lt;&lt;cs[2]&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>T.is_triangulation_in_1_sheet()<sp/>)<sp/>{<sp/></highlight><highlight class="comment">//<sp/>=<sp/>true</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_extensible<sp/>=<sp/>T.is_extensible_triangulation_in_1_sheet_h1()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>||<sp/>T.is_extensible_triangulation_in_1_sheet_h2();<sp/></highlight><highlight class="comment">//<sp/>=<sp/>false</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>T.convert_to_1_sheeted_covering();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cs<sp/>=<sp/>T.number_of_sheets();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;Current<sp/>covering:<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;cs[0]&lt;&lt;</highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal">&lt;&lt;cs[1]&lt;&lt;</highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal">&lt;&lt;cs[2]&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>is_extensible<sp/>)<sp/></highlight><highlight class="comment">//<sp/>=<sp/>false</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;It<sp/>is<sp/>safe<sp/>to<sp/>change<sp/>the<sp/>triangulation<sp/>here.&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;It<sp/>is<sp/>NOT<sp/>safe<sp/>to<sp/>change<sp/>the<sp/>triangulation<sp/>here!&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>T.convert_to_27_sheeted_covering();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cs<sp/>=<sp/>T.number_of_sheets();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;Current<sp/>covering:<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;cs[0]&lt;&lt;</highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal">&lt;&lt;cs[1]&lt;&lt;</highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal">&lt;&lt;cs[2]&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;It<sp/>is<sp/>(again)<sp/>safe<sp/>to<sp/>modify<sp/>the<sp/>triangulation.&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Periodic_3_triangulation_3LargePointSet">
+<title>Large Point Set</title>
+<para>Two optimizations are available for large point sets. Firstly, spatial sorting can be used to sort the input points according to a Hilbert curve, see chapter <ref refid="index_1secspatial_sorting" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Spatial_sorting.tag">Spatial Sorting</ref>. Secondly, 36 appropriately chosen dummy points can be inserted to avoid the use of a 27-sheeted covering space in the beginning. These 36 dummy points are deleted in the end. If the point set turns out to not have a Delaunay triangulation in the 1-sheeted covering space, the triangulation is converted to the 27-sheeted covering space during the removal of the 36 dummy points. Note that this might take even longer than computing the triangulation without using this optimization. In general, uniformly distributed random point sets of more than 1000 points have a Delaunay triangulation in the 1-sheeted covering space.</para>
+<para>The following example illustrates the use of these optimization techniques.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2large_point_set_8cpp-example" kindref="compound">Periodic_3_triangulation_3/large_point_set.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/large_point_set.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_3&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3DT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Timer<sp/>t;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Creator__uniform__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Creator_uniform_3&lt;double, Point&gt;</ref><sp/>Creator;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>random(7);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_in_cube_3&lt;Point,<sp/>Creator&gt;<sp/>in_cube(.5,<sp/>random);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>n<sp/>=<sp/>10000;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>pts;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3<sp/>PT1,<sp/>PT2,<sp/>PT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Generating<sp/>n<sp/>random<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0<sp/>;<sp/>i<sp/>&lt;<sp/>n<sp/>;<sp/>i++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>p<sp/>=<sp/>*in_cube;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>in_cube++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>pts.push_back(Point(p.x()+.5,p.y()+.5,p.z()+.5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Standard<sp/>insertion</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0<sp/>;<sp/>i<sp/>&lt;<sp/>n<sp/>;<sp/>i++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>PT1.insert(pts[i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/><sp/>Time:<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;t.time()&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/>sec.<sp/>(Standard<sp/>insertion)&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.reset();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Iterator<sp/>range<sp/>insertion<sp/>using<sp/>spatial<sp/>sorting<sp/>but<sp/>no<sp/>dummy<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PT2.insert(pts.begin(),<sp/>pts.end());<sp/></highlight><highlight class="comment">//<sp/>third<sp/>parameter<sp/>defaults<sp/>to<sp/>false</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/><sp/>Time:<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;t.time()&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/>sec.<sp/>(with<sp/>spatial<sp/>sorting)&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.reset();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Iterator<sp/>range<sp/>insertion<sp/>using<sp/>spatial<sp/>sorting<sp/>and<sp/>dummy<sp/>point<sp/>heuristic</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PT3.insert(pts.begin(),<sp/>pts.end(),<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/><sp/>Time:<sp/>&quot;</highlight><highlight class="normal">&lt;&lt;t.time()&lt;&lt;</highlight><highlight class="stringliteral">&quot;<sp/>sec.<sp/>(Dummy<sp/>point<sp/>heuristic)&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Periodic_3_triangulation_3GeometricAccess">
+<title>Geometric Access</title>
+<para>Some application might use the geometric primitives of a triangulation as an input but not require a simplicial complex. We provide for these cases the geometric iterators that return only the geometric primitives fulfilling some properties. In the following example, we use the <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__3_1a9fb6b751e82c0dbae9e69f193c8821d3" kindref="member">Periodic_3_triangulation_3::Periodic_triangle_iterator</ref></computeroutput> with the option <computeroutput>UNIQUE_COVER_DOMAIN</computeroutput>. This means that only the triangles that have a non-empty intersection with the original domain of the 1-sheeted covering space are returned, see Figure <ref refid="classCGAL_1_1Periodic__3__triangulation__3_1P3Triangulation3figgeom_iterators" kindref="member">P3Triangulation3figgeom_iterators</ref>. The <computeroutput><ref refid="classCGAL_1_1Periodic__3__triangulation__3_1a4d8a791d313a7e2320079d78e9e44041" kindref="member">Periodic_3_triangulation_3::Periodic_triangle</ref></computeroutput> is actually a three-dimensional array of point-offset pairs. We check for all three entries of the periodic triangle whether the offset is (0,0,0) using the method <computeroutput>is_null</computeroutput>. If so, we convert the periodic triangle to a <computeroutput>PK::Triangle_3</computeroutput>, which requires <emphasis>exact constructions</emphasis> to be exact.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2geometric_access_8cpp-example" kindref="compound">Periodic_3_triangulation_3/geometric_access.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/geometric_access.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">CGAL::Periodic_3_Delaunay_triangulation_3&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3DT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Triangle_3<sp/><sp/><sp/><sp/><sp/>Triangle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Periodic_triangle<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Periodic_triangle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Periodic_triangle_iterator<sp/><sp/>Periodic_triangle_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3DT3::Iterator_type<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Iterator_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3DT3<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.<ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3_1a00517885761d298a85ecccf15f8a9559" kindref="member">insert</ref>(Point(0,0,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(0,0,0.5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(0,0.5,0.5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T.insert(Point(0.5,0,0.5));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Periodic_triangle<sp/>pt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle<sp/>t_bd;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Extracting<sp/>the<sp/>triangles<sp/>that<sp/>have<sp/>a<sp/>non-empty<sp/>intersection<sp/>with</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>original<sp/>domain<sp/>of<sp/>the<sp/>1-sheeted<sp/>covering<sp/>space</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Periodic_triangle_iterator<sp/>ptit<sp/>=<sp/>T.periodic_triangles_begin(P3DT3::UNIQUE_COVER_DOMAIN);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ptit<sp/>!=<sp/>T.periodic_triangles_end(P3DT3::UNIQUE_COVER_DOMAIN);<sp/>++ptit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>pt<sp/>=<sp/>*ptit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<sp/>(pt[0].second.is_null()<sp/>&amp;&amp;<sp/>pt[1].second.is_null()<sp/>&amp;&amp;<sp/>pt[2].second.is_null())<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Convert<sp/>the<sp/>current<sp/>Periodic_triangle<sp/>to<sp/>a<sp/>Triangle<sp/>if<sp/>it<sp/>is</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>not<sp/>strictly<sp/>contained<sp/>inside<sp/>the<sp/>original<sp/>domain.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>this<sp/>requires<sp/>EXACT<sp/>constructions<sp/>to<sp/>be<sp/>exact!</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>t_bd<sp/>=<sp/>T.construct_triangle(pt);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Periodic_3_triangulation_3PeriodicRegularTriangulations">
+<title>Periodic Regular Triangulations</title>
+<para>The following five examples illustrate various features of 3D periodic regular triangulations.</para>
+<sect3 id="index_1Periodic_3_triangulation_3P3TR3FirstExample">
+<title>Basic example</title>
+<para>This example shows the incremental construction of a 3D Delaunay triangulation, the location of a point and how to perform elementary operations on indices in a cell. It uses the default parameter of the class <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">Periodic_3_regular_triangulation_3</ref></computeroutput> for the triangulation data structure.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2simple_regular_example_8cpp-example" kindref="compound">Periodic_3_triangulation_3/simple_regular_example.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/simple_regular_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/periodic_3_triangulation_3_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_3&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3RT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Bare_point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Weighted_point<sp/><sp/><sp/><sp/>Weighted_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Iso_cuboid<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Iso_cuboid;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Vertex_handle<sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Cell_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/>Cell_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Locate_type<sp/><sp/><sp/><sp/><sp/><sp/><sp/>Locate_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Iso_cuboid<sp/>domain(-1,-1,-1,<sp/>2,2,2);<sp/></highlight><highlight class="comment">//<sp/>the<sp/>fundamental<sp/>domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construction<sp/>from<sp/>a<sp/>list<sp/>of<sp/>weighted<sp/>points<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Weighted_point&gt;<sp/>L;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>L.push_front(Weighted_point(Point(0,0,0),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>L.push_front(Weighted_point(Point(1,0,0),<sp/>0.02));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>L.push_front(Weighted_point(Point(0,1,0),<sp/>0.03));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3RT3<sp/>T(L.begin(),<sp/>L.end(),<sp/>domain);<sp/></highlight><highlight class="comment">//<sp/>put<sp/>the<sp/>domain<sp/>with<sp/>the<sp/>constructor</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3RT3::size_type<sp/>n<sp/>=<sp/>T.number_of_vertices();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>insertion<sp/>from<sp/>a<sp/>vector<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Weighted_point&gt;<sp/>V(3);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[0]<sp/>=<sp/>Weighted_point(Point(0,0,1),<sp/>0.04);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[1]<sp/>=<sp/>Weighted_point(Point(1,1,1),<sp/>0.05);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[2]<sp/>=<sp/>Weighted_point(Point(-1,-1,-1),<sp/>0.06);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>n<sp/>=<sp/>n<sp/>+<sp/>T.insert(V.begin(),<sp/>V.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>n<sp/>==<sp/>6<sp/>);<sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>6<sp/>points<sp/>have<sp/>been<sp/>inserted</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T.is_valid()<sp/>);<sp/></highlight><highlight class="comment">//<sp/>checking<sp/>validity<sp/>of<sp/>T</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Locate_type<sp/>lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>li,<sp/>lj;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Weighted_point<sp/>p(Point(0,0,0),<sp/>1.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Cell_handle<sp/>c<sp/>=<sp/>T.locate(p,<sp/>lt,<sp/>li,<sp/>lj);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>p<sp/>is<sp/>the<sp/>vertex<sp/>of<sp/>c<sp/>of<sp/>index<sp/>li<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>lt<sp/>==<sp/>P3RT3::VERTEX<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>c-&gt;vertex(li)-&gt;point()<sp/>==<sp/>p<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_handle<sp/>v<sp/>=<sp/>c-&gt;vertex(<sp/>(li+1)&amp;3<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>v<sp/>is<sp/>another<sp/>vertex<sp/>of<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Cell_handle<sp/>nc<sp/>=<sp/>c-&gt;neighbor(li);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>nc<sp/>=<sp/>neighbor<sp/>of<sp/>c<sp/>opposite<sp/>to<sp/>the<sp/>vertex<sp/>associated<sp/>with<sp/>p</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>nc<sp/>must<sp/>have<sp/>vertex<sp/>v<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nli;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>nc-&gt;has_vertex(<sp/>v,<sp/>nli<sp/>)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>nli<sp/>is<sp/>the<sp/>index<sp/>of<sp/>v<sp/>in<sp/>nc</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>writing<sp/>file<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>oFileT(</highlight><highlight class="stringliteral">&quot;output_regular.tri&quot;</highlight><highlight class="normal">,<sp/>std::ios::out);<sp/></highlight><highlight class="comment">//<sp/>as<sp/>a<sp/>.tri<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>oFileT<sp/>&lt;&lt;<sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>to_off(</highlight><highlight class="stringliteral">&quot;output_regular.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::write_triangulation_to_off(to_off,<sp/>T);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>d_to_off(</highlight><highlight class="stringliteral">&quot;output_regular_dual.off&quot;</highlight><highlight class="normal">);<sp/></highlight><highlight class="comment">//<sp/>as<sp/>a<sp/>.off<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>draw_dual_to_off(d_to_off,<sp/>T);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>reading<sp/>file<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3RT3<sp/>T1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>iFileT(</highlight><highlight class="stringliteral">&quot;output_regular.tri&quot;</highlight><highlight class="normal">,std::ios::in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>iFileT<sp/>&gt;&gt;<sp/>T1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T1.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T1.number_of_vertices()<sp/>==<sp/>T.number_of_vertices()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>T1.number_of_cells()<sp/>==<sp/>T.number_of_cells()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Periodic_3_triangulation_3P3TR3PointInsertionAndVertexRemoval">
+<title>Point Insertion and Vertex Removal</title>
+<para>This example shows the incremental construction of a 3D regular triangulation, and the removal of a vertex. It uses the default parameter of the <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">Periodic_3_regular_triangulation_3</ref></computeroutput> class for the triangulation data structure.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2p3rt3_insert_remove_8cpp-example" kindref="compound">Periodic_3_triangulation_3/p3rt3_insert_remove.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/p3rt3_insert_remove.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Epick<sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_3&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3RT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Weighted_point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Vertex_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3RT3<sp/>p3rt3(P3RT3::Iso_cuboid(0,0,0,<sp/>1,1,1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.1,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.9,0.1,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.9,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.1,0.9),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.4,0.4,0.4),<sp/>0.001));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(p3rt3.number_of_vertices())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>p3rt3.remove(p3rt3.vertices_begin());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;EXIT<sp/>SUCCESS&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Periodic_3_triangulation_3P3TR3SecondExample">
+<title>Data Structure</title>
+<para>This example shows the incremental construction of a 3D regular triangulation. It uses a more appropriate triangulation data structure, which saves some memory resources.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2p3rt3_insert_only_8cpp-example" kindref="compound">Periodic_3_triangulation_3/p3rt3_insert_only.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/p3rt3_insert_only.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/periodic_3_triangulation_3_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Regular_triangulation_vertex_base_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Regular_triangulation_cell_base_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Epick<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">/*<sp/>If<sp/>remove()<sp/>isn&apos;t<sp/>called<sp/>in<sp/>our<sp/>program,<sp/>we<sp/>can<sp/>use<sp/>a<sp/>triangulation<sp/>data<sp/>structure</highlight></codeline>
+<codeline><highlight class="comment"><sp/>*<sp/>more<sp/>appropriate,<sp/>which<sp/>saves<sp/>some<sp/>memory<sp/>resources.</highlight></codeline>
+<codeline><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Regular__triangulation__vertex__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Regular_triangulation_vertex_base_3</ref>&lt;Gt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__vertex__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_vertex_base_3&lt;&gt;</ref><sp/>&gt;<sp/><sp/><sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Regular__triangulation__cell__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Regular_triangulation_cell_base_3</ref>&lt;Gt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__cell__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_cell_base_3&lt;&gt;</ref><sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/>Cb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">CGAL::Triangulation_data_structure_3&lt;Vb, Cb&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_3&lt;Gt, Tds&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3RT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Iso_cuboid_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Iso_cuboid;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Weighted_point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3RT3<sp/>p3rt3(P3RT3::Iso_cuboid(0,0,0,<sp/>1,1,1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.1,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.9,0.1,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.9,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.1,0.9),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.4,0.4,0.4),<sp/>0.001));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;EXIT<sp/>SUCCESS&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Periodic_3_triangulation_3P3TR3ThirdExample">
+<title>Hidden Points</title>
+<para>This example shows that points can be hidden during the incremental construction of a 3D regular triangulation.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2p3rt3_hidden_points_8cpp-example" kindref="compound">Periodic_3_triangulation_3/p3rt3_hidden_points.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/p3rt3_hidden_points.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Epick<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_3&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3RT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Iso_cuboid_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Iso_cuboid;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Weighted_point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>P3RT3::Vertex_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3RT3<sp/>p3rt3(P3RT3::Iso_cuboid(0,0,0,<sp/>1,1,1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.1,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.9,0.1,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.91,0.1),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.1,0.1,0.89),<sp/>0.01));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.insert(<ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(0.101,0.101,0.101),<sp/>0.001));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(p3rt3.is_valid());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>:<sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p3rt3.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>hidden<sp/>points<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p3rt3.number_of_hidden_points()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Removing<sp/>the<sp/>first<sp/>point...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>p3rt3.remove(p3rt3.vertices_begin());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>first<sp/>point<sp/>is<sp/>removed<sp/>and<sp/>the<sp/>hidden<sp/>point<sp/>is<sp/>revealed.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>vertices<sp/>:<sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p3rt3.number_of_vertices()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>hidden<sp/>points<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p3rt3.number_of_hidden_points()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;EXIT<sp/>SUCCESS&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1Periodic_3_triangulation_3P3TR3FourthExample">
+<title>Bad Weights</title>
+<para>Finally, this example shows how points whose weight does not satisfy the precondition are handled during the incremental construction of a 3D regular triangulation.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Periodic_3_triangulation_3_2p3rt3_insert_point_with_bad_weight_8cpp-example" kindref="compound">Periodic_3_triangulation_3/p3rt3_insert_point_with_bad_weight.cpp</ref> <programlisting filename="Periodic_3_triangulation_3/p3rt3_insert_point_with_bad_weight.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Regular_triangulation_vertex_base_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Regular_triangulation_cell_base_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Periodic_3_regular_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Epick<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__traits__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_traits_3&lt;K&gt;</ref><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">/*<sp/>If<sp/>remove()<sp/>isn&apos;t<sp/>called<sp/>in<sp/>our<sp/>program,<sp/>we<sp/>can<sp/>use<sp/>a<sp/>triangulation<sp/>data<sp/>structure<sp/>more<sp/>appropriate</highlight></codeline>
+<codeline><highlight class="comment"><sp/>*<sp/>which<sp/>saves<sp/>some<sp/>memory<sp/>resources.</highlight></codeline>
+<codeline><highlight class="comment"><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Regular__triangulation__vertex__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Regular_triangulation_vertex_base_3</ref>&lt;Gt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__vertex__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_vertex_base_3&lt;&gt;</ref><sp/>&gt;<sp/><sp/><sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Regular__triangulation__cell__base__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Regular_triangulation_cell_base_3</ref>&lt;Gt,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Periodic__3__triangulation__ds__cell__base__3" kindref="compound">CGAL::Periodic_3_triangulation_ds_cell_base_3&lt;&gt;</ref><sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/>Cb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">CGAL::Triangulation_data_structure_3&lt;Vb, Cb&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">CGAL::Periodic_3_regular_triangulation_3&lt;Gt, Tds&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>P3RT3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Iso_cuboid_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Iso_cuboid;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Weighted_point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Weighted__point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Weighted_point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Gt::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>P3RT3<sp/>p3rt3(P3RT3::Iso_cuboid(0,0,0,<sp/>1,1,1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Here,<sp/>we<sp/>insert<sp/>a<sp/>point<sp/>with<sp/>a<sp/>bad<sp/>weight.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/>p3rt3.insert(Weighted_point_3(Point_3(0.5,0.5,0.5),<sp/>1.));</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>In<sp/>debug<sp/>mode,<sp/>if<sp/>we<sp/>uncomment<sp/>the<sp/>previous<sp/>instruction,<sp/>the<sp/>program<sp/>displays<sp/>the<sp/>following<sp/>error<sp/>message<sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>terminate<sp/>called<sp/>after<sp/>throwing<sp/>an<sp/>instance<sp/>of<sp/>&apos;CGAL::Precondition_exception&apos;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/>what():<sp/><sp/>CGAL<sp/>ERROR:<sp/>precondition<sp/>violation!</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>Expr:<sp/>point.weight()<sp/>&lt;<sp/>(<sp/>FT(0.015625)<sp/>*<sp/>(domain().xmax()-domain().xmin())<sp/>*<sp/>(domain().xmax()-domain().xmin())<sp/>)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>[...]</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/>Explanation:<sp/>point.weight()<sp/>&lt;<sp/>1/64<sp/>*<sp/>domain_size<sp/>*<sp/>domain_size</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;EXIT<sp/>SUCCESS&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+</sect2>
+<sect2 id="index_1Periodic_3_triangulation_3PeriodicAlphaShapes">
+<title>Periodic Alpha Shapes</title>
+<para>It is possible to use the classes <computeroutput><ref refid="classCGAL_1_1Periodic__3__Delaunay__triangulation__3" kindref="compound">Periodic_3_Delaunay_triangulation_3</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Periodic__3__regular__triangulation__3" kindref="compound">Periodic_3_regular_triangulation_3</ref></computeroutput> as underlying triangulations to compute alpha shapes. Examples of usage can be found in Section <ref refid="index_1AlphaShape_3DExampleForPeriodicAlphaShapes" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Alpha_shapes_3.tag">Example for Periodic Alpha Shapes</ref> of the chapter on 3D alpha shapes.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Periodic_3_triangulation_3Design">
+<title>Design and Implementation History</title>
+<para>In 2006, Nico Kruithof started to work with Monique Teillaud on the 3D Periodic Triangulations package.</para>
+<para>In 2007, Manuel Caroli continued work on the algorithms <ref refid="citelist_1CITEREF_cgal:ct-c3pt-09" kindref="member">[1]</ref> and on the package with Monique Teillaud.</para>
+<para>In 2015, Aymeric Pell<eacute/> contributed to adding regular triangulations in the package.</para>
+<para>The package follows the design of the 3D Triangulations package (see Chapter <ref refid="index_1Chapter_3D_Triangulations" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">3D Triangulations</ref>). </para>
+</sect1>
+    </detaileddescription>
+    <location file="Periodic_3_triangulation_3.txt"/>
+  </compounddef>
+</doxygen>

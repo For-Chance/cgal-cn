@@ -1,0 +1,278 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_Visibility_Computation"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Michael Hemmer, Kan Huang, Francisc Bungiu, Ning Xu</para>
+</simplesect>
+</para>
+<sect1 id="index_1visibility_2_introduction">
+<title>Introduction</title>
+<para>This package provides functionality to compute the visibility region within polygons in two dimensions. The package is based on the package <ref refid="packages_1PkgArrangementOnSurface2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D Arrangements</ref> and uses <ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::Arrangement_2</ref> as the fundamental class to specify the input as well as the output. Hence, a polygon <formula id="8">$ P $</formula> is represented by a bounded arrangement face <formula id="7">$ f $</formula> that does not have any isolated vertices and any edge that is adjacent to <formula id="7">$ f $</formula> separates <formula id="7">$ f $</formula> from another face. Note that <formula id="7">$ f $</formula> may contain holes. Similarly, a simple polygon is represented by a face without holes.</para>
+<para>Given two points <formula id="9">$ p $</formula> and <formula id="10">$ q $</formula> in <formula id="8">$ P $</formula>, they are said to be visible to each other iff the segment <formula id="11">$ pq \subset  P $</formula>, where <formula id="8">$ P $</formula> is considered to be closed, that is, <formula id="12">$\partial P \subset P$</formula>. For a query point <formula id="13">$ q \in P $</formula>, the set of points that are visible from <formula id="10">$ q $</formula> is defined as the visibility region of <formula id="10">$ q $</formula>, denoted by <formula id="14">$ V_q $</formula></para>
+<sect2 id="index_1visibility_2_degeneracies">
+<title>Degeneracies and Regularization</title>
+<para><anchor id="index_1fig__definition-fig"/> <image type="html" name="example1.png"></image>
+ <image type="latex" name="example1.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__definition-fig" kindref="member">fig__definition-fig</ref> Non-regularized visibility and regularized visibility. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>As illustrated in <ref refid="index_1fig__definition-fig" kindref="member">fig__definition-fig</ref> (1) the visibility region <formula id="14">$ V_q $</formula> of a query point <formula id="10">$ q $</formula> may not be a polygon. In the figure, all labeled points are collinear, which implies that the point <formula id="15">$ c $</formula> is visible to <formula id="10">$ q $</formula>, that is, the segment <formula id="16">$ bc $</formula> is part of <formula id="14">$ V_q $</formula>. We call such low dimensional features that are caused by degeneracies <computeroutput>needles</computeroutput>. However, for many applications these needles are actually irrelevant. Moreover, for some algorithms it is even more efficient to ignore needles in the first place. Therefore, this package offers also functionality to compute the regularized visibility area <formula id="17">$ \overline{V_q} = closure(interior(V_q)) = (V_q\setminus\partial V_q) \cup  \partial (V_q\setminus\partial V_q)$</formula>, as shown in <ref refid="index_1fig__definition-fig" kindref="member">fig__definition-fig</ref> (2). For more information about regularization, refer to Chapter <ref refid="packages_1PkgBooleanSetOperations2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D Regularized Boolean Set-Operations</ref>.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1visibility_2_classes">
+<title>Classes and Algorithms</title>
+<para>Answering visibility queries is, in many ways, similar to answering point-location queries. Thus, we use the same design used to implement <ref refid="packages_1PkgArrangementOnSurface2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D Arrangements</ref> point location. Each of the various visibility class templates employs a different algorithm or <emphasis>strategy</emphasis> for answering queriesThe term <emphasis>strategy</emphasis> is borrowed from the design-pattern taxonomy <ref refid="citelist_1CITEREF_cgal:ghjv-dpero-95" kindref="member">[3]</ref>. A <emphasis>strategy</emphasis> provides the means to define a family of algorithms, each implemented by a separate class. All classes that implement the various algorithms are made interchangeable, letting the algorithm in use vary according to the user choice.. Similar to the point-location case, some of the strategies require preprocessing. Thus, before a visibility object is used to answer visibility queries, it must be attached to an arrangement object. Afterwards, the visibility object observes changes to the attached arrangement. Hence, it is possible to modify the arrangement after attaching the visibility object. However, this feature should be used with caution as each change to the arrangement also requires an update of the auxiliary data structures in the attached object.</para>
+<para>An actual query is performed by giving the view point <formula id="9">$ p $</formula> and its containing face <formula id="7">$ f $</formula> (which must represent a valid polygon) to a visibility object. For more details see the documentation of the overloaded member function <computeroutput><ref refid="classVisibility__2_1a9c90c6b55b2053cef2071a31864afd08" kindref="member">Visibility_2::compute_visibility()</ref></computeroutput>.</para>
+<para>The following models of the <computeroutput><ref refid="classVisibility__2" kindref="compound">Visibility_2</ref></computeroutput> concept are provided:</para>
+<para><center> <table rows="4" cols="5"><row>
+<entry thead="yes"><para>Class   </para>
+</entry><entry thead="yes"><para>Function   </para>
+</entry><entry thead="yes"><para>Preprocessing   </para>
+</entry><entry thead="yes"><para>Query   </para>
+</entry><entry thead="yes"><para>Algorithm    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Simple__polygon__visibility__2" kindref="compound">Simple_polygon_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>simple polygons   </para>
+</entry><entry thead="no"><para>No   </para>
+</entry><entry thead="no"><para><formula id="3">$O(n)$</formula>$ time and <formula id="3">$O(n)$</formula>$ space   </para>
+</entry><entry thead="no"><para>B. Joe and R. B. Simpson <ref refid="citelist_1CITEREF_bjrb-clvpa-87" kindref="member">[4]</ref>    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Rotational__sweep__visibility__2" kindref="compound">Rotational_sweep_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>polygons with holes   </para>
+</entry><entry thead="no"><para>No   </para>
+</entry><entry thead="no"><para><formula id="18">$O(n\log n)$</formula>$ time and <formula id="3">$O(n)$</formula>$ space   </para>
+</entry><entry thead="no"><para>T. Asano <ref refid="citelist_1CITEREF_ta-aeafvpprh-85" kindref="member">[1]</ref>    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">Triangular_expansion_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>polygons with holes   </para>
+</entry><entry thead="no"><para><formula id="3">$O(n)$</formula>$ time and <formula id="3">$O(n)$</formula>$ space   </para>
+</entry><entry thead="no"><para><formula id="4">$O(nh)$</formula>$ time and <formula id="3">$O(n)$</formula>$ space.   </para>
+</entry><entry thead="no"><para>Bungiu et al. <ref refid="citelist_1CITEREF_ecvp-bhhhk-14" kindref="member">[2]</ref>   </para>
+</entry></row>
+</table>
+</center></para>
+<para>Where <formula id="2">$ n $</formula> denotes the number of vertices of <formula id="7">$ f $</formula> and <formula id="5">$ h $</formula> the number of holes+1.</para>
+</sect1>
+<sect1 id="index_1benchmarks">
+<title>Running Time in Practice</title>
+<para><anchor id="index_1fig__cathedral-fig"/> <image type="html" name="cathedral_2.png"></image>
+ <image type="latex" name="cathedral_2.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__cathedral-fig" kindref="member">fig__cathedral-fig</ref> Example representing a cathedral. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The left hand side of Figure <ref refid="index_1fig__cathedral-fig" kindref="member">fig__cathedral-fig</ref> depicts the outer boundary of a cathedral, which is a simple polygon with 565 vertices. The right hand side shows the cathedral also with its inner pillars, which is a polygon (with holes) with 1153 vertices. The following table shows the total running time consumption of the computation of all visibility polygons for all vertices of the cathedral.</para>
+<para><center> <table rows="4" cols="3"><row>
+<entry thead="yes"><para>Boundary Cathedral   </para>
+</entry><entry thead="yes"><para>total preprocessing time   </para>
+</entry><entry thead="yes"><para>total query time    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Simple__polygon__visibility__2" kindref="compound">Simple_polygon_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>-   </para>
+</entry><entry thead="no"><para>0.38    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Rotational__sweep__visibility__2" kindref="compound">Rotational_sweep_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>-   </para>
+</entry><entry thead="no"><para>1.01    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">Triangular_expansion_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>0.01   </para>
+</entry><entry thead="no"><para>0.06   </para>
+</entry></row>
+</table>
+</center></para>
+<para>The second table shows the same for the complete cathedral. The table does not report the time for <computeroutput><ref refid="classCGAL_1_1Simple__polygon__visibility__2" kindref="compound">Simple_polygon_visibility_2</ref></computeroutput> as this algorithm can only handle simple polygons.</para>
+<para><center> <table rows="3" cols="3"><row>
+<entry thead="yes"><para>Complete Cathedral   </para>
+</entry><entry thead="yes"><para>total preprocessing time   </para>
+</entry><entry thead="yes"><para>total query time    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Rotational__sweep__visibility__2" kindref="compound">Rotational_sweep_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>-   </para>
+</entry><entry thead="no"><para>1.91    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">Triangular_expansion_visibility_2</ref></computeroutput>   </para>
+</entry><entry thead="no"><para>0.01   </para>
+</entry><entry thead="no"><para>0.04   </para>
+</entry></row>
+</table>
+</center></para>
+<para>Thus, in general we recommend to use <computeroutput><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">Triangular_expansion_visibility_2</ref></computeroutput> even if the polygon is simple. The main advantage of the algorithm is its locality. After the triangle that contains the query point is located in the triangulation, the algorithm explores neighboring triangles, but only those that are actually seen. In this sense the algorithm can be considered as output sensitive. Note that the <computeroutput><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">Triangular_expansion_visibility_2</ref></computeroutput> algorithm performs better on the full cathedral since the additional pillars block the view early in many cases. However, if the simple polygon is rather convex (i.e., nearly all boundary is seen) or if only one (or very little) queries are required, using one of the algorithms that does not require preprocessing is advantageous.</para>
+</sect1>
+<sect1 id="index_1simple_polygon_visibility_example">
+<title>Example of Visibility in a Simple Polygon</title>
+<para>The following example shows how to obtain the regularized and non-regularized visibility regions.</para>
+<para><anchor id="index_1fig__simple_example"/> <image type="html" name="simple_example.png"></image>
+ <image type="latex" name="simple_example.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__simple_example" kindref="member">fig__simple_example</ref> The visibility region of <formula id="10">$ q $</formula> in a simple polygon: (1) non-regularized visibility; and (2) regularized visibility. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+ <linebreak/>
+<bold>File</bold> <ref refid="Visibility_2_2simple_polygon_visibility_2_8cpp-example" kindref="compound">Visibility_2/simple_polygon_visibility_2.cpp</ref> <programlisting filename="Visibility_2/simple_polygon_visibility_2.cpp"><codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_polygon_visibility_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Arrangement_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Arr_segment_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Arr_naive_point_location.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;istream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Arr__segment__traits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::Arr_segment_traits_2&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::Arrangement_2&lt;Traits_2&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arrangement_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Arrangement_2::Face_handle</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Face_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Arrangement_2::Edge_const_iterator</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Edge_const_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Arrangement_2::Ccb_halfedge_circulator</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Ccb_halfedge_circulator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//create<sp/>environment</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p1(0,4),<sp/>p2(0,0),<sp/>p3(3,2),<sp/>p4(4,0),<sp/>p5(4,4),<sp/>p6(1,2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment_2&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p1,<sp/>p2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p2,<sp/>p3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p3,<sp/>p4));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p4,<sp/>p5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p5,<sp/>p6));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p6,<sp/>p1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arrangement_2</ref><sp/>env;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgArrangementOnSurface2Funcs_1gad4aa37a4e938747028690579fb703d67" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::insert_non_intersecting_curves</ref>(env,segments.begin(),segments.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>find<sp/>the<sp/>face<sp/>of<sp/>the<sp/>query<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>(usually<sp/>you<sp/>may<sp/>know<sp/>that<sp/>by<sp/>other<sp/>means)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>q(0.5,<sp/>2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Arrangement_2::Face_const_handle</ref><sp/>*<sp/>face;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arr__naive__point__location" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::Arr_naive_point_location&lt;Arrangement_2&gt;</ref><sp/>pl(env);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::Arr_point_location_result&lt;Arrangement_2&gt;::Type</ref><sp/>obj<sp/>=<sp/>pl.locate(q);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>query<sp/>point<sp/>locates<sp/>in<sp/>the<sp/>interior<sp/>of<sp/>a<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face<sp/>=<sp/>std::get_if&lt;Arrangement_2::Face_const_handle&gt;<sp/>(&amp;obj);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>compute<sp/>non<sp/>regularized<sp/>visibility<sp/>area</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Define<sp/>visibility<sp/>object<sp/>type<sp/>that<sp/>computes<sp/>non-regularized<sp/>visibility<sp/>area</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Simple__polygon__visibility__2" kindref="compound">CGAL::Simple_polygon_visibility_2&lt;Arrangement_2, CGAL::Tag_false&gt;</ref><sp/>NSPV;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arrangement_2</ref><sp/>non_regular_output;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>NSPV<sp/>non_regular_visibility(env);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>non_regular_visibility.compute_visibility(q,<sp/>*face,<sp/>non_regular_output);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Non-regularized<sp/>visibility<sp/>region<sp/>of<sp/>q<sp/>has<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>non_regular_output.number_of_edges()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>edges:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Edge_const_iterator<sp/>eit<sp/>=<sp/>non_regular_output.edges_begin();<sp/>eit<sp/>!=<sp/>non_regular_output.edges_end();<sp/>++eit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;source()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>-&gt;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;target()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;]&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>compute<sp/>non<sp/>regularized<sp/>visibility<sp/>area</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Define<sp/>visibility<sp/>object<sp/>type<sp/>that<sp/>computes<sp/>regularized<sp/>visibility<sp/>area</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Simple__polygon__visibility__2" kindref="compound">CGAL::Simple_polygon_visibility_2&lt;Arrangement_2, CGAL::Tag_true&gt;</ref><sp/>RSPV;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arrangement_2</ref><sp/>regular_output;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RSPV<sp/>regular_visibility(env);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>regular_visibility.compute_visibility(q,<sp/>*face,<sp/>regular_output);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Regularized<sp/>visibility<sp/>region<sp/>of<sp/>q<sp/>has<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>regular_output.number_of_edges()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>edges:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Edge_const_iterator<sp/>eit<sp/>=<sp/>regular_output.edges_begin();<sp/>eit<sp/>!=<sp/>regular_output.edges_end();<sp/>++eit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;source()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>-&gt;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;target()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;]&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1general_polygon_example">
+<title>Example of Visibility in a Polygon with Holes</title>
+<para>The following example shows how to obtain the regularized visibility region using the model <computeroutput><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">Triangular_expansion_visibility_2</ref></computeroutput>, see <ref refid="index_1fig__general_polygon" kindref="member">fig__general_polygon</ref>. The arrangement has six bounded faces and an unbounded face. The query point <formula id="10">$ q $</formula> is on a vertex. The red arrow denotes the halfedge <formula id="19">$ \overrightarrow{pq} $</formula>, which also identifies the face in which the visibility region is computed. <anchor id="index_1fig__general_polygon"/> <image type="html" name="general_polygon_example.png"></image>
+ <image type="latex" name="general_polygon_example.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__general_polygon" kindref="member">fig__general_polygon</ref> The visibility region of <formula id="10">$ q $</formula> in a polygon with two holes. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+ <linebreak/>
+<bold>File</bold> <ref refid="Visibility_2_2general_polygon_example_8cpp-example" kindref="compound">Visibility_2/general_polygon_example.cpp</ref> <programlisting filename="Visibility_2/general_polygon_example.cpp"><codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangular_expansion_visibility_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Arr_segment_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Arrangement_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Define<sp/>the<sp/>used<sp/>kernel<sp/>and<sp/>arrangement</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Segment_2</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Arr__segment__traits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::Arr_segment_traits_2&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::Arrangement_2&lt;Traits_2&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arrangement_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Arrangement_2::Halfedge_const_handle</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Halfedge_const_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Arrangement_2::Face_handle</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Face_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Define<sp/>the<sp/>used<sp/>visibility<sp/>class</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">CGAL::Triangular_expansion_visibility_2&lt;Arrangement_2&gt;</ref><sp/><sp/>TEV;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Defining<sp/>the<sp/>input<sp/>geometry</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>p1(1,2),<sp/>p2(12,<sp/>3),<sp/>p3(19,-2),<sp/>p4(12,6),<sp/>p5(14,14),<sp/>p6(<sp/>9,5);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>h1(8,3),<sp/>h2(10,<sp/>3),<sp/>h3(<sp/>8,<sp/>4),<sp/>h4(10,6),<sp/>h5(11,<sp/>6),<sp/>h6(11,7);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Segment_2&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p1,p2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p2,p3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p3,p4));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p4,p5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p5,p6));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(p6,p1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(h1,h2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(h2,h3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(h3,h1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(h4,h5));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(h5,h6));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>segments.push_back(<ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref>(h6,h4));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>insert<sp/>geometry<sp/>into<sp/>the<sp/>arrangement</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arrangement_2</ref><sp/>env;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgArrangementOnSurface2Funcs_1gad4aa37a4e938747028690579fb703d67" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::insert_non_intersecting_curves</ref>(env,segments.begin(),segments.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Find<sp/>the<sp/>halfedge<sp/>whose<sp/>target<sp/>is<sp/>the<sp/>query<sp/>point.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//(usually<sp/>you<sp/>may<sp/>know<sp/>that<sp/>already<sp/>by<sp/>other<sp/>means)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>query_point<sp/>=<sp/>p4;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Halfedge_const_handle<sp/>he<sp/>=<sp/>env.halfedges_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(he-&gt;source()-&gt;point()<sp/>!=<sp/>p3<sp/>||<sp/>he-&gt;target()-&gt;point()<sp/>!=<sp/>p4)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>he++;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//visibility<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arrangement_2</ref><sp/>output_arr;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>TEV<sp/>tev(env);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Face_handle<sp/>fh<sp/>=<sp/>tev.compute_visibility(query_point,<sp/>he,<sp/>output_arr);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//print<sp/>out<sp/>the<sp/>visibility<sp/>region.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Regularized<sp/>visibility<sp/>region<sp/>of<sp/>q<sp/>has<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>output_arr.number_of_edges()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>edges.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Boundary<sp/>edges<sp/>of<sp/>the<sp/>visibility<sp/>region:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Arrangement_2::Ccb_halfedge_circulator</ref><sp/>curr<sp/>=<sp/>fh-&gt;outer_ccb();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>curr-&gt;source()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>-&gt;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>curr-&gt;target()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;]&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(++curr<sp/>!=<sp/>fh-&gt;outer_ccb())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>curr-&gt;source()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>-&gt;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>curr-&gt;target()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;]&quot;</highlight><highlight class="normal">&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1implementation_history">
+<title>Implementation History</title>
+<para>This package was first developed during Google Summer of Code 2013: Francisc Bungiu developed the <computeroutput><ref refid="classCGAL_1_1Simple__polygon__visibility__2" kindref="compound">CGAL::Simple_polygon_visibility_2</ref></computeroutput>, Kan Huang developed the <computeroutput><ref refid="classCGAL_1_1Rotational__sweep__visibility__2" kindref="compound">CGAL::Rotational_sweep_visibility_2</ref></computeroutput>, and Michael Hemmer developed the <computeroutput><ref refid="classCGAL_1_1Triangular__expansion__visibility__2" kindref="compound">CGAL::Triangular_expansion_visibility_2</ref></computeroutput>.</para>
+<para>During Google Summer of Code 2014 Ning Xu fixed a bug in <computeroutput><ref refid="classCGAL_1_1Simple__polygon__visibility__2" kindref="compound">CGAL::Simple_polygon_visibility_2</ref></computeroutput> and improved the testsuite. </para>
+</sect1>
+    </detaileddescription>
+    <location file="visibility_2.txt"/>
+  </compounddef>
+</doxygen>

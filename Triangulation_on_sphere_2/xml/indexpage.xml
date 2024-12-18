@@ -1,0 +1,337 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_Triangulations_on_sphere"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Mael Rouxel-Labbé, Monique Teillaud, and Claudia Werner</para>
+</simplesect>
+<anchor id="index_1fig__fig_TOS2_header"/><center> <image type="html" name="header.png" inline="yes"></image>
+ </center></para>
+<para>This chapter describes two-dimensional triangulations on the sphere. It is organized as follows: <itemizedlist>
+<listitem>
+<para>Section <ref refid="index_1Section_2D_ToS_Definitions" kindref="member">Definitions</ref> introduces the main definitions about triangulations on the sphere. </para>
+</listitem>
+<listitem>
+<para>Section <ref refid="index_1Section_2D_ToS_Implementation" kindref="member">Implementation</ref> details the way two-dimensional triangulations on the sphere are implemented and represented in CGAL. </para>
+</listitem>
+<listitem>
+<para>Section <ref refid="index_1Section_2D_ToS_Examples" kindref="member">Examples</ref> lists a few basic examples to illustrate the capabilities of the package. </para>
+</listitem>
+</itemizedlist>
+</para>
+<sect1 id="index_1Section_2D_ToS_Definitions">
+<title>Definitions</title>
+<para>Denote by <formula id="11">$ \mathbb{S(c, r)}$</formula> the two-dimensional sphere embedded in the Euclidean space <formula id="4">$ \mathbb{R}^3$</formula>, with center <computeroutput>c</computeroutput> and radius <computeroutput>r</computeroutput>, that is <formula id="12">$ \mathbb{S(c, r)} = \left\{ x \in \mathbf{R}^3 : \left\| x - c \right\| = r \right\} $</formula>. When the parameters <computeroutput>c</computeroutput> and <computeroutput>r</computeroutput> are not important, they will be omitted and <formula id="13">$ \mathbb{S}$</formula> will be used directly. Given a set <formula id="14">$ \mathcal{P}$</formula> of points on <formula id="11">$ \mathbb{S(c, r)}$</formula>, a <emphasis>two-dimension triangulation</emphasis> of <formula id="14">$ \mathcal{P}$</formula> can be described as a two-dimensional simplicial complex that is pure, connected, and without singularity whose vertices are exactly the points in <formula id="14">$ \mathcal{P}$</formula> (see the complete definition in the package <ref refid="index_1Section_2D_Triangulations_Definitions" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">2D Triangulations</ref>).</para>
+<para>In <formula id="15">$ \mathbb{R}^2$</formula>, a <emphasis>Delaunay</emphasis> triangulation is a two-dimension triangulation that satisfies the <emphasis>empty circle property</emphasis> (also called <emphasis>Delaunay property</emphasis>): the circumscribing circle of any facet of the triangulation contains no point in its interior. This definition naturally extends to the two-dimensional sphere, as illustrated in the figure below.</para>
+<para><anchor id="index_1fig__fig_del_def"/> <image type="html" name="delaunay_on_sphere_def.svg"></image>
+ <image type="latex" name="delaunay_on_sphere_def.svg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__fig_del_def" kindref="member">fig__fig_del_def</ref> Delaunay property: the circumscribing circle (in green) on the sphere of the Delaunay face <formula id="16">$ p_1 p_2 p_3$</formula> is empty. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>A particularity of Delaunay triangulations on <formula id="13">$ \mathbb{S}$</formula> is that the Delaunay property test can be reduced to a simple orientation test in the three-dimensional space: indeed, the circumscribing circle of a Delaunay face is the intersection of the plane passing through the three vertices of the face with <formula id="13">$ \mathbb{S}$</formula>, and determining whether a fourth point <computeroutput>q</computeroutput> is within the circumscribing circle or not is equivalent to checking whether <computeroutput>q</computeroutput> is above or below the said supporting plane.</para>
+<sect2 id="index_1Section_2D_ToS_Imprecision">
+<title>Representation of a Point on the Sphere</title>
+<para>The theoretical definition of Delaunay triangulations in the previous section assumes that points in <formula id="14">$ \mathcal{P}$</formula> lie exactly on the sphere. In a real world however, one usually does not manipulate points that lie exactly on <formula id="13">$ \mathbb{S}$</formula> because the chosen number type is not able to represent square roots exactly, such as <formula id="17">$ \mathtt{float}$</formula>, or <formula id="18">$ \mathtt{double}$</formula>. Some specific number types are able to represent exactly all points on the sphere, for example the class <computeroutput><ref refid="classCORE_1_1Expr" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CORE::Expr</ref></computeroutput>, but this comes with the drawback of a substantially higher computational cost.</para>
+<para>This lack of exact representation is an obvious problem as the interpretation of the Delaunay property as an orientation test does not stand if points do not lie in a convex position.</para>
+<para>This gap between the theoretical and the practical settings was addressed by Caroli et al. <ref refid="citelist_1CITEREF_cgal:ccplr-redtp-10" kindref="member">[1]</ref> : the solution is to use a <emphasis>regular</emphasis> triangulation, which is a generalization of the Delaunay triangulation to sets of <emphasis>weighted points</emphasis> (see <ref refid="index_1Section_2D_Triangulations_Regular" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">2D Regular Triangulations</ref> for more information). A weighted point <formula id="19">$(p,w)$</formula> of <formula id="15">$ \mathbb{R}^2$</formula> can naturally be seen as as a circle with center <formula id="20">$ p$</formula> and radius <formula id="21">$ r$</formula> such that <formula id="22">$ r^2 = w$</formula> and similarly to Delaunay triangulations and the definition of regular triangulations in <formula id="15">$ \mathbb{R}^2$</formula> can be naturally extended to circles on <formula id="13">$ \mathbb{S}$</formula>. Given a set of points <formula id="23">$ \mathcal{P}_3$</formula> living in <formula id="4">$ \mathbb{R}^3$</formula>, Caroli et al. compute a regular triangulation of the set of weighted points <formula id="24">$ \mathcal{P}_w$</formula> where the weighted points of <formula id="24">$ \mathcal{P}_w$</formula> are the projection of the points of <formula id="23">$ \mathcal{P}_3$</formula> onto <formula id="13">$ \mathbb{S}$</formula>, and whose weights are based on the projection distance. Furthermore, they show that if the Euclidean distance between the points of <formula id="24">$ \mathcal{P}_w$</formula> is sufficiently large, and if the points are sufficiently close to the sphere, then the Delaunay triangulation of the Delaunay triangulation of <formula id="23">$ \mathcal{P}_3$</formula> is exactly the regular triangulation of <formula id="24">$ \mathcal{P}_w$</formula>. As a consequence is that one can manipulate 3D points that are not exactly on the sphere, and it possible to build the Delaunay triangulation without taking the weights into account, as long as the points are sufficiently far from each other.</para>
+<para>Caroli et al. et provide bounds on this separation criterion for the case of the <formula id="18">$ \mathtt{double}$</formula> number type: two points must be at least <formula id="25">$ 2^{-25}r$</formula> apart. This is a condition that is generally satisfied for most inputs: if <formula id="21">$ r$</formula> were for example the radius of the Earth, roughly 6300 kms, then the point separation requirement would be of the order of 1 meter.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_2D_ToS_Implementation">
+<title>Implementation</title>
+<para>The main class of this package is the class <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_2</ref></computeroutput>; it represents a Delaunay triangulation on the sphere, and provides insertion and removal of vertices, as well as tools to draw the triangulation and its dual, the Voronoi diagram. The base of <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_2</ref></computeroutput> is the class <computeroutput><ref refid="classCGAL_1_1Triangulation__on__sphere__2" kindref="compound">CGAL::Triangulation_on_sphere_2</ref></computeroutput>. It represents a triangulation on the sphere, but does <emphasis>not</emphasis> support insertion or removal of vertices. Both classes are built on top of a data structure called the triangulation data structure. The triangulation data structure can be thought of as a container for the faces and vertices of the triangulation. This data structure also takes care of all the combinatorial aspects of the triangulation.</para>
+<para>These triangulation classes are intentionally very similar to <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_2</ref></computeroutput> as both classes represent triangulations of a 2-manifold domain without boundary. As such, many details about the implementation are not repeated here, and complementary information can be found in the Sections <ref refid="index_1Section_2D_Triangulations_Representation" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Representation</ref>, <ref refid="index_1Section_2D_Triangulations_Software_Design" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Software Design</ref>, and <ref refid="index_1Section_2D_Triangulations_Basic" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Basic Triangulations</ref> of the package <ref refid="packages_1PkgTriangulation2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D Triangulations</ref>.</para>
+<para>However, a significant departure from Euclidean 2D triangulations is the following: since the triangulation data structure represents a 2-manifold without boundary, it is necessary for 2D triangulations to introduce so-called <emphasis>infinite faces</emphasis> to complete the &quot;real&quot; triangulation (see <ref refid="index_1Triangulation_2TheSetofFaces" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">The Set of Faces</ref>). On the sphere, this trick is not necessary as the triangulation itself is already a 2-manifold without boundary.</para>
+<sect2 id="index_1Section_2D_ToS_Ghost">
+<title>Ghost Faces</title>
+<para>There is an exception to the previous statement: in degenerate configurations where all points lie on the same hemisphere, the Delaunay triangulation on the sphere theoretically has a border. Internally however, the triangulation data structure must remain a 2-manifold at all time. To ensure this property, fictitious faces referred to as <emphasis>ghost faces</emphasis> are added. These faces are characterized by the fact that the center of the sphere does not (strictly) lie on the positive side of the supporting plane of the face. Conversely, faces that are not ghost faces are called <emphasis>solid faces</emphasis>, and edges of such faces are <emphasis>solid edges</emphasis>.</para>
+<para><anchor id="index_1fig__fig_TOS2_ghost"/><center> <image type="html" name="ghost_faces.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__fig_TOS2_ghost" kindref="member">fig__fig_TOS2_ghost</ref> Solid (blue) and ghost (orange) faces of a Delaunay triangulation on the sphere. View from above (leftmost), and below (middle and rightmost). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Section_2D_ToS_Traits">
+<title>Traits Classes and Choice of Kernel</title>
+<para>Two traits classes are offered with this package as models of the concept <computeroutput><ref refid="classDelaunayTriangulationOnSphereTraits__2" kindref="compound">DelaunayTriangulationOnSphereTraits_2</ref></computeroutput>: <itemizedlist>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__traits__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_traits_2</ref></computeroutput>: This is the simplest possible traits, which represents points on sphere directly as 3D points. If its kernel template parameter cannot represent all points on the sphere exactly, it employs the solution described in Section <ref refid="index_1Section_2D_ToS_Imprecision" kindref="member">Representation of a Point on the Sphere</ref> to determine whether a point should be considered on the sphere, or too close to an existing vertex.  </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="classCGAL_1_1Projection__on__sphere__traits__3" kindref="compound">CGAL::Projection_on_sphere_traits_3</ref></computeroutput>: This traits class utilizes a custom internal point type for points on the sphere: given a point <computeroutput>p</computeroutput> in 3D space, this traits class manipulates directly its projection on the sphere (that is, the intersection of the sphere and the segment with endpoints <computeroutput>p</computeroutput> and the center of the sphere). Consequently, all points to be inserted are on the sphere. This traits class enables manipulating points that are not on the sphere, but whose triangulation on the sphere is still interesting, such as geographical coordinates with altitude.  </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Both these classes are templated by a kernel. The choice of this kernel is important to ensure a correct result: for the construction of triangulations to be safe, the kernel should provide exact predicates (for example, <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref></computeroutput>). In addition, some auxiliary functions such as those used in the construction of the Voronoi diagram require creating new geometric points; as such, a kernel offering an exact representation of points on the sphere and exact constructions (for example, <computeroutput><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel__with__sqrt" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel_with_sqrt</ref></computeroutput>) should be used if one wants to avoid otherwise inevitable numerical approximations.</para>
+</sect2>
+<sect2 id="index_1Section_2D_ToS_Lowdim">
+<title>Dimension of a Triangulation on the Sphere</title>
+<para>Mostly by convention with other triangulations, the dimension of a triangulation on the sphere is defined as follows: <itemizedlist>
+<listitem>
+<para><computeroutput>-2</computeroutput>, if the triangulation is empty; </para>
+</listitem>
+<listitem>
+<para><computeroutput>-1</computeroutput>, if the triangulation contains a single vertex; </para>
+</listitem>
+<listitem>
+<para><computeroutput>0</computeroutput>, if the triangulation contains exactly two vertices; </para>
+</listitem>
+<listitem>
+<para><computeroutput>1</computeroutput>, if the triangulation contains at least three coplanar vertices (which do not necessarily lie on a great circle); </para>
+</listitem>
+<listitem>
+<para><computeroutput>2</computeroutput>, if the triangulation contains at least four non-coplanar vertices. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Note that a triangulation of dimension <computeroutput>1</computeroutput> is just a polygon drawn on a circle. The polygon is not triangulated itself. Thus the triangulation of dimension <computeroutput>1</computeroutput> consists of a planar polygon and has no faces.</para>
+</sect2>
+<sect2 id="index_1Section_2D_ToS_Embedding">
+<title>Geometric Embeddings</title>
+<para>The descriptions of Delaunay (and regular) triangulations over <formula id="13">$ \mathbb{S}$</formula> have so far been mostly combinatorial. The question of the geometrical embedding of the simplices of the triangulation is also interesting. The two natural embedding of edges and faces of a triangulation of a set of points on <formula id="13">$ \mathbb{S}$</formula> are to use either <emphasis>straight</emphasis> simplex, that is using three-dimensional segments and triangles for the edges and faces of the triangulation, or to use a <emphasis>curved</emphasis> embedding, where the edges are arc segments of great circles over <formula id="13">$ \mathbb{S}$</formula>. In the latter choice, the geometrical embedding of the face is defined implicitly by its three edges.</para>
+<para>Both choices are available to users, for example using either <computeroutput><ref refid="classCGAL_1_1Triangulation__on__sphere__2_1a67bf1c3b2d51885487819d59622b4ef2" kindref="member">Triangulation_on_sphere_2::segment()</ref></computeroutput> or <computeroutput><ref refid="classCGAL_1_1Triangulation__on__sphere__2_1af54cb7ecf4defe0760c0e87e7acf317a" kindref="member">Triangulation_on_sphere_2::segment_on_sphere()</ref></computeroutput>. Similar choices are available in the construction of the dual, the Voronoi diagram.</para>
+<para><anchor id="index_1fig__fig_TOS2_embedding"/><center> <image type="html" name="geometric_embedding.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__fig_TOS2_embedding" kindref="member">fig__fig_TOS2_embedding</ref> Curved (left) and straight (right) geometric embeddings of the edges of the Delaunay triangulation of the French (including overseas territories) post offices. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_2D_ToS_Examples">
+<title>Examples</title>
+<sect2 id="index_1Section_2D_ToS_Ex_Basic">
+<title>Basic Example</title>
+<para>The following example uses the simplest traits class provided in this package. It demonstrates how to iteratively insert a few points, and how the dimension and the data structure of the triangulation evolve with these insertions.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Triangulation_on_sphere_2_2triang_on_sphere_8cpp-example" kindref="compound">Triangulation_on_sphere_2/triang_on_sphere.cpp</ref> <programlisting filename="Triangulation_on_sphere_2/triang_on_sphere.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_on_sphere_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_on_sphere_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__traits__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_traits_2&lt;K&gt;</ref><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_2&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/>DToS2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>2,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-2,<sp/>1,<sp/>1);<sp/></highlight><highlight class="comment">//<sp/>not<sp/>on<sp/>the<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>0,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>1,<sp/>2,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>0,<sp/>1,<sp/>1);<sp/></highlight><highlight class="comment">//<sp/>duplicate<sp/>of<sp/>#3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>1,<sp/>0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>1,<sp/>1,<sp/>2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits<sp/>traits(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(1,<sp/>1,<sp/>1),<sp/>1);<sp/></highlight><highlight class="comment">//<sp/>sphere<sp/>center<sp/>on<sp/>(1,1,1),<sp/>with<sp/>radius<sp/>1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DToS2<sp/>dtos(traits);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>&amp;<sp/>pt<sp/>:<sp/>points)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Inserting<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>pt</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>at<sp/>squared<sp/>distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(pt,<sp/>traits.center())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>from<sp/>the<sp/>center<sp/>of<sp/>the<sp/>sphere;<sp/>is<sp/>it<sp/>on<sp/>there<sp/>sphere?<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>(traits.is_on_sphere(pt)<sp/>?<sp/></highlight><highlight class="stringliteral">&quot;yes&quot;</highlight><highlight class="normal"><sp/>:<sp/></highlight><highlight class="stringliteral">&quot;no&quot;</highlight><highlight class="normal">)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dtos.insert(pt);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;After<sp/>insertion,<sp/>the<sp/>dimension<sp/>of<sp/>the<sp/>triangulation<sp/>is:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>dtos.dimension()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;It<sp/>has:\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_vertices()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_edges()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>edges\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_solid_faces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>solid<sp/>faces\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_ghost_faces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>ghost<sp/>faces\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsOFF_1ga9682021a1047600910151826eaa75a5b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_OFF</ref>(</highlight><highlight class="stringliteral">&quot;result.off&quot;</highlight><highlight class="normal">,<sp/>dtos,<sp/>CGAL::parameters::stream_precision(17));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_2D_ToS_Ex_Exact">
+<title>Using an Exact Kernel</title>
+<para>The following example illustrates the limitation of using a kernel with inexact representation of points on the sphere and the rejection of a point for being too close to an already existing vertex. A kernel providing exact representation is also shown to be able to insert these two extremely close points.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Triangulation_on_sphere_2_2triang_on_sphere_exact_8cpp-example" kindref="compound">Triangulation_on_sphere_2/triang_on_sphere_exact.cpp</ref> <programlisting filename="Triangulation_on_sphere_2/triang_on_sphere_exact.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel_with_sqrt.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_on_sphere_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Projection_on_sphere_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>create_triangulation(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string&amp;<sp/>filename)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Kernel::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Projection__on__sphere__traits__3" kindref="compound">CGAL::Projection_on_sphere_traits_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_2&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DToS2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Traits::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n--<sp/>Constructing<sp/>triangulation<sp/>with<sp/>Kernel:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">typeid</highlight><highlight class="normal">(<ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>).name()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>--&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>x,<sp/>y,<sp/>z;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in(filename);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!in)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>filename<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(in<sp/>&gt;&gt;<sp/>x<sp/>&gt;&gt;<sp/>y<sp/>&gt;&gt;<sp/>z)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.emplace_back(x,<sp/>y,<sp/>z);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>an<sp/>extra<sp/>point<sp/>that<sp/>would<sp/>be<sp/>too<sp/>close<sp/>to<sp/>&apos;p&apos;<sp/>with<sp/>a<sp/>basic<sp/>kernel<sp/>such<sp/>as<sp/>CGAL::EPICK,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_3&amp;<sp/>p<sp/>=<sp/>points.back();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>tiny<sp/>=<sp/>100<sp/>*<sp/>std::numeric_limits&lt;double&gt;::epsilon();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(p.x()<sp/>+<sp/>tiny,<sp/>p.y()<sp/>-<sp/>tiny,<sp/>p.z()<sp/>+<sp/>tiny);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Adding<sp/>point<sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.back()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\nvery<sp/>close<sp/>to<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Squared<sp/>distance<sp/>between<sp/>points<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(points.back(),<sp/>p)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points<sp/>in<sp/>input&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits<sp/>traits(Point_3(0,<sp/>0,<sp/>0),<sp/>100);<sp/></highlight><highlight class="comment">//<sp/>centered<sp/>on<sp/>(0,0,0),<sp/>with<sp/>radius<sp/>100</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DToS2<sp/>dtos(points.begin(),<sp/>points.end(),<sp/>traits);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_vertices()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_faces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>faces&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.precision(17);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>This<sp/>kernel<sp/>CAN<sp/>represent<sp/>exactly<sp/>all<sp/>points<sp/>of<sp/>the<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel__with__sqrt" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel_with_sqrt</ref><sp/><sp/>EPECK_w_SQRT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>This<sp/>kernel<sp/>CANNOT<sp/>represent<sp/>exactly<sp/>all<sp/>points<sp/>of<sp/>the<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>and<sp/>thus<sp/>a<sp/>separation<sp/>mechanism<sp/>is<sp/>needed<sp/>to<sp/>ensure<sp/>that<sp/>no<sp/>points<sp/>are<sp/>hidden</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EPICK;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/poste_france.xyz&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>create_triangulation&lt;EPICK&gt;(filename);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>create_triangulation&lt;EPECK_w_SQRT&gt;(filename);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_2D_ToS_Ex_Project">
+<title>Using the Projection Traits Class</title>
+<para>In this example, the use of the projection traits class is illustrated.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Triangulation_on_sphere_2_2triang_on_sphere_proj_8cpp-example" kindref="compound">Triangulation_on_sphere_2/triang_on_sphere_proj.cpp</ref> <programlisting filename="Triangulation_on_sphere_2/triang_on_sphere_proj.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_on_sphere_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Projection_on_sphere_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Projection__on__sphere__traits__3" kindref="compound">CGAL::Projection_on_sphere_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_2&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DToS2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>3,<sp/><sp/>1,<sp/><sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-8,<sp/><sp/>1,<sp/><sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>1,<sp/><sp/>2,<sp/><sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>1,<sp/>-2,<sp/><sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(<sp/>1,<sp/><sp/>1,<sp/>10);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits<sp/>traits(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>(1,1,1));<sp/></highlight><highlight class="comment">//<sp/>radius<sp/>is<sp/>1<sp/>by<sp/>default</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DToS2<sp/>dtos(traits);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits::Construct_point_on_sphere_2<sp/>cst<sp/>=<sp/>traits.construct_point_on_sphere_2_object();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>pt<sp/>:<sp/>points)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;-----<sp/>Inserting<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>pt</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>at<sp/>squared<sp/>distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(pt,<sp/>traits.center())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>from<sp/>the<sp/>center<sp/>of<sp/>the<sp/>sphere&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>dtos.insert(cst(pt));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>triangulation<sp/>now<sp/>has<sp/>dimension:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>dtos.dimension()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>and\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_vertices()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_edges()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>edges&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_solid_faces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>solid<sp/>faces&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_ghost_faces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>ghost<sp/>faces&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsOFF_1ga9682021a1047600910151826eaa75a5b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_OFF</ref>(</highlight><highlight class="stringliteral">&quot;result.off&quot;</highlight><highlight class="normal">,<sp/>dtos,<sp/>CGAL::parameters::stream_precision(17));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_2D_ToS_Ex_Range">
+<title>Insertion of a Range and Spatial Sorting</title>
+<para>The following example demonstrates how to insert a range of points at once. This enables an internal algorithm to sort the set of points to ensure locality when inserting points, which greatly speeds up the insertion.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Triangulation_on_sphere_2_2triang_on_sphere_range_8cpp-example" kindref="compound">Triangulation_on_sphere_2/triang_on_sphere_range.cpp</ref> <programlisting filename="Triangulation_on_sphere_2/triang_on_sphere_range.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_on_sphere_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Projection_on_sphere_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Projection__on__sphere__traits__3" kindref="compound">CGAL::Projection_on_sphere_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__on__sphere__2" kindref="compound">CGAL::Delaunay_triangulation_on_sphere_2&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/>DToS2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>DToS2::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.precision(17);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/radar.xyz&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>x,<sp/>y,<sp/>z;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in(filename);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!in)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>filename<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(in<sp/>&gt;&gt;<sp/>x<sp/>&gt;&gt;<sp/>y<sp/>&gt;&gt;<sp/>z)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.emplace_back(x,<sp/>y,<sp/>z);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points<sp/>in<sp/>input&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits<sp/>traits(Point(0,<sp/>0,<sp/>0),<sp/>100);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DToS2<sp/>dtos(points.begin(),<sp/>points.end(),<sp/>traits);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_vertices()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>dtos.number_of_solid_faces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>solid<sp/>faces&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsOFF_1ga9682021a1047600910151826eaa75a5b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_OFF</ref>(</highlight><highlight class="stringliteral">&quot;result.off&quot;</highlight><highlight class="normal">,<sp/>dtos,<sp/>CGAL::parameters::stream_precision(17));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_2D_ToS_Design">
+<title>Design and Implementation History</title>
+<para>Prototype code implementing the publication of Caroli et al. <ref refid="citelist_1CITEREF_cgal:ccplr-redtp-10" kindref="member">[1]</ref> was developed over the two internships of Oliver Rouiller and Claudia Werner at Inria, under the supervision of Monique Teillaud and with the help of Sébastien Loriot. Based on this prototype, Mael Rouxel-Labbé developed the initial version of this package.</para>
+<para>The work was partially supported by the grant ANR-17-CE40-0033 of the French National Research Agency ANR <ulink url="https://members.loria.fr/Monique.Teillaud/collab/SoS/">(project SoS)</ulink> and INTER/ANR/16/11554412/SoS of the Luxembourg National Research fund FNR. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Triangulation_on_sphere_2.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,352 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Envelopes_of_Surfaces_in_3D"/> <anchor id="index_1chapterEnvelope3"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Dan Halperin, Michal Meyerovitch, Ron Wein, and Baruch Zukerman</para>
+</simplesect>
+</para>
+<sect1 id="index_1Envelope_3Introduction">
+<title>Introduction</title>
+<para>A continuous surface <formula id="23">$ S$</formula> in <formula id="24">$ {\mathbb R}^3$</formula> is called <emphasis> <formula id="4">$ xy$</formula>-monotone</emphasis>, if every line parallel to the <formula id="12">$ z$</formula>-axis intersects it at a single point at most. For example, the sphere <formula id="25">$ x^2 + y^2 + z^2 = 1$</formula> is <emphasis>not</emphasis> <formula id="4">$ xy$</formula>-monotone as the <formula id="12">$ z$</formula>-axis intersects it at <formula id="26">$ (0, 0, -1)$</formula> and at <formula id="27">$ (0, 0, 1)$</formula>; however, if we use the <formula id="4">$ xy$</formula>-plane to split it to an upper hemisphere and a lower hemisphere, these two hemispheres are <formula id="4">$ xy$</formula>-monotone.</para>
+<para>An <formula id="4">$ xy$</formula>-monotone surface can therefore be represented as a bivariate function <formula id="28">$ z = S(x,y)$</formula>, defined over some continuous range <formula id="29">$ R_S \subseteq {\mathbb R}^2$</formula>. Given a set <formula id="30">$ {\cal S} = \{ S_1, S_2, \ldots, S_n \}$</formula> of <formula id="4">$ xy$</formula>-monotone surfaces, their <emphasis>lower envelope</emphasis> is defined as the point-wise minimum of all surfaces. Namely, the lower envelope of the set <formula id="31">$ {\cal S}$</formula> can be defined as the following function:  <formula id="32">\begin{eqnarray*}
+{\cal L}_{{\cal S}} (x,y) = \min_{1 \leq k \leq n}{\overline{S}_k (x,y)} \ ,
+\end{eqnarray*}</formula> where we define <formula id="33">$\overline{S}_k(x,y) = S_k(x,y)$</formula> for <formula id="34">$(x,y) \in R_{S_k}$</formula>, and <formula id="35">$\overline{S}_k(x,y) = \infty$</formula> otherwise.</para>
+<para>Similarly, the <emphasis>upper envelope</emphasis> of <formula id="36">${\cal S}$</formula> is the point-wise maximum of the <formula id="37">$xy$</formula>-monotone surfaces in the set:  <formula id="38">\begin{eqnarray*}
+{\cal U}_{{\cal S}} (x,y) = \max_{1 \leq k \leq n}{\underline{S}_k (x,y)} \ ,
+\end{eqnarray*}</formula> where in this case <formula id="39">$ \underline{S}_k(x,y) = -\infty$</formula> for <formula id="40">$ (x,y) \not\in
+R_{S_k}$</formula>.</para>
+<para>Given a set of <formula id="4">$ xy$</formula>-monotone surfaces <formula id="31">$ {\cal S}$</formula>, the <emphasis>minimization diagram</emphasis> of <formula id="31">$ {\cal S}$</formula> is a subdivision of the <formula id="4">$ xy$</formula>-plane into cells, such that the identity of the surfaces that induce the lower diagram over a specific cell of the subdivision (be it a face, an edge, or a vertex) is the same. In non-degenerate situation, a face is induced by a single surface (or by no surfaces at all, if there are no <formula id="4">$ xy$</formula>-monotone surfaces defined over it), an edge is induced by a single surface and corresponds to its projected boundary, or by two surfaces and corresponds to their projected intersection curve, and a vertex is induced by a single surface and corresponds to its projected boundary point, or by three surfaces and corresponds to their projected intersection point. The <emphasis>maximization diagram</emphasis> is symmetrically defined for upper envelopes. In the rest of this chapter, we refer to both these diagrams as <emphasis>envelope diagrams</emphasis>.</para>
+<para>It is easy to see that an envelope diagram is no more than a planar arrangement (see Chapter <ref refid="index_1chapterArrangement_on_surface_2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">2D Arrangements</ref>), represented using an extended DCEL structure, such that every DCEL record (namely each face, halfedge and vertex) stores an additional container of it originators: the <formula id="4">$ xy$</formula>-monotone surfaces that induce this feature.</para>
+<para>Lower and upper envelopes can be efficiently computed using a divide-and-conquer approach. First note that the envelope diagram for a single <formula id="4">$ xy$</formula>-monotone curve <formula id="41">$ S_k$</formula> is trivial to compute: we project the boundary of its range of definition <formula id="42">$ R_{S_k}$</formula> onto the <formula id="4">$ xy$</formula>-plane, and label the faces it induces accordingly. Given a set <formula id="43">$ {\cal D}$</formula> of (non necessarily <formula id="4">$ xy$</formula>-monotone) surfaces in <formula id="24">$ {\mathbb R}^3$</formula>, we subdivide each surface into a finite number of weakly <formula id="4">$ xy$</formula>-monotone surfaces, We consider <emphasis>vertical</emphasis> surfaces, namely patches of planes that are perpendicular to the <formula id="4">$ xy$</formula>-plane, as <emphasis>weakly</emphasis> <formula id="4">$ xy$</formula>-monotone, to handle degenerate inputs properly. and obtain the set <formula id="31">$ {\cal S}$</formula>. Then, we split the set into two disjoint subsets <formula id="44">$ {\cal S}_1$</formula> and <formula id="45">$ {\cal S}_2$</formula>, and we compute their envelope diagrams recursively. Finally, we merge the diagrams, and we do this by overlaying them and then applying some post-processing on the resulting diagram. The post-processing stage is non-trivial and involves the projection of intersection curves onto the <formula id="4">$ xy$</formula>-plane - see <ref refid="citelist_1CITEREF_cgal:m-rgece-06" kindref="member">[1]</ref> for more details.</para>
+</sect1>
+<sect1 id="index_1Envelope_3The">
+<title>The Envelope-Traits Concept</title>
+<para>The implementation of the envelope-computation algorithm is generic and can handle arbitrary surfaces. It is parameterized with a traits class, which defines the geometry of surfaces it handles, and supports all the necessary functionality on these surfaces, and on their projections onto the <formula id="4">$ xy$</formula>-plane. The traits class must model the <computeroutput><ref refid="classEnvelopeTraits__3" kindref="compound">EnvelopeTraits_3</ref></computeroutput> concept, the details of which are given below.</para>
+<para>As the representation of envelope diagrams is based on 2D arrangements, and the envelop-computation algorithm employs overlay of planar arrangements, the <computeroutput><ref refid="classEnvelopeTraits__3" kindref="compound">EnvelopeTraits_3</ref></computeroutput> refines the <computeroutput><ref refid="classArrangementXMonotoneTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">ArrangementXMonotoneTraits_2</ref></computeroutput> concept. Namely, a model of this concept must define the planar types <computeroutput><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref></computeroutput> and <computeroutput>X_monotone_curve_2</computeroutput> and support basic operations on them, as listed in Section <ref refid="index_1aos_sec-geom_traits" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">The Geometry Traits</ref>. Moreover, it must define the spatial types <computeroutput>Surface_3</computeroutput> and <computeroutput>Xy_monotone_surface_3</computeroutput> (in practice, these two types may be the same). Any model of the envelope-traits concept must also support the following operations on these spatial types:</para>
+<para><anchor id="index_1fig__env3_figcomp_over"/><center> <table rows="2" cols="2"><row>
+<entry thead="no"><para><image type="html" name="compare_over_point.png"></image>
+ <image type="latex" name="compare_over_point.png"></image>
+  </para>
+</entry><entry thead="no"><para><image type="html" name="compare_over_curve.png"></image>
+ <image type="latex" name="compare_over_curve.png"></image>
+   </para>
+</entry></row>
+<row>
+<entry thead="no"><para>(a)</para>
+</entry><entry thead="no"><para>(b) </para>
+</entry></row>
+</table>
+</center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__env3_figcomp_over" kindref="member">fig__env3_figcomp_over</ref> (a) The spheres <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> have only one two-dimensional point <formula id="22">$ p$</formula> in their common <formula id="4">$ xy$</formula>-definition range. They do not necessarily intersect over this point, and the envelope-construction algorithm needs to determine their relative <formula id="48">$
+z$</formula>-order over <formula id="22">$ p$</formula>. (b) The <formula id="12">$ z$</formula>-order of the surfaces <formula id="49">$
+S_1$</formula> and <formula id="47">$ S_2$</formula> should be determined over the <formula id="5">$ x$</formula>-monotone curve <formula id="15">$ c$</formula>. The comparison is performed over the <emphasis>interior</emphasis> of <formula id="15">$ c$</formula>, excluding its endpoints. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><itemizedlist>
+<listitem>
+<para>Subdivide a given surface into continuous <formula id="4">$ xy$</formula>-monotone surfaces. It is possible to disregard <formula id="4">$ xy$</formula>-monotone surfaces that do not contribute to the surface envelope at this stage (for example, if we are given a sphere, it is possible to return just its lower hemisphere if we are interested in the lower envelope; the upper hemisphere is obviously redundant). </para>
+</listitem>
+<listitem>
+<para>Given an <formula id="4">$ xy$</formula>-monotone surface <formula id="23">$ S$</formula>, construct all planar curves that form the boundary of the vertical projection <formula id="23">$ S$</formula>&apos;s boundary onto the <formula id="4">$ xy$</formula>-plane.</para>
+<para>This operation is used at the bottom of the recursion to build the minimization diagram of a single <formula id="4">$ xy$</formula>-monotone surface. </para>
+</listitem>
+<listitem>
+<para>Construct all geometric entities that comprise the projection (onto the <formula id="4">$ xy$</formula>-plane) of the intersection between two <formula id="4">$ xy$</formula>-monotone surfaces <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula>. These entities may be: <itemizedlist>
+<listitem>
+<para>A planar curve, which is the projection of an 3D intersection curve of <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> (for example, the intersection curve between two spheres is a 3D circle, which becomes an ellipse when projected onto the <formula id="4">$ xy$</formula>-plane). In many cases it is also possible to indicate the multiplicity of the intersection: if it is odd, the two surfaces intersect transversely and change their relative <formula id="12">$ z$</formula>-positions on either side of the intersection curve; if it the multiplicity is even, they maintain their relative <formula id="12">$ z$</formula>-position. Providing the multiplicity information is optional. When provided, it is used by the algorithm to determine the relative order of <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> on one side of their intersection curve when their order on the other side of that curve is known, thus improving the performance of the algorithm. </para>
+</listitem>
+<listitem>
+<para>A point, induces by the projection of a tangency point of <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula>, <emphasis>or</emphasis> by the projection of a vertical intersection curve onto the <formula id="4">$ xy$</formula>-plane. </para>
+</listitem>
+</itemizedlist>
+Needless to say, the set of intersection entities may be empty in case <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> do not intersect. </para>
+</listitem>
+<listitem>
+<para>Given two <formula id="4">$ xy$</formula>-monotone surfaces <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula>, and a planar point <formula id="50">$ p = (x_0,y_0)$</formula> that lies in their common <formula id="4">$ xy$</formula>-definition range, determine the <formula id="12">$ z$</formula>-order of <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> over <formula id="22">$ p$</formula>, namely compare <formula id="51">$ S_1(x_0,y_0)$</formula> and <formula id="52">$ S_2(x_0,y_0)$</formula>. This operation is used only in degenerate situations, in order to determine the surface inducing the envelope over a vertex (see <ref refid="index_1fig__env3_figcomp_over" kindref="member">fig__env3_figcomp_over</ref> (a) for an illustration of a situation when this operation is used). </para>
+</listitem>
+<listitem>
+<para>Given two <formula id="4">$ xy$</formula>-monotone surfaces <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula>, and a planar <formula id="5">$ x$</formula>-monotone curve <formula id="15">$ c$</formula>, which is a part of their projected intersection, determine the <formula id="12">$ z$</formula>-order of <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> immediately above (or, similarly, immediately below) the curve <formula id="15">$ c$</formula>. Note that <formula id="15">$ c$</formula> is a planar <formula id="5">$ x$</formula>-monotone curve, and we refer to the region above (or below) it in the <emphasis>plane</emphasis>. If <formula id="15">$ c$</formula> is a vertical curve, we regard the region to its left as lying above it, and the region to its right as lying below it.</para>
+<para>This operation is used by the algorithm to determine the surface that induce the envelope over a face incident to <formula id="15">$ c$</formula>. </para>
+</listitem>
+<listitem>
+<para>Given two <formula id="4">$ xy$</formula>-monotone surfaces <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula>, and a planar <formula id="5">$ x$</formula>-monotone curve <formula id="15">$ c$</formula>, which fully lies in their common <formula id="4">$ xy$</formula>-definition range, and such that <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> do not intersect over the interior of <formula id="15">$ c$</formula>, determine the relative <formula id="12">$ z$</formula>-order of <formula id="16">$ s_1$</formula> and <formula id="17">$ s_2$</formula> over the interior of <formula id="15">$ c$</formula>. Namely, we compare <formula id="51">$ S_1(x_0,y_0)$</formula> and <formula id="52">$ S_2(x_0,y_0)$</formula> for some point <formula id="53">$ (x_0, y_0)$</formula> on <formula id="15">$ c$</formula>.</para>
+<para>This operation is used by the algorithm to determine which surface induce the envelope over an edge associated with the <formula id="5">$ x$</formula>-monotone curve <formula id="15">$ c$</formula>, or of a face incident to <formula id="15">$ c$</formula>, in situations where the previous predicate cannot be used, as <formula id="15">$ c$</formula> is <emphasis>not</emphasis> an intersection curve of <formula id="46">$ S_1$</formula> and <formula id="47">$ S_2$</formula> (see <ref refid="index_1fig__env3_figcomp_over" kindref="member">fig__env3_figcomp_over</ref> (b) for an illustration of a situation where this operation is used). </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>The package currently contains a traits class for named <computeroutput><ref refid="classCGAL_1_1Env__triangle__traits__3" kindref="compound">Env_triangle_traits_3</ref>&lt;<ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>&gt;</computeroutput> handling 3D triangles, and another named <computeroutput><ref refid="classCGAL_1_1Env__sphere__traits__3" kindref="compound">Env_sphere_traits_3</ref>&lt;ConicTraits&gt;</computeroutput> for 3D spheres, based on geometric operations on conic curves (ellipses). In addition, the package includes a traits-class decorator that enables users to attach external (non-geometric) data to surfaces. The usage of the various traits classes is demonstrated in the next section.</para>
+</sect1>
+<sect1 id="index_1Envelope_3Examples">
+<title>Examples</title>
+<sect2 id="index_1Envelope_3ExampleforEnvelopeofTriangles">
+<title>Example for Envelope of Triangles</title>
+<para><anchor id="index_1fig__env3_figex_tri"/><center> <table rows="2" cols="3"><row>
+<entry thead="no"><para><image type="html" name="ex_triangles.png"></image>
+ <image type="latex" name="ex_triangles.png"></image>
+  </para>
+</entry><entry thead="no"><para><image type="html" name="ex_tri_le.png"></image>
+ <image type="latex" name="ex_tri_le.png"></image>
+  </para>
+</entry><entry thead="no"><para><image type="html" name="ex_tri_ue.png"></image>
+ <image type="latex" name="ex_tri_ue.png"></image>
+  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>(a)</para>
+</entry><entry thead="no"><para>(b)</para>
+</entry><entry thead="no"><para>(c) </para>
+</entry></row>
+</table>
+</center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__env3_figex_tri" kindref="member">fig__env3_figex_tri</ref> (a) Two triangles in <formula id="24">$ {\mathbb R}^3$</formula>, as given in <computeroutput>envelope_triangles.cpp</computeroutput>. (b) Their lower envelope. (c) Their upper envelope. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The following example shows how to use the envelope-traits class for 3D triangles and how to traverse the envelope diagram. It constructs the lower and upper envelopes of the two triangles, as depicted in <ref refid="index_1fig__env3_figex_tri" kindref="member">fig__env3_figex_tri</ref> (a) and prints the triangles that induce each face and each edge in the output diagrams. For convenience, we use the traits-class decorator <computeroutput><ref refid="classCGAL_1_1Env__surface__data__traits__3" kindref="compound">Env_surface_data_traits_3</ref></computeroutput> to label the triangles. When printing the diagrams, we just output the labels of the triangles:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Envelope_3_2envelope_triangles_8cpp-example" kindref="compound">Envelope_3/envelope_triangles.cpp</ref> <programlisting filename="Envelope_3/envelope_triangles.cpp"><codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Constructing<sp/>the<sp/>lower<sp/>and<sp/>the<sp/>upper<sp/>envelope<sp/>of<sp/>a<sp/>set<sp/>of<sp/>triangles.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_rational.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Env_triangle_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Env_surface_data_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/envelope_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Number_type<sp/>=<sp/>CGAL::Exact_rational;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;Number_type&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Traits_3<sp/>=<sp/><ref refid="classCGAL_1_1Env__triangle__traits__3" kindref="compound">CGAL::Env_triangle_traits_3&lt;Kernel&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Triangle__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Triangle_3</ref><sp/>=<sp/>Traits_3::Surface_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Data_traits_3<sp/>=<sp/><ref refid="classCGAL_1_1Env__surface__data__traits__3" kindref="compound">CGAL::Env_surface_data_traits_3&lt;Traits_3, char&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Data_triangle_3<sp/>=<sp/>Data_traits_3::Surface_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Envelope__diagram__2" kindref="compound">Envelope_diagram_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Envelope__diagram__2" kindref="compound">CGAL::Envelope_diagram_2&lt;Data_traits_3&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">/*<sp/>Auxiliary<sp/>function<sp/>-<sp/>print<sp/>the<sp/>features<sp/>of<sp/>the<sp/>given<sp/>envelope<sp/>diagram.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print_diagram(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Envelope__diagram__2" kindref="compound">Envelope_diagram_2</ref>&amp;<sp/>diag)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Go<sp/>over<sp/>all<sp/>arrangement<sp/>faces.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>fit<sp/>=<sp/>diag.faces_begin();<sp/>fit<sp/>!=<sp/>diag.faces_end();<sp/>++fit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>face<sp/>boundary.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(fit-&gt;is_unbounded())<sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[Unbounded<sp/>face]&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>vertices<sp/>along<sp/>the<sp/>outer<sp/>boundary<sp/>of<sp/>the<sp/>face.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>ccb<sp/>=<sp/>fit-&gt;outer_ccb();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[Face]<sp/><sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">do</highlight><highlight class="normal"><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;(&apos;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>ccb-&gt;target()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/><sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(++ccb<sp/>!=<sp/>fit-&gt;outer_ccb());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>labels<sp/>of<sp/>the<sp/>triangles<sp/>that<sp/>induce<sp/>the<sp/>envelope<sp/>on<sp/>this<sp/>face.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;--&gt;<sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>fit-&gt;number_of_surfaces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>triangles:&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>sit<sp/>=<sp/>fit-&gt;surfaces_begin();<sp/>sit<sp/>!=<sp/>fit-&gt;surfaces_end();<sp/>++sit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sit-&gt;data();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Go<sp/>over<sp/>all<sp/>arrangement<sp/>edges.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arrangement__2_1a50f87a7c4b684a0454efc754780aaef3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Envelope_diagram_2::Edge_const_iterator</ref><sp/>eit;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>eit<sp/>=<sp/>diag.edges_begin();<sp/>eit<sp/>!=<sp/>diag.edges_end();<sp/>++eit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>labels<sp/>of<sp/>the<sp/>triangles<sp/>that<sp/>induce<sp/>the<sp/>envelope<sp/>on<sp/>this<sp/>edge.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[Edge]<sp/><sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;source()-&gt;point()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;target()-&gt;point()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>--&gt;<sp/><sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>eit-&gt;number_of_surfaces()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>triangles:&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>sit<sp/>=<sp/>eit-&gt;surfaces_begin();<sp/>sit<sp/>!=<sp/>eit-&gt;surfaces_end();<sp/>++sit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sit-&gt;data();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">/*<sp/>The<sp/>main<sp/>program:<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Construct<sp/>the<sp/>input<sp/>triangles,<sp/>makred<sp/>A<sp/>and<sp/>B.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Data_triangle_3&gt;<sp/>triangles;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>t1<sp/>=<sp/><ref refid="classKernel_1_1Triangle__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Triangle_3</ref>(<ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>(0,<sp/>0,<sp/>0),<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>(0,<sp/>6,<sp/>0),<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>(5,<sp/>3,<sp/>4));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>triangles.push_back(Data_triangle_3(t1,<sp/></highlight><highlight class="charliteral">&apos;A&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>t2<sp/>=<sp/><ref refid="classKernel_1_1Triangle__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Triangle_3</ref>(<ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>(6,<sp/>0,<sp/>0),<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>(6,<sp/>6,<sp/>0),<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>(1,<sp/>3,<sp/>4));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>triangles.push_back(Data_triangle_3(t2,<sp/></highlight><highlight class="charliteral">&apos;B&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>and<sp/>print<sp/>the<sp/>minimization<sp/>diagram.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Envelope_diagram_2<sp/>min_diag;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgEnvelope3Ref_1gafd8dc9fadb187466e4c567099ec1a443" kindref="member">CGAL::lower_envelope_3</ref>(triangles.begin(),<sp/>triangles.end(),<sp/>min_diag);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>minimization<sp/>diagram:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_diagram(min_diag);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>and<sp/>print<sp/>the<sp/>maximization<sp/>diagram.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Envelope_diagram_2<sp/>max_diag;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgEnvelope3Ref_1ga1fbbe89e27c3dc3404bbbb3b1f7ceea1" kindref="member">CGAL::upper_envelope_3</ref><sp/>(triangles.begin(),<sp/>triangles.end(),<sp/>max_diag);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>maximization<sp/>diagram:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_diagram<sp/>(max_diag);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Envelope_3ExampleforEnvelopeofSpheres">
+<title>Example for Envelope of Spheres</title>
+<para>The next example demonstrates how to instantiate and use the envelope-traits class for spheres, based on the <computeroutput><ref refid="classCGAL_1_1Arr__conic__traits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arr_conic_traits_2</ref></computeroutput> class that handles the projected intersection curves. The program reads a set of spheres from an input file and constructs their lower envelope:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Envelope_3_2envelope_spheres_8cpp-example" kindref="compound">Envelope_3/envelope_spheres.cpp</ref> <programlisting filename="Envelope_3/envelope_spheres.cpp"><codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Constructing<sp/>the<sp/>lower<sp/>envelope<sp/>of<sp/>a<sp/>set<sp/>of<sp/>spheres<sp/>read<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/config.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifndef<sp/>CGAL_USE_CORE</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Sorry,<sp/>this<sp/>example<sp/>needs<sp/>CORE<sp/>...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;chrono&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/CORE_algebraic_number_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Arr_conic_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Env_sphere_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/envelope_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Nt_traits<sp/>=<sp/><ref refid="classCGAL_1_1CORE__algebraic__number__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::CORE_algebraic_number_traits</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Rational<sp/>=<sp/>Nt_traits::Rational;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Algebraic<sp/>=<sp/>Nt_traits::Algebraic;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Rat_kernel<sp/>=<sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;Rational&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Rat_point_3<sp/>=<sp/>Rat_kernel::Point_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Alg_kernel<sp/>=<sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;Algebraic&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Conic_traits_2<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Arr__conic__traits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">CGAL::Arr_conic_traits_2&lt;Rat_kernel, Alg_kernel, Nt_traits&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Traits_3<sp/>=<sp/><ref refid="classCGAL_1_1Env__sphere__traits__3" kindref="compound">CGAL::Env_sphere_traits_3&lt;Conic_traits_2&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classKernel_1_1Sphere__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Sphere_3</ref><sp/>=<sp/>Traits_3::Surface_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Envelope_diagram_2<sp/>=<sp/><ref refid="classCGAL_1_1Envelope__diagram__2" kindref="compound">CGAL::Envelope_diagram_2&lt;Traits_3&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>the<sp/>name<sp/>of<sp/>the<sp/>input<sp/>file<sp/>from<sp/>the<sp/>command<sp/>line,<sp/>or<sp/>use<sp/>the<sp/>default</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>fan_grids.dat<sp/>file<sp/>if<sp/>no<sp/>command-line<sp/>parameters<sp/>are<sp/>given.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;spheres.dat&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Open<sp/>the<sp/>input<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in_file(filename);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<sp/>in_file.is_open())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Failed<sp/>to<sp/>open<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>filename<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>...&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Read<sp/>the<sp/>spheres<sp/>from<sp/>the<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>input<sp/>file<sp/>format<sp/>should<sp/>be<sp/>(all<sp/>coordinate<sp/>values<sp/>are<sp/>integers):</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>&lt;n&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>number<sp/>of<sp/>spheres.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>&lt;x_1&gt;<sp/>&lt;y_1&gt;<sp/>&lt;x_1&gt;<sp/>&lt;R_1&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>center<sp/>and<sp/>squared<sp/>radious<sp/>of<sp/>sphere<sp/>#1.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>&lt;x_2&gt;<sp/>&lt;y_2&gt;<sp/>&lt;x_2&gt;<sp/>&lt;R_2&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>center<sp/>and<sp/>squared<sp/>radious<sp/>of<sp/>sphere<sp/>#2.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/>:<sp/><sp/><sp/><sp/><sp/>:<sp/><sp/><sp/><sp/><sp/>:<sp/><sp/><sp/><sp/><sp/>:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>&lt;x_n&gt;<sp/>&lt;y_n&gt;<sp/>&lt;x_n&gt;<sp/>&lt;R_n&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>//<sp/>center<sp/>and<sp/>squared<sp/>radious<sp/>of<sp/>sphere<sp/>#n.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>n<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Sphere_3&gt;<sp/>spheres;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x<sp/>=<sp/>0,<sp/>y<sp/>=<sp/>0,<sp/>z<sp/>=<sp/>0,<sp/>sqr_r<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>in_file<sp/>&gt;&gt;<sp/>n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>n;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>in_file<sp/>&gt;&gt;<sp/>x<sp/>&gt;&gt;<sp/>y<sp/>&gt;&gt;<sp/>z<sp/>&gt;&gt;<sp/>sqr_r;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>spheres.push_back(<ref refid="classKernel_1_1Sphere__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Sphere_3</ref>(Rat_point_3(x,<sp/>y,<sp/>z),<sp/>Rational(sqr_r)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>in_file.close();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Constructing<sp/>the<sp/>lower<sp/>envelope<sp/>of<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>n<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>spheres.\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>the<sp/>lower<sp/>envelope.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Envelope_diagram_2<sp/>min_diag;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>start<sp/>=<sp/>std::chrono::system_clock::now();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgEnvelope3Ref_1gafd8dc9fadb187466e4c567099ec1a443" kindref="member">CGAL::lower_envelope_3</ref>(spheres.begin(),<sp/>spheres.end(),<sp/>min_diag);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::chrono::duration&lt;double&gt;<sp/>secs<sp/>=<sp/>std::chrono::system_clock::now()<sp/>-<sp/>start;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>dimensions<sp/>of<sp/>the<sp/>minimization<sp/>diagram.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;V<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>min_diag.number_of_vertices()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,<sp/>E<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>min_diag.number_of_edges()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,<sp/>F<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>min_diag.number_of_faces()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Construction<sp/>took<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>secs.count()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>seconds.\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Envelope_3ExampleforEnvelopeofPlanes">
+<title>Example for Envelope of Planes</title>
+<para>The next example demonstrates how to instantiate and use the envelope-traits class for planes, based on the <computeroutput><ref refid="classCGAL_1_1Arr__linear__traits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">Arr_linear_traits_2</ref></computeroutput> class that handles infinite linear objects such as lines and rays.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Envelope_3_2envelope_planes_8cpp-example" kindref="compound">Envelope_3/envelope_planes.cpp</ref> <programlisting filename="Envelope_3/envelope_planes.cpp"><codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Constructing<sp/>the<sp/>lower<sp/>and<sp/>the<sp/>upper<sp/>envelope<sp/>of<sp/>a<sp/>set<sp/>of<sp/>planes.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_rational.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Env_plane_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/envelope_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Number_type<sp/>=<sp/>CGAL::Exact_rational;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;Number_type&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Plane__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Plane_3</ref><sp/>=<sp/><ref refid="classKernel_1_1Plane__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Plane_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Traits_3<sp/>=<sp/><ref refid="classCGAL_1_1Env__plane__traits__3" kindref="compound">CGAL::Env_plane_traits_3&lt;Kernel&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Surface_3<sp/>=<sp/>Traits_3::Surface_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Envelope__diagram__2" kindref="compound">Envelope_diagram_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Envelope__diagram__2" kindref="compound">CGAL::Envelope_diagram_2&lt;Traits_3&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">/*<sp/>Auxiliary<sp/>function<sp/>-<sp/>print<sp/>the<sp/>features<sp/>of<sp/>the<sp/>given<sp/>envelope<sp/>diagram.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print_diagram(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Envelope__diagram__2" kindref="compound">Envelope_diagram_2</ref>&amp;<sp/>diag)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Go<sp/>over<sp/>all<sp/>arrangement<sp/>faces.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>fit<sp/>=<sp/>diag.faces_begin();<sp/>fit<sp/>!=<sp/>diag.faces_end();<sp/>++fit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>face<sp/>boundary.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>vertices<sp/>along<sp/>the<sp/>outer<sp/>boundary<sp/>of<sp/>the<sp/>face.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>ccb<sp/>=<sp/>fit-&gt;outer_ccb();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[Face]<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">do</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!ccb-&gt;is_fictitious())<sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;(&apos;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>ccb-&gt;curve()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(++ccb<sp/>!=<sp/>fit-&gt;outer_ccb());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>the<sp/>planes<sp/>that<sp/>induce<sp/>the<sp/>envelope<sp/>on<sp/>this<sp/>face.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;--&gt;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>fit-&gt;number_of_surfaces()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>planes:&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>sit<sp/>=<sp/>fit-&gt;surfaces_begin();<sp/>sit<sp/>!=<sp/>fit-&gt;surfaces_end();<sp/>++sit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;<sp/>&apos;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sit-&gt;plane();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">/*<sp/>The<sp/>main<sp/>program:<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Construct<sp/>the<sp/>input<sp/>planes.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Surface_3&gt;<sp/>planes;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>planes.push_back(Surface_3(<ref refid="classKernel_1_1Plane__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Plane_3</ref>(0,<sp/>-1,<sp/>1,<sp/>0)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>planes.push_back(Surface_3(<ref refid="classKernel_1_1Plane__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Plane_3</ref>(-1,<sp/>0,<sp/>1,<sp/>0)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>planes.push_back(Surface_3(<ref refid="classKernel_1_1Plane__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Plane_3</ref>(0,<sp/>1<sp/>,<sp/>1,<sp/>0)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>planes.push_back(Surface_3(<ref refid="classKernel_1_1Plane__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Plane_3</ref>(1,<sp/>0,<sp/>1,<sp/><sp/>0)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>and<sp/>print<sp/>the<sp/>minimization<sp/>diagram.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Envelope_diagram_2<sp/>min_diag;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgEnvelope3Ref_1gafd8dc9fadb187466e4c567099ec1a443" kindref="member">CGAL::lower_envelope_3</ref>(planes.begin(),<sp/>planes.end(),<sp/>min_diag);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>minimization<sp/>diagram:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_diagram(min_diag);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>and<sp/>print<sp/>the<sp/>maximization<sp/>diagram.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Envelope_diagram_2<sp/>max_diag;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgEnvelope3Ref_1ga1fbbe89e27c3dc3404bbbb3b1f7ceea1" kindref="member">CGAL::upper_envelope_3</ref>(planes.begin(),<sp/>planes.end(),<sp/>max_diag);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>maximization<sp/>diagram:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_diagram<sp/>(max_diag);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Envelope_3.txt"/>
+  </compounddef>
+</doxygen>

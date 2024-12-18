@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="classCirculator" kind="class" language="C++" prot="public">
+    <compoundname>Circulator</compoundname>
+    <includes local="no">Concepts/Circulator.h</includes>
+    <briefdescription>
+<para>A <ref refid="classCirculator" kindref="compound">Circulator</ref> is similar to an <ref refid="classIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Iterator</ref>, with the difference that it is designed for circular data structures. </para>
+    </briefdescription>
+    <detaileddescription>
+<para><heading level="1"></heading>
+</para>
+<sect1 id="classCirculator_1circulatorConceptsIntro">
+<title>Circulators</title>
+<para>Iterators in the STL were tailored for linear sequences. The specialization for circular data structures leads to slightly different requirements which we will summarize in the <emphasis>circulators</emphasis> concept. The main difference is that a circular data structure has no natural past-the-end value. As a consequence, a container supporting circulators will not have an <computeroutput>end()</computeroutput>-member function. The semantic of a circulator range differs from the semantic of an iterator range. For a circulator <computeroutput>c</computeroutput> the range <computeroutput>[c, c)</computeroutput> denotes the sequence of all elements in the data structure. For iterators, this range defines the empty sequence. A separate test for an empty sequence has been added to the circulator requirements: A comparison <computeroutput>c == nullptr</computeroutput> for a circulator <computeroutput>c</computeroutput> is true for an empty sequence. As for C++, we recommend the use of 0 instead of <computeroutput>nullptr</computeroutput>.</para>
+<sect2 id="classCirculator_1circulatorConceptsCirculators">
+<title>Circulators</title>
+<para>Similar to STL iterators, we distinguish between forward, bidirectional, and random access circulatorsInput circulators are a contradiction, since any circulator is supposed to return once to itself. Output circulators are not supported since they would be indistinguishable from output iterators.. Most requirements for circulators are equal to those for iterators. We present the changes, please refer to [<ref refid="citelist_1CITEREF_cgal:ms-strg-96" kindref="member">[2]</ref>, chapter 18 or <ref refid="citelist_1CITEREF_cgal:ansi-is14882-98" kindref="member">[1]</ref>] for the iterator requirements.</para>
+<para><bold>Past-the-end value:</bold> There is no past-the-end value for circulators.</para>
+<para><bold>Singular values:</bold> There are no singular values for circulatorsSince circulators must be implemented as classes anyway, there is no need to allow singular values for them. An un-initalized circulator does not have a singular value, but is supposed to refer to an empty sequence.</para>
+<para><bold>Empty sequence:</bold> The comparison <computeroutput>c == nullptr</computeroutput> (or <computeroutput>c == 0</computeroutput>) for a circulator <computeroutput>c</computeroutput> is <computeroutput>true</computeroutput> if <computeroutput>c</computeroutput> denotes an empty sequence, and <computeroutput>false</computeroutput> otherwise.</para>
+<para><bold>Dereferenceable values:</bold> A circulator that does not denote an empty sequence is dereferenceable.</para>
+<para><bold>Reachability:</bold> Each dereferenceable circulator can reach itself with a finite and non-empty sequence of applications of <computeroutput>operator++</computeroutput>.</para>
+<para><bold>Ranges:</bold> For any circulator <computeroutput>c</computeroutput> the range <computeroutput>[c, c)</computeroutput> is a valid range. If the circulator refers to an empty sequence, the range <computeroutput>[c, c)</computeroutput> denotes the empty range. Otherwise the circulator is dereferenceable and the range <computeroutput>[c, c)</computeroutput> denotes the sequence of all elements in the data structure. <emphasis>Remark:</emphasis> When a circulator is used in a place of an iterator, as, for example, with an STL algorithm, it will work as expected with the only exception that, in STL algorithms, the range <computeroutput>[c, c)</computeroutput> denotes always the empty range. This is not a requirement, but a consequence of the requirements stated here and the fact that the STL requirements for iterator ranges are based on the <computeroutput>operator++</computeroutput> and the <computeroutput>operator==</computeroutput>, which we use for circulators as well. In principle, we face here the difference between a <computeroutput>while</computeroutput> loop and a <computeroutput>do-while</computeroutput> loop.</para>
+<para><bold>Types:</bold> For a circulator of type <computeroutput>c</computeroutput> the following local types are required:</para>
+<para><table rows="6" cols="2"><row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::value_type</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>value type the circulator refers to. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::reference</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>reference type used for the return type of <computeroutput>C::operator*()</computeroutput>. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::pointer</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>pointer type used for the return type of <computeroutput>C::operator-&gt;()</computeroutput>. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::size_type</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>unsigned integral type that can hold the size of a sequence </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::difference_type</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>signed integral type that can hold the distance between two circulators. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::iterator_category</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>circulator category.</para>
+<para></para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="classCirculator_1circulatorConceptsForward">
+<title>Forward Circulators</title>
+<para>In the following, we assume that <computeroutput>a</computeroutput> and <computeroutput>b</computeroutput> are circulators of type <computeroutput>C</computeroutput>, <computeroutput>r</computeroutput> is of type <computeroutput>C&amp;</computeroutput> (is assignable), and <computeroutput>T</computeroutput> denotes the value type of <computeroutput>C</computeroutput>. Let <computeroutput>D</computeroutput> be the distance type of <computeroutput>C</computeroutput>. As for C++, we recommend the use of 0 instead of <computeroutput>nullptr</computeroutput>.</para>
+<para><table rows="11" cols="2"><row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C()</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>a circulator equal to <computeroutput>nullptr</computeroutput> denoting an empty sequence. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>a == nullptr</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>Returns <computeroutput>true</computeroutput> if <computeroutput>a</computeroutput> denotes an empty sequence, <computeroutput>false</computeroutput> otherwise. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry><entry thead="no" align="left" valign="top"><para>For simplicity, <computeroutput>nullptr == a</computeroutput> is not required. The </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry><entry thead="no" align="left" valign="top"><para>behavior for comparisons with pointer-like values different than <computeroutput>nullptr</computeroutput> </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry><entry thead="no" align="left" valign="top"><para>is undefined. A runtime assertion is recommended. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>a != nullptr</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>Returns <computeroutput>!(a == nullptr)</computeroutput>. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>++r</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>Like for forward iterators, but a dereferenceable circulator <computeroutput>r</computeroutput> will always </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry><entry thead="no" align="left" valign="top"><para>be dereferenceable after <computeroutput>++r</computeroutput> (no past-the-end value). <emphasis>Precondition:</emphasis> <computeroutput>r</computeroutput> </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry><entry thead="no" align="left" valign="top"><para>does not denote an empty sequence. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>r++</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>Same as for <computeroutput>++r</computeroutput>. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::iterator_category</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>circulator category <computeroutput>Forward_circulator_tag</computeroutput>.</para>
+<para></para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="classCirculator_1circulatorConceptsBidirectional">
+<title>Bidirectional Circulators</title>
+<para>The same requirements as for the forward circulators hold for bidirectional iterators with the following change of the iterator category:</para>
+<para><table rows="1" cols="2"><row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::iterator_category</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>circulator category <computeroutput>Bidirectional_circulator_tag</computeroutput>.</para>
+<para></para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="classCirculator_1circulatorConceptsRandomAccessCirculators">
+<title>Random Access Circulators</title>
+<para><anchor id="classCirculator_1sectionMinCircleRequ"/> The same requirements as for the bidirectional circulators hold for random access iterators with the following changes and extensions.</para>
+<para>The idea of random access extends naturally to circulators using equivalence classes modulus the length of the sequence. With this in mind, the additional requirements for random access iterators hold also for random access circulators. The only exception is that the random access iterator is required to provide a total order on the sequence, which a circulator cannot provideOne might define an order by splitting the circle at a fixed point, e.g. the start circulator provided from the data structure. This is what the adaptor to iterators will do. Nonetheless, we do not require this for circulators..</para>
+<para>The difference of two circulators is not unique as for iterators. A reasonable requirement demands that the result is in a certain range <computeroutput>[1-size, size-1]</computeroutput>, where <computeroutput>size</computeroutput> is the size of the sequence, and that whenever a circulator <computeroutput>a</computeroutput> is fixed that the differences with all other circulators of the sequence form a consistent ordering.</para>
+<para>For the adaptor to iterators a minimal circulator <computeroutput>d_min</computeroutput> is required for which the difference <computeroutput>c - d_min</computeroutput> to all other circulators <computeroutput>c</computeroutput> is non negative.</para>
+<para><table rows="3" cols="2"><row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>b - a</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>limited range and consistent ordering as explained above. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>a.min_circulator()</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>returns the minimal circulator from the range <computeroutput>[a,a)</computeroutput>. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>C::iterator_category</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>circulator category <computeroutput>Random_access_circulator_tag</computeroutput>.</para>
+<para></para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="classCirculator_1circulatorConceptsConstCirculators">
+<title>Const Circulators</title>
+<para>As with iterators, we distinguish between circulators and const circulators. The expression <computeroutput>*a = t</computeroutput> with <computeroutput>t</computeroutput> of type <computeroutput>T</computeroutput> is valid for mutable circulators. It is invalid for const circulators.</para>
+</sect2>
+<sect2 id="classCirculator_1subsec_CircContClass">
+<title>Circulators in Container Classes</title>
+<para>For a container <computeroutput>x</computeroutput> of type <computeroutput>X</computeroutput> that supports circulators <computeroutput>c</computeroutput> the following naming convention is recommended:</para>
+<para><table rows="5" cols="2"><row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>X::Circulator</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>the type of the mutable circulator. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>X::Const_circulator</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>the type of the const circulator. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>c = x.begin()</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>the start circulator of the sequence. It is of type <computeroutput>X::Circulator</computeroutput> for a </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry><entry thead="no" align="left" valign="top"><para>mutable container or <computeroutput>X::Const_circulator</computeroutput> for a const container. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry><entry thead="no" align="left" valign="top"><para></para>
+<para></para>
+</entry></row>
+</table>
+</para>
+<para>If a container will support iterators and circulators, the member function <computeroutput>circulator_begin()</computeroutput> is proposed. However, the support of iterators and circulators simultaneously is not recommended, since it would lead to fat interfaces. The natural choice should be supported, the other concept will be available through adaptors.</para>
+</sect2>
+<sect2 id="classCirculator_1subsec_Circ_ex">
+<title>Example</title>
+<para>A generic <computeroutput>contains</computeroutput> function accepts a range of circulators and a value. It returns <computeroutput>true</computeroutput> if the value is contained in the sequence of items denoted by the range of circulators. As usual for circular structures, a <computeroutput>do</computeroutput>-<computeroutput>while</computeroutput> loop is preferable, such that for the specific input, <computeroutput>c == d</computeroutput>, all elements in the sequence are reached. Note that the example simplifies if the sequence is known to be non-empty, which is for example the common case in polyhedral surfaces where vertices and facets have at least one incident edge.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Circulator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>contains(<sp/><ref refid="classCirculator" kindref="compound">Circulator</ref><sp/>c,<sp/><ref refid="classCirculator" kindref="compound">Circulator</ref><sp/>d,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>T&amp;<sp/>value)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(c<sp/>!=<sp/>0)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">do</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(*c<sp/>==<sp/>value)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(++c<sp/>!=<sp/>d);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Concepts/Circulator.h" line="297" column="1" bodyfile="Concepts/Circulator.h" bodystart="297" bodyend="300"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

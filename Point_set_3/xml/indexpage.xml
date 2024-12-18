@@ -1,0 +1,480 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Point_Set_3"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Simon Giraudot</para>
+</simplesect>
+CGAL provides several algorithms for processing point sets, ranging from <ref refid="index_1Chapter_Shape_Detection" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">Shape Detection</ref> to <ref refid="index_1Chapter_Advancing_Front_Surface_Reconstruction" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Advancing_front_surface_reconstruction.tag">Surface Reconstruction</ref> through standard <ref refid="index_1Chapter_Point_Set_Processing" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">Point Set Processing</ref> tools.</para>
+<para>While these algorithms do not impose specific data structures to work on, this package provides a 3D point set structure to make it easier for the user to handle additional properties such as normal vectors, colors, labels, and to call CGAL algorithms on them.</para>
+<sect1 id="index_1Point_set_3_Principle">
+<title>General Principle</title>
+<para><computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3</ref>&lt;Point,Vector&gt;</computeroutput> is a vector based data structure that contains a default property (named <computeroutput>point</computeroutput>) for the coordinates of the points.</para>
+<para>Any property the user needs can be easily added, modified, and removed at runtime. A property is identified by a unique name and a type. Convenience methods are provided to handle the normal vectors (property named <computeroutput>normal</computeroutput>) that is a very common property on point sets.</para>
+<para>To optimize memory allocation and deallocation, each point is associated an index. The removal of a point simply marks the index as removed. Internally, this avoids the property vectors to be modified at each removal, and allow insertion of new points to reuse indices of points marked as removed. In particular this implies that a point inserted after some removal was done might has a non default initialized property. If the user needs memory to be effectively deallocated, the element marked as removed can be actually deleted from memory using <computeroutput>Point_set_3::garbage_collect()</computeroutput>.</para>
+</sect1>
+<sect1 id="index_1Point_set_3_Usage">
+<title>Simple Usage</title>
+<para>The data structure is designed to be easy to use despite its potential complexity when using properties. Several convenience methods are provided to handle points and normals without having to handle properties directly.</para>
+<para>The following example shows how to fill a point set, add a normal property, set the normal values, add and remove a point.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Point_set_3_2point_set_8cpp-example" kindref="compound">Point_set_3/point_set.cpp</ref> <programlisting filename="Point_set_3/point_set.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;limits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3&lt;Point&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print_point_set<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_set&amp;<sp/>point_set)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Content<sp/>of<sp/>point<sp/>set:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Point_set::const_iterator<sp/>it<sp/>=<sp/>point_set.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>it<sp/>!=<sp/>point_set.end();<sp/>++<sp/>it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>Point<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>*it</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>point_set.<ref refid="classCGAL_1_1Point__set__3_1a5b5ba4bb7f08a4acfa4798a01f60506d" kindref="member">point</ref>(*it)<sp/></highlight><highlight class="comment">//<sp/>or<sp/>point_set[it]</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>with<sp/>normal<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>point_set.normal(*it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.insert<sp/>(Point<sp/>(0.,<sp/>0.,<sp/>0.));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.insert<sp/>(Point<sp/>(0.,<sp/>0.,<sp/>1.));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.insert<sp/>(Point<sp/>(0.,<sp/>1.,<sp/>0.));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.add_normal_map();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_point_set(point_set);<sp/></highlight><highlight class="comment">//<sp/>Normals<sp/>have<sp/>default<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Change<sp/>normal<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set::iterator<sp/>it<sp/>=<sp/>point_set.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.normal(*(it++))<sp/>=<sp/>Vector<sp/>(1.,<sp/>0.,<sp/>0.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.normal(*(it++))<sp/>=<sp/>Vector<sp/>(0.,<sp/>1.,<sp/>0.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.normal(*(it++))<sp/>=<sp/>Vector<sp/>(0.,<sp/>0.,<sp/>1.);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>point<sp/>+<sp/>normal</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.insert<sp/>(Point<sp/>(1.,<sp/>2.,<sp/>3.),<sp/>Vector<sp/>(4.,<sp/>5.,<sp/>6.));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_point_set(point_set);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>new<sp/>item</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set::iterator<sp/>new_item<sp/>=<sp/>point_set.insert(Point<sp/>(7.,<sp/>8.,<sp/>9.));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.normal(*new_item)<sp/>=<sp/>Vector<sp/>(10.,<sp/>11.,<sp/>12.);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_point_set(point_set);<sp/></highlight><highlight class="comment">//<sp/>New<sp/>item<sp/>has<sp/>default<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.remove<sp/>(point_set.begin()<sp/>+<sp/>2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>point_set.begin()<sp/>+<sp/>4);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_point_set(point_set);<sp/></highlight><highlight class="comment">//<sp/>New<sp/>item<sp/>has<sp/>default<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Display<sp/>information</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Number<sp/>of<sp/>removed<sp/>points:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;point_set.number_of_removed_points()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.collect_garbage();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Display<sp/>information<sp/>(garbage<sp/>should<sp/>be<sp/>gone)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;After<sp/>garbage<sp/>collection:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;point_set.number_of_removed_points()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1Point_set_3_Properties">
+<title>Using Additional Properties</title>
+<para>Every information in the point set is a property. A raw point set comes only with a <computeroutput>point</computeroutput> property. As we saw in the previous example, the user can easily add a <emphasis>normal</emphasis> property. But this mechanism is generalized to any type of property.</para>
+<para>The following example shows how to define a color property and an intensity property, and how to modify the point set according to this.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Point_set_3_2point_set_property_8cpp-example" kindref="compound">Point_set_3/point_set_property.cpp</ref> <programlisting filename="Point_set_3/point_set_property.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;limits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::array&lt;unsigned<sp/>char,<sp/>3&gt;<sp/>Color;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3&lt;Point&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Point_set::Property_map&lt;Color&gt;<sp/>Color_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Point_set::Property_map&lt;FT&gt;<sp/>FT_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print_point_set<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_set&amp;<sp/>point_set)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Color_map<sp/>color<sp/>=<sp/>point_set.<ref refid="classCGAL_1_1Point__set__3_1ad8850305773c76619e6cad0f5abbaaa9" kindref="member">property_map</ref>&lt;Color&gt;(</highlight><highlight class="stringliteral">&quot;color&quot;</highlight><highlight class="normal">).value();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT_map<sp/>intensity<sp/>=<sp/>point_set.property_map&lt;FT&gt;(</highlight><highlight class="stringliteral">&quot;intensity&quot;</highlight><highlight class="normal">).value();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Content<sp/>of<sp/>point<sp/>set:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Point_set::const_iterator<sp/>it<sp/>=<sp/>point_set.begin();<sp/>it<sp/>!=<sp/>point_set.end();<sp/>++<sp/>it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>Point<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>point_set.point(*it)<sp/></highlight><highlight class="comment">//<sp/>or<sp/>point_set[it]</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>with<sp/>color<sp/>[&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(color[*it][0])</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(color[*it][1])</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(color[*it][2])</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;]<sp/>and<sp/>intensity<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>intensity[*it]</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Color<sp/>black<sp/>=<sp/>{{<sp/>0,<sp/>0,<sp/>0<sp/>}};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>success<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Color_map<sp/>color;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::tie<sp/>(color,<sp/>success)<sp/>=<sp/>point_set.add_property_map&lt;Color&gt;<sp/>(</highlight><highlight class="stringliteral">&quot;color&quot;</highlight><highlight class="normal">,<sp/>black);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(success);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT_map<sp/>intensity;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::tie<sp/>(intensity,<sp/>success)<sp/>=<sp/>point_set.add_property_map&lt;FT&gt;<sp/>(</highlight><highlight class="stringliteral">&quot;intensity&quot;</highlight><highlight class="normal">,<sp/>0.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(success);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.reserve<sp/>(10);<sp/></highlight><highlight class="comment">//<sp/>For<sp/>memory<sp/>optimization</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>10;<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point_set::iterator<sp/>it<sp/>=<sp/>point_set.insert<sp/>(Point<sp/>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal">(i),<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal">(i),<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal">(i)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Color<sp/>c<sp/>=<sp/>{{<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(CGAL::get_default_random().get_int(0,<sp/>255)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(CGAL::get_default_random().get_int(0,<sp/>255)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(CGAL::get_default_random().get_int(0,<sp/>255))<sp/>}};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>color[*it]<sp/>=<sp/>c;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>intensity[*it]<sp/>=<sp/>rand()<sp/>/<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">double</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(RAND_MAX);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_point_set<sp/>(point_set);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Remove<sp/>points<sp/>with<sp/>intensity<sp/>less<sp/>than<sp/>0.5</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set::iterator<sp/>it<sp/>=<sp/>point_set.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(it<sp/>!=<sp/>point_set.end())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(intensity[*it]<sp/>&lt;<sp/>0.5)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>point_set.remove(it);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++<sp/>it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print_point_set<sp/>(point_set);<sp/></highlight><highlight class="comment">//<sp/>point<sp/>set<sp/>is<sp/>filtered</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1Point_set_3_Algorithms">
+<title>Applying CGAL Algorithms</title>
+<para>Most CGAL algorithms let the user free to choose an input data structure: the points and attributes are then accessed through ranges and property maps. The <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3</ref></computeroutput> class is a range that provides property maps: applying CGAL algorithms is straightforward.</para>
+<para>As the <ref refid="group__PkgPointSetProcessing3Ref" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">Point Set Processing</ref> algorithms use <ref refid="index_1BGLNamedParameters" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> to handle property maps, a method <computeroutput><ref refid="classCGAL_1_1Point__set__3_1a02ef886d19ffa53faf527625c633c81c" kindref="member">CGAL::Point_set_3::parameters()</ref></computeroutput> is provided: it returns a named parameter object with the right point and normal maps to read and write in the point set object.</para>
+<para>In addition, all input/output functions of the package <ref refid="index_1Chapter_Point_Set_Processing" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">Point Set Processing</ref> are overloaded so that the user only has to call them with a <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3</ref></computeroutput> object as a parameter (see <ref refid="index_1Point_set_3_IO" kindref="member">Input/Output</ref>).</para>
+<sect2 id="index_1Point_set_3_PSP">
+<title>Point Set Processing</title>
+<para>The following example shows how to apply some algorithms from the CGAL library using a point set object:</para>
+<para><itemizedlist>
+<listitem><para>generating a point set around a sphere</para>
+</listitem><listitem><para>estimating the normals with <computeroutput><ref refid="group__PkgPointSetProcessing3Algorithms_1ga078e25209373cab0e1f3524202489771" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::jet_estimate_normals()</ref></computeroutput></para>
+</listitem><listitem><para>simplifying the point set with <computeroutput><ref refid="group__PkgPointSetProcessing3Algorithms_1ga7757ef9b3900e42fde26f5a0ac56e20f" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::grid_simplify_point_set()</ref></computeroutput></para>
+</listitem><listitem><para>detecting the sphere shape with <computeroutput><ref refid="classCGAL_1_1Shape__detection_1_1Efficient__RANSAC" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Efficient_RANSAC</ref></computeroutput></para>
+</listitem></itemizedlist>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Point_set_3_2point_set_algo_8cpp-example" kindref="compound">Point_set_3/point_set_algo.cpp</ref> <programlisting filename="Point_set_3/point_set_algo.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/jet_estimate_normals.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/grid_simplify_point_set.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Efficient__RANSAC_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL/Shape_detection/Efficient_RANSAC.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;limits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Random_points_on_sphere_3&lt;Point&gt;<sp/>Point_generator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3&lt;Point&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Shape__detection_1_1Efficient__RANSAC__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Efficient_RANSAC_traits</ref></highlight></codeline>
+<codeline><highlight class="normal">&lt;<ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>,<sp/>Point_set,<sp/>Point_set::Point_map,<sp/>Point_set::Vector_map&gt;<sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Shape__detection_1_1Efficient__RANSAC" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Efficient_RANSAC&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Efficient_ransac;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Shape__detection_1_1Sphere" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Sphere&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Sphere;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Generate<sp/>points<sp/>on<sp/>a<sp/>unit<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_generator<sp/>generator(1.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>nb_pts<sp/>=<sp/>10000;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.reserve<sp/>(nb_pts);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>nb_pts;<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>point_set.insert<sp/>(*(generator<sp/>++));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>normal<sp/>property<sp/>and<sp/>estimate<sp/>normal<sp/>values</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.add_normal_map();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::jet_estimate_normals&lt;CGAL::Sequential_tag&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(point_set,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>12,<sp/></highlight><highlight class="comment">//<sp/>Number<sp/>of<sp/>neighbors</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>point_set.parameters().<sp/></highlight><highlight class="comment">//<sp/>Named<sp/>parameters<sp/>provided<sp/>by<sp/>Point_set_3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>degree_fitting(2));<sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>additional<sp/>named<sp/>parameter<sp/>specific<sp/>to<sp/>jet_estimate_normals</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Simplify<sp/>point<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgPointSetProcessing3Algorithms_1ga7757ef9b3900e42fde26f5a0ac56e20f" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::grid_simplify_point_set</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(point_set,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>0.1);<sp/></highlight><highlight class="comment">//<sp/>Size<sp/>of<sp/>grid<sp/>cell</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>point_set.parameters()<sp/>can<sp/>be<sp/>omitted<sp/>if<sp/>no<sp/>additional<sp/>named<sp/>parameter<sp/>is<sp/>needed</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::string&gt;<sp/>properties<sp/>=<sp/>point_set.properties();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Properties:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>properties.size();<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>*<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>properties[i]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Detect<sp/>sphere<sp/>with<sp/>RANSAC</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Efficient_ransac<sp/>ransac;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ransac.set_input(point_set,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>point_set.point_map(),<sp/></highlight><highlight class="comment">//<sp/>Call<sp/>built-in<sp/>property<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>point_set.normal_map());<sp/></highlight><highlight class="comment">//<sp/>Call<sp/>built-in<sp/>property<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ransac.add_shape_factory&lt;Sphere&gt;();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Efficient_ransac::Parameters<sp/>parameters;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parameters.probability<sp/>=<sp/>0.05;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parameters.min_points<sp/>=<sp/>std::size_t(point_set.size()<sp/>/<sp/>3);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parameters.epsilon<sp/>=<sp/>0.01;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parameters.cluster_epsilon<sp/>=<sp/>0.5;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>parameters.normal_threshold<sp/>=<sp/>0.9;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ransac.detect(parameters);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::shared_ptr&lt;Efficient_ransac::Shape&gt;<sp/>shape<sp/>:<sp/>ransac.shapes())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(Sphere*<sp/>sphere<sp/>=<sp/></highlight><highlight class="keyword">dynamic_cast&lt;</highlight><highlight class="normal">Sphere*</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(shape.get()))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Detected<sp/>sphere<sp/>of<sp/>center<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sphere-&gt;center()<sp/></highlight><highlight class="comment">//<sp/>Center<sp/>should<sp/>be<sp/>approx<sp/>0,<sp/>0,<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>and<sp/>of<sp/>radius<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sphere-&gt;radius()<sp/>&lt;&lt;<sp/>std::endl;<sp/></highlight><highlight class="comment">//<sp/>Radius<sp/>should<sp/>be<sp/>approx<sp/>1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Point_set_3_IO">
+<title>Input/Output</title>
+<para>The following example shows how to read a point set in the XYZ format, normalize and invert the normal vectors, and write the result in the OFF format.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Point_set_3_2point_set_read_xyz_8cpp-example" kindref="compound">Point_set_3/point_set_read_xyz.cpp</ref> <programlisting filename="Point_set_3/point_set_read_xyz.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;limits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3&lt;Point&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>fname<sp/>=<sp/>argc<sp/>&gt;<sp/>1<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/oni.pwn&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Reading<sp/>input</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgPointSetProcessing3IOXyz_1ga7d8cfbc64a9f01efcca7490caf11f763" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::IO::read_XYZ</ref>(fname,<sp/>point_set))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Can&apos;t<sp/>read<sp/>input<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(point_set.has_normal_map())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Normalization<sp/>+<sp/>inversion<sp/>of<sp/>normal<sp/>vectors</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Point_set::iterator<sp/>it<sp/>=<sp/>point_set.begin();<sp/>it<sp/>!=<sp/>point_set.end();<sp/>++<sp/>it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Vector<sp/>n<sp/>=<sp/>point_set.normal(*it);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>n<sp/>=<sp/>-<sp/>n<sp/>/<sp/>std::sqrt<sp/>(n<sp/>*<sp/>n);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>point_set.normal(*it)<sp/>=<sp/>n;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Writing<sp/>result<sp/>in<sp/>OFF<sp/>format</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgStreamSupportIoFuncsOFF_1ga9682021a1047600910151826eaa75a5b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_OFF</ref>(</highlight><highlight class="stringliteral">&quot;normalized_normals.off&quot;</highlight><highlight class="normal">,<sp/>point_set,<sp/>CGAL::parameters::stream_precision(17)))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The PLY format is the usual choice when storing an arbitrary number of additional properties of points is needed. CGAL provides a function <ref refid="group__PkgPointSet3IOPLY" kindref="compound"><computeroutput>read_PLY()</computeroutput> </ref> that allows the user to recover any PLY property wanted, provided the adapted PLY interpreter is implemented.</para>
+<para>A <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3</ref></computeroutput> object can be filled with all readable properties of a PLY input. Each PLY property is read and stored into as a property with similar name and type.</para>
+<para>For example, if the following line is found in the PLY header:</para>
+<para><blockquote><para><zwj/>property uchar red </para>
+</blockquote>Then a property named <computeroutput>red</computeroutput> and with type <computeroutput>std::uint8_t</computeroutput> (<computeroutput>boost</computeroutput> types are used because of their fixed memory size) will be instantiated in the point set and filled with the corresponding values.</para>
+<para>Points and normals are recovered as properties with specific class types (namely the template types <computeroutput>Point</computeroutput> and <computeroutput>Vector</computeroutput>). Other non-1D properties are stored with simple number types. For example, if a color is given with integer red, green and blue values, 3 integer properties <computeroutput>red</computeroutput>, <computeroutput>green</computeroutput> and <computeroutput>blue</computeroutput> will be created. A user-defined interpreter must be implemented if such properties should be stored all together (a unique property <computeroutput>color</computeroutput> of type <computeroutput>std::array</computeroutput> for example).</para>
+<para>The following example shows how to use this interpreter and how to access a specific property afterwards:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Point_set_3_2point_set_read_ply_8cpp-example" kindref="compound">Point_set_3/point_set_read_ply.cpp</ref> <programlisting filename="Point_set_3/point_set_read_ply.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;limits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3&lt;Point&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>f(argc<sp/>&gt;<sp/>1<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/example.ply&quot;</highlight><highlight class="normal">),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::ios_base::binary);<sp/></highlight><highlight class="comment">//<sp/>Mandatory<sp/>on<sp/>Windows<sp/>if<sp/>input<sp/>is<sp/>binary<sp/>PLY</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgStreamSupportIoFuncsPLY_1gae46c2df145f4328d11e1d55017d6487b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::read_PLY</ref>(f,<sp/>point_set))<sp/></highlight><highlight class="comment">//<sp/>same<sp/>as<sp/>`f<sp/>&gt;&gt;<sp/>point_set`</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Can&apos;t<sp/>read<sp/>input<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Shows<sp/>which<sp/>properties<sp/>are<sp/>defined</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::string&gt;<sp/>properties<sp/>=<sp/>point_set.properties();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Properties:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>properties.size();<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>*<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>properties[i]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Recover<sp/>&quot;label&quot;<sp/>property<sp/>of<sp/>type<sp/>int</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::optional&lt;Point_set::Property_map&lt;std::int32_t&gt;&gt;<sp/>label_prop<sp/>=<sp/>point_set.property_map&lt;std::int32_t&gt;<sp/>(</highlight><highlight class="stringliteral">&quot;label&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(label_prop.has_value())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Point<sp/>set<sp/>has<sp/>an<sp/>integer<sp/>\&quot;label\&quot;<sp/>property<sp/>with<sp/>values:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Point_set::iterator<sp/>it<sp/>=<sp/>point_set.begin();<sp/>it<sp/>!=<sp/>point_set.end();<sp/>++<sp/>it)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>*<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*label_prop)[*it]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(argc<sp/>&gt;<sp/>2<sp/>&amp;&amp;<sp/>strcmp<sp/>(argv[2],<sp/></highlight><highlight class="stringliteral">&quot;-b&quot;</highlight><highlight class="normal">)<sp/>==<sp/>0)<sp/></highlight><highlight class="comment">//<sp/>Optional<sp/>binary<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsPLY_1ga62510f84cfdb4ba91996702fc4b1d3ac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_PLY</ref>(</highlight><highlight class="stringliteral">&quot;out.ply&quot;</highlight><highlight class="normal">,<sp/>point_set,<sp/>CGAL::parameters::stream_precision(17));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="comment">//<sp/>ASCII<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgStreamSupportIoFuncsPLY_1ga62510f84cfdb4ba91996702fc4b1d3ac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::write_PLY</ref>(</highlight><highlight class="stringliteral">&quot;out.ply&quot;</highlight><highlight class="normal">,<sp/>point_set,<sp/>CGAL::parameters::stream_precision(17)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>.use_binary_mode(</highlight><highlight class="keyword">false</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Point_set_3_Avdanced">
+<title>Advanced Usage</title>
+<para>Using functions of CGAL to read files requires a slightly different behavior because internally the properties of a point are defined <emphasis>before</emphasis> this point is inserted into the point set (which is not possible with <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3</ref></computeroutput>). Although using the provided overloads presented in the previous subsection should cover most usages, we document the specific back inserters and property maps that are used internally:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Point__set__3_1ab5af3ed54a34b3ba3981c171bb2d1b14" kindref="member">CGAL::Point_set_3::index_back_inserter()</ref></computeroutput> is used as an output iterator that creates new points.</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Point__set__3_1a2c1251f86561fbeaf604cc9d094c06da" kindref="member">CGAL::Point_set_3::point_push_map()</ref></computeroutput> is a property map for setting the coordinates of a point. It will first insert the point create in the structure if it has not been created first (by <computeroutput>index_back_inserter()</computeroutput> for example).</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Point__set__3_1a455cf274a28beddffbdb5d010f39b76a" kindref="member">CGAL::Point_set_3::normal_push_map()</ref></computeroutput> works similarly but for normal vectors.</para>
+</listitem></itemizedlist>
+</para>
+<para>Such <emphasis>push property maps</emphasis> are also available for other user-defined properties (see <computeroutput><ref refid="classCGAL_1_1Point__set__3_1a777d4074c9e4dc46ede24372c5f0e9bc" kindref="member">CGAL::Point_set_3::push_property_map()</ref></computeroutput>).</para>
+<para>The following example shows how to read OFF point without using the overload provided for <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3</ref></computeroutput>:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Point_set_3_2point_set_advanced_8cpp-example" kindref="compound">Point_set_3/point_set_advanced.cpp</ref> <programlisting filename="Point_set_3/point_set_advanced.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/read_points.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;limits&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3&lt;Point&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>argc<sp/>&gt;<sp/>1<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/camel.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>point_set.add_normal_map();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Reading<sp/>input<sp/>in<sp/>OFF<sp/>format</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgPointSetProcessing3IO_1ga8fac388459c5cf96bf11ce3b4e0459c1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::IO::read_points</ref>(filename,<sp/>point_set.index_back_inserter(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map(point_set.point_push_map())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>.normal_map(point_set.normal_push_map())))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Can&apos;t<sp/>read<sp/>input<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Point_set_3_Draw">
+<title>Draw a Point Set</title>
+<para>A 3D point set can be visualized by calling the <ref refid="group__PkgDrawPointSet3D" kindref="compound">CGAL::draw&lt;PS&gt;() </ref> function as shown in the following example. This function opens a new window showing the given point set. A call to this function is blocking, that is the program continues as soon as the user closes the window.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Point_set_3_2draw_point_set_3_8cpp-example" kindref="compound">Point_set_3/draw_point_set_3.cpp</ref> <programlisting filename="Point_set_3/draw_point_set_3.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Vector_3</ref><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3&lt;Point&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>argc<sp/>&gt;<sp/>1<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/oni.pwn&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>point_set;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgPointSet3IO_1gade7dbb6c22e93441b0868c214e2858e6" kindref="member">CGAL::IO::read_point_set</ref>(filename,<sp/>point_set))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Can&apos;t<sp/>read<sp/>input<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>filename<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawPointSet3D_1ga595e86e94d2a4ae58697504c80017d5a" kindref="member">CGAL::draw</ref>(point_set);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>This function requires <computeroutput>CGAL_Qt6</computeroutput>, and is only available if the macro <computeroutput>CGAL_USE_BASIC_VIEWER</computeroutput> is defined. Linking with the cmake target <computeroutput>CGAL::CGAL_Basic_viewer</computeroutput> will link with <computeroutput>CGAL_Qt6</computeroutput> and add the definition <computeroutput>CGAL_USE_BASIC_VIEWER</computeroutput>.</para>
+<para><anchor id="index_1fig__fig_draw_point_set"/> <image type="html" name="draw_point_set.png"></image>
+ <image type="latex" name="draw_point_set.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__fig_draw_point_set" kindref="member">fig__fig_draw_point_set</ref> Result of the run of the draw_point_set_3 program. A window shows the 3D points and allows to navigate through the 3D scene. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Point_set_3_History">
+<title>History</title>
+<para>This package has been created to fill the need for a practical data structure that handles points with a user-defined set of properties. A property mechanism was already implemented in the <ref refid="index_1Chapter_3D_Surface_mesh" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface Mesh</ref> package: all the classes dedicated to the management of properties were extracted so that they can be used in this package. <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh</ref>&lt;Point&gt;</computeroutput> and <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound">CGAL::Point_set_3</ref>&lt;Point,Vector&gt;</computeroutput> now follow a similar API for property management. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Point_set_3.txt"/>
+  </compounddef>
+</doxygen>

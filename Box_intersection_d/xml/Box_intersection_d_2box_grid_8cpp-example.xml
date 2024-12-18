@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Box_intersection_d_2box_grid_8cpp-example" kind="example">
+    <compoundname>Box_intersection_d/box_grid.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Box_intersection_d/box_grid.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/box_intersection_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Box__intersection__d_1_1Box__d" kindref="compound">CGAL::Box_intersection_d::Box_d&lt;int,2&gt;</ref><sp/>Box;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>coordinates<sp/>for<sp/>9<sp/>boxes<sp/>of<sp/>a<sp/>grid</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>p[9*4]<sp/><sp/><sp/>=<sp/>{<sp/>0,0,1,1,<sp/><sp/>1,0,2,1,<sp/><sp/>2,0,3,1,<sp/></highlight><highlight class="comment">//<sp/>lower</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>0,1,1,2,<sp/><sp/>1,1,2,2,<sp/><sp/>2,1,3,2,<sp/></highlight><highlight class="comment">//<sp/>middle</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>0,2,1,3,<sp/><sp/>1,2,2,3,<sp/><sp/>2,2,3,3};</highlight><highlight class="comment">//<sp/>upper</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>9<sp/>boxes</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Box<sp/>boxes[9]<sp/>=<sp/>{<sp/>Box(<sp/>p,<sp/><sp/><sp/><sp/>p+<sp/>2),<sp/><sp/>Box(<sp/>p+<sp/>4,<sp/>p+<sp/>6),<sp/><sp/>Box(<sp/>p+<sp/>8,<sp/>p+10),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Box(<sp/>p+12,<sp/>p+14),<sp/><sp/>Box(<sp/>p+16,<sp/>p+18),<sp/><sp/>Box(<sp/>p+20,<sp/>p+22),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Box(<sp/>p+24,<sp/>p+26),<sp/><sp/>Box(<sp/>p+28,<sp/>p+30),<sp/><sp/>Box(<sp/>p+32,<sp/>p+34)};</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>2<sp/>selected<sp/>boxes<sp/>as<sp/>query;<sp/>center<sp/>and<sp/>upper<sp/>right</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Box<sp/>query[2]<sp/>=<sp/>{<sp/>Box(<sp/>p+16,<sp/>p+18),<sp/><sp/>Box(<sp/>p+32,<sp/>p+34)};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>callback<sp/>function<sp/>object<sp/>writing<sp/>results<sp/>to<sp/>an<sp/>output<sp/>iterator</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>OutputIterator&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Report<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">OutputIterator</ref><sp/>it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Report(<sp/><ref refid="classOutputIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">OutputIterator</ref><sp/>i)<sp/>:<sp/>it(i)<sp/>{}<sp/></highlight><highlight class="comment">//<sp/>store<sp/>iterator<sp/>in<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>We<sp/>write<sp/>the<sp/>id-number<sp/>of<sp/>box<sp/>a<sp/>to<sp/>the<sp/>output<sp/>iterator<sp/>assuming</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>that<sp/>box<sp/>b<sp/>(the<sp/>query<sp/>box)<sp/>is<sp/>not<sp/>interesting<sp/>in<sp/>the<sp/>result.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Box&amp;<sp/>a,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Box&amp;)<sp/>{<sp/>*it++<sp/>=<sp/>a.id();<sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Iter&gt;<sp/></highlight><highlight class="comment">//<sp/>helper<sp/>function<sp/>to<sp/>create<sp/>the<sp/>function<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Report&lt;Iter&gt;<sp/>report(<sp/>Iter<sp/>it)<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Report&lt;Iter&gt;(it);<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>run<sp/>the<sp/>intersection<sp/>algorithm<sp/>and<sp/>store<sp/>results<sp/>in<sp/>a<sp/>vector</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;std::size_t&gt;<sp/>result;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgBoxIntersectionD__box__intersection__d_1ga7ac96673d25a437c98e8abb864a3362d" kindref="member">CGAL::box_intersection_d</ref>(<sp/>boxes,<sp/>boxes+9,<sp/>query,<sp/>query+2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>report(<sp/>std::back_inserter(<sp/>result)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort,<sp/>check,<sp/>and<sp/>show<sp/>result</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::sort(<sp/>result.begin(),<sp/>result.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::size_t<sp/>check1[13]<sp/>=<sp/>{0,1,2,3,4,4,5,5,6,7,7,8,8};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(result.size()<sp/>==<sp/>13<sp/>&amp;&amp;<sp/>std::equal(check1,check1+13,result.begin()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::copy(<sp/>result.begin(),<sp/>result.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::ostream_iterator&lt;std::size_t&gt;(<sp/>std::cout,<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>run<sp/>it<sp/>again<sp/>but<sp/>for<sp/>different<sp/>cutoff<sp/>value<sp/>and<sp/>half-open<sp/>boxes</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>result.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgBoxIntersectionD__box__intersection__d_1ga7ac96673d25a437c98e8abb864a3362d" kindref="member">CGAL::box_intersection_d</ref>(<sp/>boxes,<sp/>boxes+9,<sp/>query,<sp/>query+2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>report(<sp/>std::back_inserter(<sp/>result)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::ptrdiff_t(1),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgBoxIntersectionDEnums_1ggac1b7703e33d0fe5d9d484493189c9cd8ae829505cc850e61a5190ade8ad6098b5" kindref="member">CGAL::Box_intersection_d::HALF_OPEN</ref>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>sort,<sp/>check,<sp/>and<sp/>show<sp/>result</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::sort(<sp/>result.begin(),<sp/>result.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::size_t<sp/>check2[2]<sp/><sp/>=<sp/>{4,8};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(result.size()<sp/>==<sp/>2<sp/>&amp;&amp;<sp/>std::equal(check2,<sp/>check2+2,<sp/>result.begin()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::copy(<sp/>result.begin(),<sp/>result.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::ostream_iterator&lt;std::size_t&gt;(<sp/>std::cout,<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

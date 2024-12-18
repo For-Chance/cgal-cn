@@ -1,0 +1,313 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Jet_fitting_3_2Mesh_estimation_8cpp-example" kind="example">
+    <compoundname>Jet_fitting_3/Mesh_estimation.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Jet_fitting_3/Mesh_estimation.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Monge_via_jet_fitting.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/program_options.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">po<sp/>=<sp/>boost::program_options;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal"><ref refid="namespacestd" kindref="compound">std</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;PolyhedralSurf.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;PolyhedralSurf_operations.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;PolyhedralSurf_rings.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//Kernel<sp/>of<sp/>the<sp/>PolyhedralSurf</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DFT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;DFT&gt;</ref><sp/><sp/>Data_Kernel;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Data_Kernel::Point_3<sp/><sp/>DPoint;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Data_Kernel::Vector_3<sp/>DVector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//HDS</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Vertex<sp/>Vertex;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Halfedge_handle<sp/>Halfedge_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Halfedge<sp/>Halfedge;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Vertex_iterator<sp/>Vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Facet_handle<sp/>Facet_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PolyhedralSurf::Facet<sp/>Facet;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Hedge_cmp{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>operator()(Halfedge_handle<sp/>a,<sp/><sp/>Halfedge_handle<sp/>b)</highlight><highlight class="keyword"><sp/>const</highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>&amp;*a<sp/>&lt;<sp/>&amp;*b;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Facet_cmp{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>operator()(Facet_handle<sp/>a,<sp/>Facet_handle<sp/>b)</highlight><highlight class="keyword"><sp/>const</highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>&amp;*a<sp/>&lt;<sp/>&amp;*b;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//Vertex<sp/>property<sp/>map,<sp/>with<sp/>std::map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;Vertex*,<sp/>int&gt;<sp/>Vertex2int_map_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;<sp/>Vertex2int_map_type<sp/>&gt;<sp/>Vertex_PM_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>T_PolyhedralSurf_rings&lt;PolyhedralSurf,<sp/>Vertex_PM_type<sp/>&gt;<sp/>Poly_rings;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//Hedge<sp/>property<sp/>map,<sp/>with<sp/>enriched<sp/>Halfedge<sp/>with<sp/>its<sp/>length</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>typedef<sp/>HEdge_PM&lt;PolyhedralSurf&gt;<sp/>Hedge_PM_type;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>typedef<sp/>T_PolyhedralSurf_hedge_ops&lt;PolyhedralSurf,<sp/>Hedge_PM_type&gt;<sp/>Poly_hedge_ops;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//Hedge<sp/>property<sp/>map,<sp/>with<sp/>std::map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;Halfedge_handle,<sp/>double,<sp/>Hedge_cmp&gt;<sp/>Hedge2double_map_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Hedge2double_map_type&gt;<sp/>Hedge_PM_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>T_PolyhedralSurf_hedge_ops&lt;PolyhedralSurf,<sp/>Hedge_PM_type&gt;<sp/>Poly_hedge_ops;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>//Facet<sp/>property<sp/>map<sp/>with<sp/>enriched<sp/>Facet<sp/>with<sp/>its<sp/>normal</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>typedef<sp/>Facet_PM&lt;PolyhedralSurf&gt;<sp/>Facet_PM_type;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>typedef<sp/>T_PolyhedralSurf_facet_ops&lt;PolyhedralSurf,<sp/>Facet_PM_type&gt;<sp/>Poly_facet_ops;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//Facet<sp/>property<sp/>map,<sp/>with<sp/>std::map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;Facet_handle,<sp/>Vector_3,<sp/>Facet_cmp&gt;<sp/>Facet2normal_map_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Facet2normal_map_type&gt;<sp/>Facet_PM_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>T_PolyhedralSurf_facet_ops&lt;PolyhedralSurf,<sp/>Facet_PM_type&gt;<sp/>Poly_facet_ops;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>LFT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;LFT&gt;</ref><sp/><sp/><sp/><sp/><sp/>Local_Kernel;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Monge__via__jet__fitting" kindref="compound">CGAL::Monge_via_jet_fitting&lt;Data_Kernel&gt;</ref><sp/>My_Monge_via_jet_fitting;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>My_Monge_via_jet_fitting::Monge_form<sp/>My_Monge_form;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>default<sp/>parameter<sp/>values<sp/>and<sp/>global<sp/>variables</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>d_fitting<sp/>=<sp/>2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>d_monge<sp/>=<sp/>2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nb_rings<sp/>=<sp/>0;</highlight><highlight class="comment">//seek<sp/>min<sp/>#<sp/>of<sp/>rings<sp/>to<sp/>get<sp/>the<sp/>required<sp/>#pts</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nb_points_to_use<sp/>=<sp/>0;</highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>verbose<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>min_nb_points<sp/>=<sp/>(d_fitting<sp/>+<sp/>1)<sp/>*<sp/>(d_fitting<sp/>+<sp/>2)<sp/>/<sp/>2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//gather<sp/>points<sp/>around<sp/>the<sp/>vertex<sp/>v<sp/>using<sp/>rings<sp/>on<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//polyhedralsurf.<sp/>the<sp/>collection<sp/>of<sp/>points<sp/>resorts<sp/>to<sp/>3<sp/>alternatives:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>1.<sp/>the<sp/>exact<sp/>number<sp/>of<sp/>points<sp/>to<sp/>be<sp/>used</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>2.<sp/>the<sp/>exact<sp/>number<sp/>of<sp/>rings<sp/>to<sp/>be<sp/>used</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>3.<sp/>nothing<sp/>is<sp/>specified</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>gather_fitting_points(Vertex*<sp/>v,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::vector&lt;DPoint&gt;<sp/>&amp;in_points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_PM_type&amp;<sp/>vpm)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//container<sp/>to<sp/>collect<sp/>vertices<sp/>of<sp/>v<sp/>on<sp/>the<sp/>PolyhedralSurf</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Vertex*&gt;<sp/>gathered;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//initialize</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>in_points.clear();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//OPTION<sp/>-p<sp/>nb_points_to_use,<sp/>with<sp/>nb_points_to_use<sp/>!=<sp/>0.<sp/>Collect</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//enough<sp/>rings<sp/>and<sp/>discard<sp/>some<sp/>points<sp/>of<sp/>the<sp/>last<sp/>collected<sp/>ring<sp/>to</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//get<sp/>the<sp/>exact<sp/>&quot;nb_points_to_use&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>nb_points_to_use<sp/>!=<sp/>0<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Poly_rings::collect_enough_rings(v,<sp/>nb_points_to_use,<sp/>gathered,<sp/>vpm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>gathered.size()<sp/>&gt;<sp/>nb_points_to_use<sp/>)<sp/>gathered.resize(nb_points_to_use);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{<sp/></highlight><highlight class="comment">//<sp/>nb_points_to_use=0,<sp/>this<sp/>is<sp/>the<sp/>default<sp/>and<sp/>the<sp/>option<sp/>-p<sp/>is<sp/>not<sp/>considered;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>then<sp/>option<sp/>-a<sp/>nb_rings<sp/>is<sp/>checked.<sp/>If<sp/>nb_rings=0,<sp/>collect</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>enough<sp/>rings<sp/>to<sp/>get<sp/>the<sp/>min_nb_points<sp/>required<sp/>for<sp/>the<sp/>fitting</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>else<sp/>collect<sp/>the<sp/>nb_rings<sp/>required</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>nb_rings<sp/>==<sp/>0<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Poly_rings::collect_enough_rings(v,<sp/>min_nb_points,<sp/>gathered,<sp/>vpm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>Poly_rings::collect_i_rings(v,<sp/>nb_rings,<sp/>gathered,<sp/>vpm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//store<sp/>the<sp/>gathered<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Vertex*&gt;::iterator</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>itb<sp/>=<sp/>gathered.begin(),<sp/>ite<sp/>=<sp/>gathered.end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgHandlesAndCirculatorsFunctions_1gae4f6b9dc3b933f01f2d0275a7bf8b308" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">CGAL_For_all</ref>(itb,ite)<sp/>in_points.push_back((*itb)-&gt;point());</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="preprocessor">#if<sp/>defined(CGAL_USE_BOOST_PROGRAM_OPTIONS)<sp/>&amp;&amp;<sp/>!<sp/>defined(DONT_USE_BOOST_PROGRAM_OPTIONS)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>if_name_string;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>if_name;<sp/></highlight><highlight class="comment">//input<sp/>file<sp/>name</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>w_if_name;<sp/><sp/></highlight><highlight class="comment">//as<sp/>above,<sp/>but<sp/>/<sp/>replaced<sp/>by<sp/>_</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>res4openGL_fname;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">string</highlight><highlight class="normal"><sp/>verbose_fname;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out_4ogl,<sp/>out_verbose;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">try</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>defined(CGAL_USE_BOOST_PROGRAM_OPTIONS)<sp/>&amp;&amp;<sp/>!<sp/>defined(DONT_USE_BOOST_PROGRAM_OPTIONS)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>po::options_description<sp/>desc(</highlight><highlight class="stringliteral">&quot;Allowed<sp/>options&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>desc.add_options()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="stringliteral">&quot;help,h&quot;</highlight><highlight class="normal">,<sp/></highlight><highlight class="stringliteral">&quot;produce<sp/>help<sp/>message.&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="stringliteral">&quot;input-file,f&quot;</highlight><highlight class="normal">,<sp/>po::value&lt;string&gt;(&amp;if_name_string)-&gt;default_value(<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/ellipe0.003.off&quot;</highlight><highlight class="normal">)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;name<sp/>of<sp/>the<sp/>input<sp/>off<sp/>file&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="stringliteral">&quot;degree-jet,d&quot;</highlight><highlight class="normal">,<sp/>po::value&lt;unsigned<sp/>int&gt;(&amp;d_fitting)-&gt;default_value(2),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;degree<sp/>of<sp/>the<sp/>jet,<sp/>1<sp/>&lt;=<sp/>degre-jet<sp/>&lt;=<sp/>4&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="stringliteral">&quot;degree-monge,m&quot;</highlight><highlight class="normal">,<sp/>po::value&lt;unsigned<sp/>int&gt;(&amp;d_monge)-&gt;default_value(2),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;degree<sp/>of<sp/>the<sp/>Monge<sp/>rep,<sp/>1<sp/>&lt;=<sp/>degree-monge<sp/>&lt;=<sp/>degree-jet&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="stringliteral">&quot;nb-rings,a&quot;</highlight><highlight class="normal">,<sp/>po::value&lt;unsigned<sp/>int&gt;(&amp;nb_rings)-&gt;default_value(0),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;number<sp/>of<sp/>rings<sp/>to<sp/>collect<sp/>neighbors.<sp/>0<sp/>means<sp/>collect<sp/>enough<sp/>rings<sp/>to<sp/>make<sp/>appro<sp/>possible<sp/>a&gt;=1<sp/>fixes<sp/>the<sp/>nb<sp/>of<sp/>rings<sp/>to<sp/>be<sp/>collected&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="stringliteral">&quot;nb-points,p&quot;</highlight><highlight class="normal">,<sp/>po::value&lt;unsigned<sp/>int&gt;(&amp;nb_points_to_use)-&gt;default_value(0),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;number<sp/>of<sp/>neighbors<sp/>to<sp/>use.<sp/><sp/>0<sp/>means<sp/>this<sp/>option<sp/>is<sp/>not<sp/>considered,<sp/>this<sp/>is<sp/>the<sp/>default<sp/>p&gt;=1<sp/>fixes<sp/>the<sp/>nb<sp/>of<sp/>points<sp/>to<sp/>be<sp/>used&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="stringliteral">&quot;verbose,v&quot;</highlight><highlight class="normal">,<sp/>po::value&lt;bool&gt;(&amp;verbose)-&gt;default_value(</highlight><highlight class="keyword">false</highlight><highlight class="normal">),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;verbose<sp/>output<sp/>on<sp/>text<sp/>file&quot;</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>po::variables_map<sp/>vm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>po::store(po::parse_command_line(argc,<sp/>argv,<sp/>desc),<sp/>vm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>po::notify(vm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(vm.count(</highlight><highlight class="stringliteral">&quot;help&quot;</highlight><highlight class="normal">))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>cout<sp/>&lt;&lt;<sp/>desc<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Command-line<sp/>options<sp/>require<sp/>Boost.ProgramOptions&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>if_name_string<sp/>=<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/ellipe0.003.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d_fitting<sp/>=<sp/>2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d_monge<sp/>=<sp/>2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>nb_rings<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>nb_points_to_use<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>verbose<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal">(exception&amp;<sp/>e)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;error:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>e.what()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">catch</highlight><highlight class="normal">(...)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Exception<sp/>of<sp/>unknown<sp/>type!\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//modify<sp/>global<sp/>variables<sp/>which<sp/>are<sp/>fct<sp/>of<sp/>options:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>min_nb_points<sp/>=<sp/>(d_fitting<sp/>+<sp/>1)<sp/>*<sp/>(d_fitting<sp/>+<sp/>2)<sp/>/<sp/>2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(nb_points_to_use<sp/>&lt;<sp/>min_nb_points<sp/>&amp;&amp;<sp/>nb_points_to_use<sp/>!=<sp/>0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>nb<sp/>of<sp/>points<sp/>asked<sp/>is<sp/>not<sp/>enough<sp/>to<sp/>perform<sp/>the<sp/>fitting&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;<sp/>exit(0);}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//prepare<sp/>output<sp/>file<sp/>names</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//--------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;if_name_string&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>if_name_string<sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>if_name<sp/>=<sp/>if_name_string;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>w_if_name<sp/>=<sp/>if_name;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i&lt;w_if_name.size();<sp/>i++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(w_if_name[i]<sp/>==<sp/></highlight><highlight class="charliteral">&apos;/&apos;</highlight><highlight class="normal">)<sp/>w_if_name[i]=</highlight><highlight class="charliteral">&apos;_&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cerr<sp/>&lt;&lt;<sp/>if_name<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>cerr<sp/>&lt;&lt;<sp/>w_if_name<sp/>&lt;&lt;<sp/></highlight><highlight class="charliteral">&apos;\n&apos;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>res4openGL_fname<sp/>=<sp/>w_if_name<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;.4ogl.txt&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal">std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;res4openGL_fname&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>res4openGL_fname<sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out_4ogl.open(res4openGL_fname.c_str(),<sp/>std::ios::out);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(out_4ogl.good());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//if<sp/>verbose<sp/>only...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(verbose){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>verbose_fname<sp/><sp/>=<sp/>w_if_name<sp/>+<sp/></highlight><highlight class="stringliteral">&quot;.verb.txt&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out_verbose.open(verbose_fname.c_str(),<sp/>std::ios::out);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(out_verbose.good());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga2cbb865dd83eedd780f4a452635b1d28" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::IO::set_pretty_mode</ref>(out_verbose);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nb_vertices_considered<sp/>=<sp/>0;</highlight><highlight class="comment">//count<sp/>vertices<sp/>for<sp/>verbose</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//load<sp/>the<sp/>model<sp/>from<sp/>&lt;mesh.off&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//------------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolyhedralSurf<sp/>P;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>stream(if_name.c_str());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>stream<sp/>&gt;&gt;<sp/>P;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;loadMesh...<sp/><sp/>&quot;</highlight><highlight class="normal">&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Polysurf<sp/>with<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>P.size_of_vertices()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices<sp/>and<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>P.size_of_facets()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>facets.<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(verbose)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out_verbose<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Polysurf<sp/>with<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>P.size_of_vertices()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices<sp/>and<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>P.size_of_facets()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>facets.<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//exit<sp/>if<sp/>not<sp/>enough<sp/>points<sp/>in<sp/>the<sp/>model</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(min_nb_points<sp/>&gt;<sp/>P.size_of_vertices())<sp/><sp/><sp/><sp/>exit(0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//create<sp/>property<sp/>maps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//-----------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Vertex,<sp/>using<sp/>a<sp/>std::map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex2int_map_type<sp/>vertex2props;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_PM_type<sp/>vpm(vertex2props);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Hedge,<sp/>with<sp/>enriched<sp/>hedge</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//HEdgePM_type<sp/>hepm<sp/>=<sp/>get_hepm(boost::edge_weight_t(),<sp/>P);</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Hedge,<sp/>using<sp/>a<sp/>std::map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Hedge2double_map_type<sp/>hedge2props;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Hedge_PM_type<sp/>hepm(hedge2props);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Facet<sp/>PM,<sp/>with<sp/>enriched<sp/>Facet</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//FacetPM_type<sp/>fpm<sp/>=<sp/>get_fpm(boost::vertex_attribute_t(),<sp/>P);</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//Facet<sp/>PM,<sp/>with<sp/>std::map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Facet2normal_map_type<sp/>facet2props;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Facet_PM_type<sp/>fpm(facet2props);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//initialize<sp/>Polyhedral<sp/>data<sp/>:<sp/>length<sp/>of<sp/>edges,<sp/>normal<sp/>of<sp/>facets</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Poly_hedge_ops::compute_edges_length(P,<sp/>hepm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Poly_facet_ops::compute_facets_normals(P,<sp/>fpm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//MAIN<sp/>LOOP:<sp/>perform<sp/>calculation<sp/>for<sp/>each<sp/>vertex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//----------------------------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;DPoint&gt;<sp/>in_points;<sp/><sp/></highlight><highlight class="comment">//container<sp/>for<sp/>data<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_iterator<sp/>vitb,<sp/>vite;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//initialize<sp/>the<sp/>tag<sp/>of<sp/>all<sp/>vertices<sp/>to<sp/>-1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vitb<sp/>=<sp/>P.vertices_begin();<sp/>vite<sp/>=<sp/>P.vertices_end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgHandlesAndCirculatorsFunctions_1gae4f6b9dc3b933f01f2d0275a7bf8b308" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">CGAL_For_all</ref>(vitb,vite)<sp/>put(vpm,<sp/>&amp;(*vitb),<sp/>-1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vitb<sp/>=<sp/>P.vertices_begin();<sp/>vite<sp/>=<sp/>P.vertices_end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(;<sp/>vitb<sp/>!=<sp/>vite;<sp/>vitb++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//initialize</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vertex*<sp/>v<sp/>=<sp/>&amp;(*vitb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>in_points.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>My_Monge_form<sp/>monge_form;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//gather<sp/>points<sp/>around<sp/>the<sp/>vertex<sp/>using<sp/>rings</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>gather_fitting_points(v,<sp/>in_points,<sp/>vpm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//skip<sp/>if<sp/>the<sp/>nb<sp/>of<sp/>points<sp/>is<sp/>to<sp/>small</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>in_points.size()<sp/>&lt;<sp/>min_nb_points<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;not<sp/>enough<sp/>pts<sp/>for<sp/>fitting<sp/>this<sp/>vertex&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>in_points.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">continue</highlight><highlight class="normal">;}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>perform<sp/>the<sp/>fitting</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>My_Monge_via_jet_fitting<sp/>monge_fit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>monge_form<sp/>=<sp/>monge_fit(in_points.begin(),<sp/>in_points.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>d_fitting,<sp/>d_monge);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//switch<sp/>min-max<sp/>ppal<sp/>curv/dir<sp/>wrt<sp/>the<sp/>mesh<sp/>orientation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>DVector<sp/>normal_mesh<sp/>=<sp/>Poly_facet_ops::compute_vertex_average_unit_normal(v,<sp/>fpm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>monge_form.comply_wrt_given_normal(normal_mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//OpenGL<sp/>output.<sp/>Scaling<sp/>for<sp/>ppal<sp/>dir,<sp/>may<sp/>be<sp/>optimized<sp/>with<sp/>a</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//global<sp/>mean<sp/>edges<sp/>length<sp/>computed<sp/>only<sp/>once<sp/>on<sp/>all<sp/>edges<sp/>of<sp/>P</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>DFT<sp/>scale_ppal_dir<sp/>=<sp/>Poly_hedge_ops::compute_mean_edges_length_around_vertex(v,<sp/>hepm)/2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out_4ogl<sp/>&lt;&lt;<sp/>v-&gt;point()<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>monge_form.dump_4ogl(out_4ogl,<sp/>scale_ppal_dir);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//verbose<sp/>txt<sp/>output</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(verbose)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::vector&lt;DPoint&gt;::iterator<sp/>itbp<sp/>=<sp/>in_points.begin(),<sp/>itep<sp/>=<sp/>in_points.end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>out_verbose<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;in_points<sp/>list<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(;itbp!=itep;itbp++)<sp/>out_verbose<sp/>&lt;&lt;<sp/>*itbp<sp/>&lt;&lt;<sp/>std::endl<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>out_verbose<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;---<sp/>vertex<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><sp/>++nb_vertices_considered</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>v-&gt;point()<sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;number<sp/>of<sp/>points<sp/>used<sp/>:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>in_points.size()<sp/>&lt;&lt;<sp/>std::endl</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>;</highlight><highlight class="comment">//<sp/>&lt;&lt;<sp/>monge_form;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="comment">//all<sp/>vertices<sp/>processed</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//cleanup<sp/>filenames</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out_4ogl.close();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(verbose)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>out_verbose.close();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

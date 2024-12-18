@@ -1,0 +1,180 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_Placement_of_Streamlines"/><anchor id="index_1chapterStream_lines_2"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="author"><para>Abdelkrim Mebarki</para>
+</simplesect>
+This chapter describes the CGAL 2D streamline placement package. Basic definitions and notions are given in Section <ref refid="index_1Section_2D_Streamlines_Definitions" kindref="member">Definitions</ref>. Section <ref refid="index_1Section_2D_Streamlines_Fundamental_notions" kindref="member">Fundamental Notions</ref> gives a description of the integration process. Section <ref refid="index_1Section_2D_Streamlines_Strategy" kindref="member">Farthest Point Seeding Strategy</ref> provides a brief description of the algorithm. Section <ref refid="index_1Section_2D_Streamlines_Implementation" kindref="member">Implementation</ref> presents the implementation of the package, and Section <ref refid="index_1Section_2D_Streamlines_Example" kindref="member">Examples</ref> details two example placements.</para>
+<para><anchor id="index_1fig__illustration"/> <image type="html" name="1.png"></image>
+ <image type="latex" name="1.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__illustration" kindref="member">fig__illustration</ref> The core idea of the algorithm is to integrate the streamlines from the center of the biggest empty cavities in the domain (left). A Delaunay triangulation of all the sample points is used to model the streamlines and the spaces within the domain (middle). A final result is shown (right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect1 id="index_1Section_2D_Streamlines_Definitions">
+<title>Definitions</title>
+<para>In physics, a <emphasis>field</emphasis> is an assignment of a quantity to every point in space. For example, a gravitational field assigns a gravitational potential to each point in space.</para>
+<para>Vector and direction fields are commonly used for modeling physical phenomena, where a direction and magnitude, namely a vector is assigned to each point inside a domain (such as the magnitude and direction of the force at each point in a magnetic field).</para>
+<para>Streamlines are important tools for visualizing flow fields. A streamline* is a curve everywhere tangent to the field. In practice, a streamline is often represented as a polyline (series of points) iteratively elongated by bidirectional numerical integration started from a <emphasis>seed point</emphasis>, until it comes close to another streamline (according to a specified distance called <emphasis>the separating distance</emphasis>), hits the domain boundary, reaches a critical point or generates a closed path.</para>
+<para>A <emphasis>valid</emphasis> placement of streamlines consists of saturating the domain with a set of tangential streamlines in accordance with a specified <emphasis>density</emphasis>, determined by the <emphasis>separating distance</emphasis> between the streamlines.</para>
+</sect1>
+<sect1 id="index_1Section_2D_Streamlines_Fundamental_notions">
+<title>Fundamental Notions</title>
+<para>A streamline can be considered as the path traced by an imaginary massless particle dropped into a steady fluid flow described by the field. The construction of this path consists in the solving an ordinary differential equation for successive time intervals. In this way, we obtain a series of points <formula id="0">$ p_k, 0&lt;k&lt;n$</formula> which allow visualizing the streamline. The differential equation is defined as follows : <formula id="1">\[ \frac{dp}{dt} = v(p(t)), \ \ \ \ \ \ p(0) = p_0 \]</formula> where <computeroutput>p(t)</computeroutput> is the position of the particle at time <computeroutput>t</computeroutput>, <computeroutput>v</computeroutput> is a function which assigns a vector value at each point in the domain (possibly by interpolation), and <formula id="2">$ p_0$</formula> is the initial position. The position after a given interval <formula id="3">$ \Delta t$</formula> is given by : <formula id="4">\[ p(t + \Delta t) = p(t) +
+\int_t^{t+\Delta t} v(p(t)) dt \]</formula></para>
+<para>Several numeric methods have been proposed to solve this equation. In this package, the Euler, and the Second Order Runge-Kutta algorithm are implemented.</para>
+<sect2 id="index_1Stream_lines_2EulerIntegrator">
+<title>Euler Integrator</title>
+<para><anchor id="index_1fig__euler_fig"/> <image type="html" name="euler_integrator.png"></image>
+ <image type="latex" name="euler_integrator.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__euler_fig" kindref="member">fig__euler_fig</ref> Euler integrator. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>This algorithm approximates the point computation by this formula <formula id="5">\[ p_{k+1} = p_k + hv(p_k) \]</formula> where <computeroutput>h</computeroutput> specifies the integration step* (see <ref refid="index_1fig__euler_fig" kindref="member">fig__euler_fig</ref>). The integration can be done forward (resp. backward) by specifying a positive (resp. negative) integration step <computeroutput>h</computeroutput>. The streamline is then constructed by successive integration from a seed point both forward and backward.</para>
+</sect2>
+<sect2 id="index_1Stream_lines_2SecondOrderRungeKuttaIntegrator">
+<title>Second Order Runge-Kutta Integrator</title>
+<para><anchor id="index_1fig__runge_kutta_fig"/> <image type="html" name="runge_kutta_integrator.png"></image>
+ <image type="latex" name="runge_kutta_integrator.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__runge_kutta_fig" kindref="member">fig__runge_kutta_fig</ref> Runge-Kutta second order integrator (The empty circle represents the intermediate point, and the gray disk represents the Euler integrated point). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>This method introduces an intermediate point <formula id="6">$ p&apos;_k$</formula> between <formula id="7">$ p_k$</formula> and <formula id="8">$ p_{k+1}$</formula> to increase the precision of the computation (see <ref refid="index_1fig__runge_kutta_fig" kindref="member">fig__runge_kutta_fig</ref>), where:</para>
+<para><formula id="9">\[
+\begin{array}{ccccc}
+p&apos;_k &amp; = &amp; p_k &amp; + &amp; \frac{1}{2}hv(p_k) \\
+p_{k+1} &amp; = &amp; p_k &amp; + &amp; hv(p&apos;_k) \\
+\end{array}
+\]</formula></para>
+<para>See <ref refid="citelist_1CITEREF_cgal:ptvf-nrcpp-02" kindref="member">[2]</ref> for further details about numerical integration.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_2D_Streamlines_Strategy">
+<title>Farthest Point Seeding Strategy</title>
+<para>The algorithm implemented in this package <ref refid="citelist_1CITEREF_cgal:mad-fpsep-05" kindref="member">[1]</ref> consists of placing one streamline at a time by numerical integration starting farthest away from all previously placed streamlines.</para>
+<para>The input of our algorithm is given by (i) a flow field, (ii) a <emphasis>density</emphasis> specified either globally, by the inverse of the ideal spacing distance, or locally by a density field, and (iii) a <emphasis>saturation</emphasis> ratio over the desired spacing required to trigger the seeding of a new streamline.</para>
+<para>The input flow field is given by a discrete set of vectors or directions sampled within a domain, associated with an interpolation scheme (<emphasis>e.g.</emphasis> bilinear interpolation over a regular grid, or natural neighbor interpolation over an irregular point set to allow for an evaluation at each point coordinate within the domain).</para>
+<para>The <emphasis>output</emphasis> is a streamline placement, represented as a list of streamlines. The core idea of our algorithm consists of placing one streamline at a time by numerical integration seeded at the farthest point from all previously placed streamlines.</para>
+<para>The streamlines are approximated by polylines, whose points are inserted to a 2D Delaunay triangulation (see <ref refid="index_1fig__illustration" kindref="member">fig__illustration</ref>). The empty circumscribed circles of the Delaunay triangles provide us with a good approximation of the cavities in the domain.</para>
+<para>After each streamline integration, all incident triangles whose circumcircle diameter is larger (within the saturation ratio) than the desired spacing distance are pushed to a priority queue sorted by the triangle circumcircle diameter. To start each new streamline integration, the triangle with largest circumcircle diameter (and hence the biggest cavity) is popped out of the queue. We first test if it is still a valid triangle of the triangulation, since it could have been destroyed by a streamline previously added to the triangulation. If it is not, we pop another triangle out of the queue. If it is, we use the center of its circumcircle as seed point to integrate a new streamline.</para>
+<para>Our algorithm terminates when the priority queue is empty. The size of the biggest cavity being monotonically decreasing, our algorithm guarantees the domain saturation.</para>
+</sect1>
+<sect1 id="index_1Section_2D_Streamlines_Implementation">
+<title>Implementation</title>
+<para>Streamlines are represented as polylines, and are obtained by iterative integration from the seed point. A polyline is represented as a range of points. The computation is processed via a list of Delaunay triangulation vertices.</para>
+<para>To implement the triangular grid, the class <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Delaunay_triangulation_2</ref></computeroutput> is used. The priority queue used to store candidate seed points is taken from the Standard Template Library <ref refid="citelist_1CITEREF_cgal:sgcsi-stlpg-97" kindref="member">[3]</ref>.</para>
+</sect1>
+<sect1 id="index_1Section_2D_Streamlines_Example">
+<title>Examples</title>
+<para>The first example illustrates the generation of a 2D streamline placement from a vector field defined on a regular grid. <linebreak/>
+<bold>File</bold> <ref refid="Stream_lines_2_2stl_regular_field_8cpp-example" kindref="compound">Stream_lines_2/stl_regular_field.cpp</ref> <programlisting filename="Stream_lines_2/stl_regular_field.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Stream_lines_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Runge_kutta_integrator_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Regular_grid_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Regular__grid__2" kindref="compound">CGAL::Regular_grid_2&lt;K&gt;</ref><sp/><ref refid="classField" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">Field</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Runge__kutta__integrator__2" kindref="compound">CGAL::Runge_kutta_integrator_2&lt;Field&gt;</ref><sp/>Runge_kutta_integrator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Stream__lines__2" kindref="compound">CGAL::Stream_lines_2&lt;Field, Runge_kutta_integrator&gt;</ref><sp/>Strl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Strl::Point_iterator_2<sp/>Point_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Strl::Stream_line_iterator_2<sp/>Strl_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Strl::Point_2<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Strl::Vector_2<sp/><ref refid="classCGAL_1_1Vector__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Runge_kutta_integrator<sp/>runge_kutta_integrator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*data.vec.cin<sp/>is<sp/>an<sp/>ASCII<sp/>file<sp/>containing<sp/>the<sp/>vector<sp/>field<sp/>values*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>infile(</highlight><highlight class="stringliteral">&quot;data/vnoise.vec.cin&quot;</highlight><highlight class="normal">,<sp/>std::ios::in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>iXSize,<sp/>iYSize;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>x_samples,<sp/>y_samples;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>iXSize<sp/>=<sp/>iYSize<sp/>=<sp/>512;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>infile<sp/>&gt;&gt;<sp/>x_samples;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>infile<sp/>&gt;&gt;<sp/>y_samples;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classField" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">Field</ref><sp/>regular_grid_2(x_samples,<sp/>y_samples,<sp/>iXSize,<sp/>iYSize);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*fill<sp/>the<sp/>grid<sp/>with<sp/>the<sp/>appropreate<sp/>values*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;i&lt;x_samples;i++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>j=0;j&lt;y_samples;j++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>xval,<sp/>yval;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>infile<sp/>&gt;&gt;<sp/>xval;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>infile<sp/>&gt;&gt;<sp/>yval;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>regular_grid_2.set_field(i,<sp/>j,<sp/><ref refid="classCGAL_1_1Vector__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_2</ref>(xval,<sp/>yval));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>infile.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*<sp/>the<sp/>placement<sp/>of<sp/>streamlines<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;processing...\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>dSep<sp/>=<sp/>3.5;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>dRat<sp/>=<sp/>1.6;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Strl<sp/>Stream_lines(regular_grid_2,<sp/>runge_kutta_integrator,dSep,dRat);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;placement<sp/>generated\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*writing<sp/>streamlines<sp/>to<sp/>streamlines_on_regular_grid_1.stl<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>fw(</highlight><highlight class="stringliteral">&quot;streamlines_on_regular_grid_1.stl&quot;</highlight><highlight class="normal">,std::ios::out);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>fw<sp/>&lt;&lt;<sp/>Stream_lines.number_of_lines()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Strl_iterator<sp/>sit<sp/>=<sp/>Stream_lines.begin();<sp/>sit<sp/>!=<sp/>Stream_lines.end();<sp/>sit++)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>fw<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Point_iterator<sp/>pit<sp/>=<sp/>sit-&gt;first;<sp/>pit<sp/>!=<sp/>sit-&gt;second;<sp/>pit++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_2<sp/>p<sp/>=<sp/>*pit;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>fw<sp/>&lt;&lt;<sp/>p.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p.y()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>fw.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> The second example depicts the generation of a streamline placement from a vector field defined on a triangular grid. <linebreak/>
+<bold>File</bold> <ref refid="Stream_lines_2_2stl_triangular_field_8cpp-example" kindref="compound">Stream_lines_2/stl_triangular_field.cpp</ref> <programlisting filename="Stream_lines_2/stl_triangular_field.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Stream_lines_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Runge_kutta_integrator_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangular_field_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangular__field__2" kindref="compound">CGAL::Triangular_field_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classField" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">Field</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Runge__kutta__integrator__2" kindref="compound">CGAL::Runge_kutta_integrator_2&lt;Field&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Runge_kutta_integrator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Stream__lines__2" kindref="compound">CGAL::Stream_lines_2&lt;Field, Runge_kutta_integrator&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Strl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Strl::Stream_line_iterator_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>stl_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Runge_kutta_integrator<sp/>runge_kutta_integrator(1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*datap.tri.cin<sp/>and<sp/>datav.tri.cin<sp/>are<sp/>ASCII<sp/>files<sp/>where<sp/>are<sp/>stored<sp/>the<sp/>vector<sp/>values*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>inp(</highlight><highlight class="stringliteral">&quot;data/datap.tri.cin&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>inv(</highlight><highlight class="stringliteral">&quot;data/datav.tri.cin&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;Point&gt;<sp/>beginp(inp);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;Vector&gt;<sp/>beginv(inv);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;Point&gt;<sp/>endp;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classField" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">Field</ref><sp/>triangular_field(beginp,<sp/>endp,<sp/>beginv);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*<sp/>the<sp/>placement<sp/>of<sp/>streamlines<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;processing...\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>dSep<sp/>=<sp/>30.0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>dRat<sp/>=<sp/>1.6;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Strl<sp/>Stream_lines(triangular_field,<sp/>runge_kutta_integrator,dSep,dRat);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;placement<sp/>generated\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">/*writing<sp/>streamlines<sp/>to<sp/>streamlines.stl<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;streamlines.stl\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>fw(</highlight><highlight class="stringliteral">&quot;streamlines.stl&quot;</highlight><highlight class="normal">,std::ios::out);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Stream_lines.print_stream_lines(fw);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect1>
+    </detaileddescription>
+    <location file="Stream_lines_2.txt"/>
+  </compounddef>
+</doxygen>

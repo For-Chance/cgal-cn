@@ -1,0 +1,623 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Advancing_Front_Surface_Reconstruction"/><anchor id="index_1I1ChapterAdvancingFrontSurfaceReconstruction"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Tran Kai Frank Da and David Cohen-Steiner</para>
+</simplesect>
+Surface reconstruction from an unstructured point cloud amounts to generate a plausible surface that approximates well the input points. This problem is ill-posed as many surfaces can be generated. A wide range of approaches have been proposed to tackle this problem. Among them are variational methods <ref refid="citelist_1CITEREF_s-lsm-96" kindref="member">[13]</ref><ref refid="citelist_1CITEREF_zomk-insru-00" kindref="member">[14]</ref>, tensor voting <ref refid="citelist_1CITEREF_cgal:ml-cfsg-00" kindref="member">[11]</ref>, implicit surface <ref refid="citelist_1CITEREF_hddhjmss-pssr-94" kindref="member">[9]</ref><ref refid="citelist_1CITEREF_bc-ssrnn-00" kindref="member">[6]</ref>, and Delaunay triangulations.</para>
+<para>For Delaunay based algorithms the output surface is commonly generated as the union of some triangles selected in the 3D Delaunay triangulation of the input points. Such algorithms are either volume-based by generating as output the boundary of selected tetrahedra <ref refid="citelist_1CITEREF_abe-cbscc-97" kindref="member">[3]</ref><ref refid="citelist_1CITEREF_ack-pcubm-01" kindref="member">[4]</ref>, or surface-based by selecting a set of triangles.</para>
+<para>In most surface based Delaunay algorithms the triangles are selected independently, that is in parallel <ref refid="citelist_1CITEREF_agj-lcsr-00" kindref="member">[1]</ref><ref refid="citelist_1CITEREF_ab-srvf-98" kindref="member">[2]</ref>.</para>
+<para>This chapter presents a surface-based Delaunay surface reconstruction algorithm that sequentially selects the triangles, that is it uses previously selected triangles to select a new triangle for advancing the front. At each advancing step the most plausible triangle is selected, and such that the triangles selected generates an orientable manifold triangulated surface.</para>
+<para>Two other examples of this greedy approach are the ball pivoting algorithm and Boyer-Petitjean&apos;s algorithm <ref refid="citelist_1CITEREF_bmrst-bpasr-99" kindref="member">[5]</ref><ref refid="citelist_1CITEREF_pb-rnrps-01" kindref="member">[12]</ref>. In both algorithms a triangulated surface is incrementally grown starting from a seed triangle. Ball pivoting is fast, but the quality of the reconstruction depends on user defined parameters corresponding to the sampling density. The Boyer-Petitjean approach can handle non-uniform sampling, but fails when near co-circular points are encountered, and it does not provide any guarantee on the topology of the surface.</para>
+<para>We describe next the algorithm and provide examples.</para>
+<para><simplesect kind="note"><para>A <ref refid="tuto_reconstruction" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">detailed tutorial on surface reconstruction</ref> is provided with a guide to choose the most appropriate method along with pre- and post-processing.</para>
+</simplesect>
+</para>
+<sect1 id="index_1AFSR_Definitions">
+<title>Definitions and the Algorithm</title>
+<para>A detailed description of the algorithm and the underlying theory are provided in <ref refid="citelist_1CITEREF_cgal:csd-gdbsra-04" kindref="member">[8]</ref>.</para>
+<para>The first step of the algorithm is the construction of a 3D Delaunay triangulation of the point set. The radius of a triangle <formula id="0">$ t $</formula> is the radius of the smallest sphere passing through the vertices of <formula id="1">$ t$</formula> and enclosing no sample point. In other words, the radius <formula id="2">$ r_t$</formula> is the distance from any vertex of <formula id="1">$ t$</formula> to the Voronoi edge dual to <formula id="1">$ t$</formula>. This triangle with three boundary edges is the initial triangulated surface, and its boundary is the advancing front. The Delaunay triangle with the smallest radius is the starting point for the greedy algorithm.</para>
+<para>The algorithm maintains a priority queue of candidate triangles, that is of valid triangles incident to the boundary edges of the current surface. The priority is the plausibility. While the priority queue is not empty, the algorithm pops from the queue the most plausible candidate triangle and adds it to the surface. New candidate triangles are pushed to the priority queue when new boundary edges appear on the advancing front. As the algorithm creates a two-manifold surface some candidate triangles can not be selected due to topological constraints which are explained next.</para>
+<sect2 id="index_1AFSR_Topology">
+<title>Topological Constraints</title>
+<para>Any triangle <formula id="3">$t$</formula> considered as the next potential candidate shares an edge <formula id="4">$e$</formula> with the front of the current reconstruction. Let <formula id="5">$b$</formula> be the vertex of <formula id="3">$t$</formula> opposite to <formula id="4">$e$</formula>. There are four configurations where <formula id="3">$t$</formula> is added to the surface.</para>
+<para><itemizedlist>
+<listitem><para>extension, if <formula id="5">$b$</formula> is not yet on the surface.</para>
+</listitem><listitem><para>hole filling, if <formula id="5">$b$</formula> is on the front and both neighbors of <formula id="5">$b$</formula> on the front are on edge <formula id="4">$e$</formula>.</para>
+</listitem><listitem><para>ear filling, if <formula id="5">$b$</formula> is on the front and one neighbor of <formula id="5">$b$</formula> on the front is on edge <formula id="4">$e$</formula>.</para>
+</listitem><listitem><para>glueing, if <formula id="5">$b$</formula> is on the front and no neighbor of <formula id="5">$b$</formula> on the front is on edge <formula id="4">$e$</formula>.</para>
+</listitem></itemizedlist>
+</para>
+<para><anchor id="index_1fig__figAFSRvalid"/> <image type="html" name="valid.png"></image>
+ <image type="latex" name="valid.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figAFSRvalid" kindref="member">fig__figAFSRvalid</ref> Valid candidates. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>While the first three operations never induce a non-manifold edge or vertex, we only can perform gluing, if triangle <formula id="3">$t$</formula> has a <emphasis>twin</emphasis> facet, that is a triangle with an edge on the front and incident to <formula id="5">$b$</formula>, and the third vertex on edge <formula id="4">$e$</formula>.</para>
+<para>A triangle is said <emphasis>valid</emphasis> when the above operations can be applied.</para>
+</sect2>
+<sect2 id="index_1AFSR_Selection">
+<title>Plausibility of a Candidate Triangle</title>
+<para>Valid triangles for an edge on the front are compared through their radius. While the radius is a good criterion in the case of 2D smooth curve reconstruction <ref refid="citelist_1CITEREF_b-cccda-94" kindref="member">[7]</ref>, we need another criterion for 3D surface reconstruction, namely the dihedral angle between triangles on the surface, that is the angle between the normals of the triangles. There are three bounds namely <formula id="6">$ \alpha_\mathrm{sliver} $</formula>, <formula id="7">$ \beta $</formula>, and <formula id="8">$ \delta $</formula>.</para>
+<para>The <emphasis>candidate</emphasis> triangle of an edge <formula id="9">$ e $</formula> is the triangle with the smallest radius:<itemizedlist>
+<listitem><para>that is valid for <formula id="9">$ e $</formula>, and</para>
+</listitem><listitem><para>that has <formula id="10">$ \beta_t &lt; \alpha_\mathrm{sliver} $</formula>, and</para>
+</listitem><listitem><para>that has its internal angles with <formula id="9">$ e $</formula> smaller than <formula id="8">$ \delta $</formula>.</para>
+</listitem></itemizedlist>
+</para>
+<para>There may be no such triangle. In the implementation of the algorithm <formula id="6">$ \alpha_\mathrm{sliver} $</formula> and <formula id="11">$ \delta$</formula> are equal to <formula id="12">$ 5\pi/6 $</formula>.</para>
+<para>We denote by <formula id="13">$ \beta_t$</formula> the angle between the normal of a triangle <formula id="1">$ t$</formula> incident on a boundary edge <formula id="9">$ e $</formula> and the normal of the triangle on the surface incident to <formula id="9">$ e $</formula>.</para>
+<para>We define the <emphasis>plausibility</emphasis> grade <formula id="14">$ p(t) $</formula> as <formula id="15">$ 1/r_t $</formula>, if <formula id="16">$ \beta_t &lt; \beta $</formula>, and <formula id="17">$ -\beta_t $</formula> else. The parameter <formula id="18">$
+\beta $</formula> can be specified by the user and is set by default to <formula id="19">$ \pi/6$</formula>.</para>
+<para>Let&apos;s have a look at the figure below. <anchor id="index_1fig__figAFSRplausible"/> <image type="html" name="wedges.png"></image>
+ <image type="latex" name="wedges.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figAFSRplausible" kindref="member">fig__figAFSRplausible</ref> Plausibility. Triangle <computeroutput>t&apos;</computeroutput> and incident triangles sharing edge <computeroutput>e</computeroutput> seen from the side. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><formula id="20">$ \alpha_\mathrm{sliver}$</formula> corresponds to the red wedge. The algorithm will never select triangle <computeroutput>t1</computeroutput> even if it is the only candidate triangle.</para>
+<para><formula id="21">$\beta$</formula> corresponds to the green wedge. If there is a candidate triangle in this zone, the one with the smallest radius is the most plausible.</para>
+<para>If there is no candidate triangle in the green wedge, the triangle with the smallest angle between its normal and the normal of <computeroutput>t&apos;</computeroutput> is chosen. In the figure above this would be triangle <computeroutput>t4</computeroutput>.</para>
+</sect2>
+<sect2 id="index_1AFSR_Boundaries">
+<title>Dealing with Multiple Components, Boundaries and Sharp Edges</title>
+<para>By construction the output of the algorithm is a connected orientable manifold with or without boundary. To cope with multiple components we merely look for a new seed facet among facets disjoint from the surface. In case of noisy data or outliers, the user must filter out small surface components.</para>
+<para>It is impossible to handle all kinds of boundaries and non uniform sampling at the same time, as a void can either be an undersampled area of the surface, or a hole.</para>
+<para>As we do not want the algorithm to rely on a uniformity condition on the sampling it will fill holes cut off from &quot;flat&quot; regions of the surface. However, in many cases a boundary component cannot be closed by adding a spanning disk such that the resulting disk is well sampled. Typically, closing a boundary component due to a transversal clipping of the operation, would yield large dihedral angles at boundary edges. Moreover, if the boundary is sufficiently well sampled, the radii of the two triangles incident on a boundary edge would be very different. These heuristic facts can be used for boundary detection.</para>
+<para>More specifically, we discard any candidate triangle <formula id="0">$ t $</formula>, for an edge <formula id="9">$ e $</formula> such that <formula id="22">$ p(t) &lt; 0$</formula>, and <formula id="23">$ r_t &gt; \mathrm{radius\_ratio\_bound} \times r_{t&apos;}$</formula> where <formula id="24">$ t&apos;$</formula> is the triangle on the surface incident on <formula id="9">$ e $</formula>. The parameter <formula id="25">$\mathrm{radius\_ratio\_bound}$</formula> is specified by the user and is set by default to 5.</para>
+<para>For the example given in <ref refid="index_1fig__figAFSRplausible" kindref="member">fig__figAFSRplausible</ref>, we said that if there was no triangle <computeroutput>t3</computeroutput> in the green wedge, triangle <computeroutput>t4</computeroutput> would be chosen as it has the smallest angle between its normal and the normal of triangle <computeroutput>t&apos;</computeroutput>. However, in case its radius was <formula id="25">$\mathrm{radius\_ratio\_bound}$</formula> times larger than the radius of triangle <computeroutput>t&apos;</computeroutput>, triangle <computeroutput>t2</computeroutput> would be chosen, assuming that its radius is not <formula id="25">$\mathrm{radius\_ratio\_bound}$</formula> times larger.</para>
+<para>Note that this heuristic implies that where the sampling is too sparse with respect to curvature, it must be sufficiently uniform for our algorithm to work.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1AFSR_Examples">
+<title>Examples</title>
+<para>The first of the following three examples presents a free function for doing surface reconstruction. For a sequence of points the function produces a sequence of triplets of indices describing the triangles of the surface. The second example presents a class that enables to traverse the surface represented in a 2D triangulation data structure where the faces are connected with the facets of underlying 3D Delaunay triangulation. The third example shows how to get outliers and the boundaries of the surface. The last example shows how to combine this algorithm with two CGAL algorithms in order to reconstruct surfaces with sharp features.</para>
+<sect2 id="index_1AFSR_Example_function">
+<title>Examples for Global Function</title>
+<para>The global function <computeroutput><ref refid="group__PkgAdvancingFrontSurfaceReconstructionRef_1gaa2b1f41291920247fd5c6ef7c09f70a4" kindref="member">advancing_front_surface_reconstruction()</ref></computeroutput> takes an iterator range of points as input and writes for each face of the reconstructed surface a triplet of point indices into an output iterator. The following example writes the output triangulated surface to <computeroutput>std::cout</computeroutput> in accordance to the OFF format.</para>
+<para>The function has an overload with an additional argument that allows to choose how to prioritize facets. It can be written in a way to avoid the generation of triangles with a perimeter larger than a given bound.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Advancing_front_surface_reconstruction_2reconstruction_fct_8cpp-example" kindref="compound">Advancing_front_surface_reconstruction/reconstruction_fct.cpp</ref> <programlisting filename="Advancing_front_surface_reconstruction/reconstruction_fct.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Advancing_front_surface_reconstruction.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tuple.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/lexical_cast.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::array&lt;std::size_t,3&gt;<sp/>Facet;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal"><ref refid="namespacestd" kindref="compound">std</ref><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ostream&amp;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgIOTDS3_1ga13941cbdb65047e071485853a7f619d9" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">operator&lt;&lt;</ref>(std::ostream&amp;<sp/>os,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Facet&amp;<sp/>f)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>os<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;3<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>f[0]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>f[1]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>f[2];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>os;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Perimeter<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>bound;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Perimeter(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>bound)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>bound(bound)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>AdvancingFront,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Cell_handle&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>operator()<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>AdvancingFront&amp;<sp/>adv,<sp/>Cell_handle&amp;<sp/>c,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">&amp;<sp/>index)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>bound<sp/>==<sp/>0<sp/>is<sp/>better<sp/>than<sp/>bound<sp/>&lt;<sp/>infinity</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>as<sp/>it<sp/>avoids<sp/>the<sp/>distance<sp/>computations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(bound<sp/>==<sp/>0){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.smallest_radius_delaunay_sphere<sp/>(c,<sp/>index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>perimeter<sp/>&gt;<sp/>bound,<sp/>return<sp/>infinity<sp/>so<sp/>that<sp/>facet<sp/>is<sp/>not<sp/>used</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>d<sp/><sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d<sp/>=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+1)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+2)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d<sp/>+=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+2)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+3)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d<sp/>+=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+1)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+3)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Otherwise,<sp/>return<sp/>usual<sp/>priority<sp/>value:<sp/>smallest<sp/>radius<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>delaunay<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.smallest_radius_delaunay_sphere<sp/>(c,<sp/>index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/half.xyz&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>per<sp/>=<sp/>(argc&gt;2)?boost::lexical_cast&lt;double&gt;(argv[2]):0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>radius_ratio_bound<sp/>=<sp/>(argc&gt;3)?boost::lexical_cast&lt;double&gt;(argv[3]):5.0;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Facet&gt;<sp/>facets;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy(std::istream_iterator&lt;Point_3&gt;(in),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::istream_iterator&lt;Point_3&gt;(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Perimeter<sp/>perimeter(per);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgAdvancingFrontSurfaceReconstructionRef_1gaa2b1f41291920247fd5c6ef7c09f70a4" kindref="member">CGAL::advancing_front_surface_reconstruction</ref>(points.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>points.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(facets),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>perimeter,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>radius_ratio_bound);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;OFF\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>facets.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>0\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy(points.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>points.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::ostream_iterator&lt;Point_3&gt;(std::cout,<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy(facets.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>facets.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::ostream_iterator&lt;Facet&gt;(std::cout,<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>While the first example just writes index triples, the second example uses as output iterator a wrapper around a reference to a <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref></computeroutput> and calls the function <computeroutput>add_face()</computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Advancing_front_surface_reconstruction_2reconstruction_surface_mesh_8cpp-example" kindref="compound">Advancing_front_surface_reconstruction/reconstruction_surface_mesh.cpp</ref> <programlisting filename="Advancing_front_surface_reconstruction/reconstruction_surface_mesh.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;array&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Advancing_front_surface_reconstruction.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/disable_warnings.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::array&lt;std::size_t,3&gt;<sp/>Facet;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref><sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Construct{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh&amp;<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">Iterator&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Construct(Mesh&amp;<sp/>mesh,PointIterator<sp/>b,<sp/>PointIterator<sp/>e)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>mesh(mesh)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(;<sp/>b!=e;<sp/>++b){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>boost::graph_traits&lt;Mesh&gt;::vertex_descriptor<sp/>v;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>v<sp/>=<sp/>add_vertex(mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>mesh.point(v)<sp/>=<sp/>*b;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Construct&amp;<sp/>operator=(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Facet<sp/>f)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::vertices_size_type<sp/>size_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>mesh.add_face(vertex_descriptor(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">size_type</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(f[0])),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_descriptor(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">size_type</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(f[1])),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_descriptor(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="normal">size_type</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(f[2])));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Construct&amp;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__Kernel__operator__prod_1ga8427cff04588dc338b8acf3e1b116dce" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">operator*</ref>()<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Construct&amp;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>operator++()<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Construct</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>operator++(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">)<sp/>{<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>*</highlight><highlight class="keyword">this</highlight><highlight class="normal">;<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/half.xyz&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>m;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy(std::istream_iterator&lt;Point_3&gt;(in),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::istream_iterator&lt;Point_3&gt;(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Construct<sp/>construct(m,points.begin(),points.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgAdvancingFrontSurfaceReconstructionRef_1gaa2b1f41291920247fd5c6ef7c09f70a4" kindref="member">CGAL::advancing_front_surface_reconstruction</ref>(points.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>points.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>construct);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>m<sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1AFSR_Example_class">
+<title>Example for the Reconstruction Class</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction" kindref="compound">Advancing_front_surface_reconstruction</ref></computeroutput> provides access to a 2D triangulation data structure describing the output surface. The latter can be explored by hopping from a face to its neighboring faces, and by hopping from faces of the 2D triangulation data structure to corresponding facets of the underlying 3D Delaunay triangulation.</para>
+<para>The type of the 2D triangulation data structure describing the reconstructed surface is the nested type <ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1a5e53d504a33aeadb5d07754ef9abf1fe" kindref="member"><computeroutput>Advancing_front_surface_reconstruction::Triangulation_data_structure_2</computeroutput></ref>.</para>
+<para>The type <computeroutput>Advancing_front_surface_reconstruction::Triangulation_data_structure_2::Vertex</computeroutput> is model of the concept <computeroutput><ref refid="classTriangulationDataStructure__2_1_1Vertex" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_2.tag">TriangulationDataStructure_2::Vertex</ref></computeroutput> and has additionally the method <computeroutput>vertex_3()</computeroutput> that returns an <computeroutput><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1a9df10e1e009e536e2271b17d8ad117e9" kindref="member">Advancing_front_surface_reconstruction::Vertex_handle</ref></computeroutput> to the associated 3D vertex.</para>
+<para>The type <computeroutput>Advancing_front_surface_reconstruction::Triangulation_data_structure_2::Face</computeroutput> is model of the concept <computeroutput><ref refid="classTriangulationDataStructure__2_1_1Face" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_2.tag">TriangulationDataStructure_2::Face</ref></computeroutput> and has additionally the method <computeroutput>facet()</computeroutput> that returns the associated <computeroutput><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1aa5e3c1e9ad309a243a3fe34d8dbfb783" kindref="member">Advancing_front_surface_reconstruction::Facet</ref></computeroutput>, and a method <computeroutput>is_on_surface()</computeroutput> for testing if a face is part of the reconstructed surface.</para>
+<para>In case the surface has boundaries, the 2D surface has one vertex which is associated to the infinite vertex of the 3D triangulation.</para>
+<para>The underlying 3D Delaunay triangulation can be accessed as well, using the API of the class <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Delaunay_triangulation_3</ref></computeroutput>.</para>
+<para>The following example writes the surface to <computeroutput>std::cout</computeroutput> in accordance to the STL (Stereo Lithography) format.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Advancing_front_surface_reconstruction_2reconstruction_class_8cpp-example" kindref="compound">Advancing_front_surface_reconstruction/reconstruction_class.cpp</ref> <programlisting filename="Advancing_front_surface_reconstruction/reconstruction_class.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Advancing_front_surface_reconstruction.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction" kindref="compound">CGAL::Advancing_front_surface_reconstruction&lt;&gt;</ref><sp/>Reconstruction;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Reconstruction::Triangulation_3<sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Reconstruction::Triangulation_data_structure_2<sp/>TDS_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/half.xyz&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;Point_3&gt;<sp/>begin(in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;Point_3&gt;<sp/>end;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref><sp/>dt(begin,end);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Reconstruction<sp/>reconstruction(dt);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>reconstruction.run();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>TDS_2&amp;<sp/>tds<sp/>=<sp/>reconstruction.triangulation_data_structure_2();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;solid<sp/>produced<sp/>with<sp/>CGAL::Advancing_front_surface_reconstruction\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(TDS_2::Face_iterator<sp/>fit<sp/>=<sp/>tds.faces_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>fit<sp/>!=<sp/>tds.faces_end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++fit){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(reconstruction.has_on_surface(fit)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Triangulation__3_1aa100228164b0cf78d5c2b1009c2df258" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3::Facet</ref><sp/>f<sp/>=<sp/>fit-&gt;facet();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Triangulation__3_1ac076eb6ecdeeeb2b5bf678a21b3d23ee" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3::Cell_handle</ref><sp/>ch<sp/>=<sp/>f.first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ci<sp/>=<sp/>f.second;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>points[3];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0,<sp/>j<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>4;<sp/>i++){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(ci<sp/>!=<sp/>i){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>points[j]<sp/>=<sp/>ch-&gt;vertex(i)-&gt;point();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>j++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>facet<sp/>normal<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/><ref refid="group__unit__normal__grp_1ga2dd531ada431e654de186b792ad28c95" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::unit_normal</ref>(points[0],points[1],<sp/>points[2])<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>outer<sp/>loop\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>vertex<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points[0]<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>vertex<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points[1]<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>vertex<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points[2]<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>endloop\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>endfacet\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;endsolid&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1AFSR_Example_boundaries">
+<title>Example for Outliers and Boundaries</title>
+<para>Input points which are not on a surface are outliers. The member function <ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1af6c1b6feaf4f93dc29e3d67b86efde86" kindref="member"><computeroutput>outliers()</computeroutput></ref> returns an iterator range of those points.</para>
+<para>Boundary edges can be traversed with the member function <ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1aa38773e1696b49b55c06b2bc037d7a88" kindref="member"><computeroutput>boundaries()</computeroutput></ref> It returns an iterator range type <ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1a048f25a32eebd5d396c1e79fec5db49d" kindref="member"><computeroutput>Boundary_range</computeroutput></ref> whose iterators have the value type <ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1aa2bcfba42b1a2ad04fd0e1914a01b162" kindref="member"><computeroutput>Vertex_on_boundary_range</computeroutput></ref>. This is again an iterator range whose iterators have the value type <ref refid="classCGAL_1_1Advancing__front__surface__reconstruction_1a9df10e1e009e536e2271b17d8ad117e9" kindref="member"><computeroutput>Vertex_handle</computeroutput></ref>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Advancing_front_surface_reconstruction_2boundaries_8cpp-example" kindref="compound">Advancing_front_surface_reconstruction/boundaries.cpp</ref> <programlisting filename="Advancing_front_surface_reconstruction/boundaries.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Advancing_front_surface_reconstruction.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Perimeter<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>bound;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Perimeter(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>bound)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>bound(bound)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>AdvancingFront,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Cell_handle&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>operator()<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>AdvancingFront&amp;<sp/>adv,<sp/>Cell_handle&amp;<sp/>c,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">&amp;<sp/>index)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>bound<sp/>==<sp/>0<sp/>is<sp/>better<sp/>than<sp/>bound<sp/>&lt;<sp/>infinity</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>as<sp/>it<sp/>avoids<sp/>the<sp/>distance<sp/>computations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(bound<sp/>==<sp/>0){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.smallest_radius_delaunay_sphere<sp/>(c,<sp/>index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>perimeter<sp/>&gt;<sp/>bound,<sp/>return<sp/>infinity<sp/>so<sp/>that<sp/>facet<sp/>is<sp/>not<sp/>used</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>d<sp/><sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d<sp/>=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+1)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+2)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d<sp/>+=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+2)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+3)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>d<sp/>+=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+1)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+3)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Otherwise,<sp/>return<sp/>usual<sp/>priority<sp/>value:<sp/>smallest<sp/>radius<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>delaunay<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.smallest_radius_delaunay_sphere<sp/>(c,<sp/>index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction" kindref="compound">CGAL::Advancing_front_surface_reconstruction&lt;CGAL::Default, Perimeter&gt;</ref><sp/>Reconstruction;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Reconstruction::Triangulation_3<sp/>Triangulation_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Reconstruction::Outlier_range<sp/>Outlier_range;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Reconstruction::Boundary_range<sp/>Boundary_range;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Reconstruction::Vertex_on_boundary_range<sp/>Vertex_on_boundary_range;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Reconstruction::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/half.xyz&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;Point_3&gt;<sp/>begin(in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::istream_iterator&lt;Point_3&gt;<sp/>end;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Perimeter<sp/>perimeter(0.5);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangulation_3<sp/>dt(begin,<sp/>end);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Reconstruction<sp/>reconstruction(dt,<sp/>perimeter);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>reconstruction.run();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>reconstruction.number_of_outliers()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>outliers:\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_3&amp;<sp/>p<sp/>:<sp/>reconstruction.outliers()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Boundaries:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Vertex_on_boundary_range&amp;<sp/>vobr<sp/>:<sp/>reconstruction.boundaries()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;boundary\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>As<sp/>we<sp/>use<sp/>range-base<sp/>loop<sp/>we<sp/>do<sp/>not<sp/>use<sp/>the<sp/>type<sp/>Boundary_range</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Vertex_handle<sp/>v<sp/>:<sp/>vobr){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>v-&gt;point()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1AFSR_Example_sharp_features">
+<title>Example for Sharp Features</title>
+<para>The priority queue used by the advancing front surface reconstruction algorithm can be modified to achieve robustness to sharp edges and provide piecewise-planar or hybrid reconstruction as described in <ref refid="citelist_1CITEREF_cgal:la-srpss-13" kindref="member">[10]</ref>. Two other algorithms available in CGAL must be applied first as a preprocessing to the point set:</para>
+<para><itemizedlist>
+<listitem><para><ref refid="index_1Chapter_Shape_Detection" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">Shape detection</ref>: detect planar sections of the input.</para>
+</listitem><listitem><para><ref refid="index_1Point_set_processing_3Structuring" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">Point set structuring</ref>: resample the planar sections and edges and corners detected among them.</para>
+</listitem></itemizedlist>
+</para>
+<para><anchor id="index_1fig__figAFSRstruct"/> <image type="html" name="structured_example.png"></image>
+ <image type="latex" name="structured_example.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figAFSRstruct" kindref="member">fig__figAFSRstruct</ref> Comparison of advancing front output.</para>
+<para><itemizedlist>
+<listitem><para>Top: input point set and raw advancing front reconstruction</para>
+</listitem><listitem><para>Bottom: structured point set and advancing front reconstruction with structure-dependent priority functor</para>
+</listitem></itemizedlist>
+</para>
+<para><htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The quality of the reconstruction can be significantly improved thanks to point set structuring when dealing with shapes with sharp features, as shown on the previous figure. The following example shows how to define a priority functor that favors structurally coherent facets and makes the advancing front algorithm robust to sharp features.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Advancing_front_surface_reconstruction_2reconstruction_structured_8cpp-example" kindref="compound">Advancing_front_surface_reconstruction/reconstruction_structured.cpp</ref> <programlisting filename="Advancing_front_surface_reconstruction/reconstruction_structured.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;algorithm&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;array&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Efficient__RANSAC_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL/Shape_detection/Efficient_RANSAC.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/structure_point_set.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_vertex_base_with_info_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Advancing_front_surface_reconstruction.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/read_points.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/disable_warnings.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/lexical_cast.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;Kernel::Point_3,<sp/>Kernel::Vector_3&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point_with_normal;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;Point_with_normal&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Pwn_vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::First_of_pair_property_map&lt;Point_with_normal&gt;<sp/><sp/>Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Second_of_pair_property_map&lt;Point_with_normal&gt;<sp/>Normal_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Efficient<sp/>RANSAC<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Shape__detection_1_1Efficient__RANSAC__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Efficient_RANSAC_traits</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>&lt;<ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>,<sp/>Pwn_vector,<sp/>Point_map,<sp/>Normal_map&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Shape__detection_1_1Efficient__RANSAC" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Efficient_RANSAC&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/>Efficient_ransac;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Shape__detection_1_1Plane" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Plane&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Plane;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Point<sp/>set<sp/>structuring<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__with__structure" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::Point_set_with_structure&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Structure;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Advancing<sp/>front<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction__vertex__base__3" kindref="compound">CGAL::Advancing_front_surface_reconstruction_vertex_base_3&lt;Kernel&gt;</ref><sp/>LVb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction__cell__base__3" kindref="compound">CGAL::Advancing_front_surface_reconstruction_cell_base_3&lt;Kernel&gt;</ref><sp/>LCb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">CGAL::Triangulation_data_structure_3&lt;LVb,LCb&gt;</ref><sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Delaunay_triangulation_3&lt;Kernel,Tds&gt;</ref><sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__3_1a1ba56e37b3a5acb1ba49a56d9d101a19" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3::Vertex_handle</ref><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::array&lt;std::size_t,3&gt;<sp/>Facet;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Functor<sp/>to<sp/>init<sp/>the<sp/>advancing<sp/>front<sp/>algorithm<sp/>with<sp/>indexed<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">On_the_fly_pair{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Pwn_vector&amp;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::pair&lt;Point,<sp/>std::size_t&gt;<sp/>result_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>On_the_fly_pair(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Pwn_vector&amp;<sp/>points)<sp/>:<sp/>points(points)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>result_type</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>operator()(std::size_t<sp/>i)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>result_type(points[i].first,i);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Specialized<sp/>priority<sp/>functor<sp/>that<sp/>favor<sp/>structure<sp/>coherence</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Structure&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Priority_with_structure_coherence<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Structure&amp;<sp/>structure;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>bound;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Priority_with_structure_coherence(Structure&amp;<sp/>structure,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>bound)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>structure<sp/>(structure),<sp/>bound<sp/>(bound)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>AdvancingFront,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Cell_handle&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>operator()<sp/>(AdvancingFront&amp;<sp/>adv,<sp/>Cell_handle&amp;<sp/>c,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">&amp;<sp/>index)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>perimeter<sp/>&gt;<sp/>bound,<sp/>return<sp/>infinity<sp/>so<sp/>that<sp/>facet<sp/>is<sp/>not<sp/>used</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(bound<sp/>!=<sp/>0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>d<sp/><sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>d<sp/>=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+1)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+2)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>d<sp/>+=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+2)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+3)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>d<sp/>+=<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">sqrt</ref>(<ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">squared_distance</ref>(c-&gt;vertex((index+1)%4)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex((index+3)%4)-&gt;point()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(d&gt;bound)<sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>adv.infinity();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Facet<sp/>f<sp/>=<sp/>{{<sp/>c-&gt;vertex<sp/>((index<sp/>+<sp/>1)<sp/>%<sp/>4)-&gt;info<sp/>(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex<sp/>((index<sp/>+<sp/>2)<sp/>%<sp/>4)-&gt;info<sp/>(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex<sp/>((index<sp/>+<sp/>3)<sp/>%<sp/>4)-&gt;info<sp/>()<sp/>}};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>facet_coherence<sp/>takes<sp/>values<sp/>between<sp/>-1<sp/>and<sp/>3,<sp/>3<sp/>being<sp/>the<sp/>most</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>coherent<sp/>and<sp/>-1<sp/>being<sp/>incoherent.<sp/>Smaller<sp/>weight<sp/>means<sp/>higher</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>priority.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>weight<sp/>=<sp/>100.<sp/>*<sp/>(5<sp/>-<sp/>structure.facet_coherence<sp/>(f));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>weight<sp/>*<sp/>adv.smallest_radius_delaunay_sphere<sp/>(c,<sp/>index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Advancing<sp/>front<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Advancing__front__surface__reconstruction" kindref="compound">CGAL::Advancing_front_surface_reconstruction</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;Triangulation_3,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Priority_with_structure_coherence&lt;Structure&gt;<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Reconstruction;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Points<sp/>with<sp/>normals.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Pwn_vector<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>fname<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Loading<sp/>point<sp/>set<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgPointSetProcessing3IO_1ga8fac388459c5cf96bf11ce3b4e0459c1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">CGAL::IO::read_points</ref>(fname,<sp/>std::back_inserter(points),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>normal_map(Normal_map())))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Shape<sp/>detection...<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Efficient_ransac<sp/>ransac;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ransac.set_input(points);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ransac.add_shape_factory&lt;Plane&gt;();<sp/></highlight><highlight class="comment">//<sp/>Only<sp/>planes<sp/>are<sp/>useful<sp/>for<sp/>structuring</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Default<sp/>RANSAC<sp/>parameters</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Efficient_ransac::Parameters<sp/>op;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>op.probability<sp/>=<sp/>0.05;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>op.min_points<sp/>=<sp/>100;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>op.epsilon<sp/>=<sp/>(argc&gt;2<sp/>?<sp/>boost::lexical_cast&lt;double&gt;(argv[2])<sp/>:<sp/>0.002);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>op.cluster_epsilon<sp/>=<sp/>(argc&gt;3<sp/>?<sp/>boost::lexical_cast&lt;double&gt;(argv[3])<sp/>:<sp/>0.02);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>op.normal_threshold<sp/>=<sp/>0.7;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ransac.detect(op);<sp/></highlight><highlight class="comment">//<sp/>Plane<sp/>detection</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Efficient_ransac::Plane_range<sp/>planes<sp/>=<sp/>ransac.planes();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done\nPoint<sp/>set<sp/>structuring...<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Pwn_vector<sp/>structured_pts;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Structure<sp/>pss<sp/>(points,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>planes,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>op.cluster_epsilon,<sp/><sp/></highlight><highlight class="comment">//<sp/>Same<sp/>parameter<sp/>as<sp/>RANSAC</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::point_map<sp/>(Point_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>normal_map<sp/>(Normal_map()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>plane_map<sp/>(<ref refid="classCGAL_1_1Shape__detection_1_1Plane__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Plane_map&lt;Traits&gt;</ref>()).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>plane_index_map(<ref refid="classCGAL_1_1Shape__detection_1_1Point__to__shape__index__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Shape_detection.tag">CGAL::Shape_detection::Point_to_shape_index_map&lt;Traits&gt;</ref>(points,<sp/>planes)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>pss.size();<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>structured_pts.push_back<sp/>(pss[i]);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done\nAdvancing<sp/>front...<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::size_t&gt;<sp/>point_indices(boost::counting_iterator&lt;std::size_t&gt;(0),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::counting_iterator&lt;std::size_t&gt;(structured_pts.size()));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangulation_3<sp/>dt<sp/>(boost::make_transform_iterator(point_indices.begin(),<sp/>On_the_fly_pair(structured_pts)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::make_transform_iterator(point_indices.end(),<sp/>On_the_fly_pair(structured_pts)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Priority_with_structure_coherence&lt;Structure&gt;<sp/>priority<sp/>(pss,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>1000.<sp/>*<sp/>op.cluster_epsilon);<sp/></highlight><highlight class="comment">//<sp/>Avoid<sp/>too<sp/>large<sp/>facets</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Reconstruction<sp/>R(dt,<sp/>priority);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>R.run<sp/>();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done\nWriting<sp/>result...<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Facet&gt;<sp/>output;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Reconstruction::TDS_2&amp;<sp/>tds<sp/>=<sp/>R.triangulation_data_structure_2();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Reconstruction::TDS_2::Face_iterator<sp/>fit<sp/>=<sp/>tds.faces_begin();<sp/>fit<sp/>!=<sp/>tds.faces_end();<sp/>++fit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(fit-&gt;is_on_surface())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output.push_back<sp/>(<ref refid="group__PkgSTLExtensionRef_1ga08aa4fa93a53622eae19f823e8e141df" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::make_array</ref>(fit-&gt;vertex(0)-&gt;vertex_3()-&gt;id(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>fit-&gt;vertex(1)-&gt;vertex_3()-&gt;id(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>fit-&gt;vertex(2)-&gt;vertex_3()-&gt;id()));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>f<sp/>(</highlight><highlight class="stringliteral">&quot;out.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>f<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;OFF\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>structured_pts.size<sp/>()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>output.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>0\n&quot;</highlight><highlight class="normal">;<sp/></highlight><highlight class="comment">//<sp/>Header</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>structured_pts.size<sp/>();<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>f<sp/>&lt;&lt;<sp/>structured_pts[i].first<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>output.size<sp/>();<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>f<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;3<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>output[i][0]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>output[i][1]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>output[i][2]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;all<sp/>done\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>f.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Advancing_front_surface_reconstruction.txt"/>
+  </compounddef>
+</doxygen>

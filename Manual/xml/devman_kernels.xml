@@ -1,0 +1,86 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_kernels" kind="page">
+    <compoundname>devman_kernels</compoundname>
+    <title>Geometry Kernels</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="authors"><para>Olivier Devillers (<computeroutput><ulink url="mailto:olivier.devillers@inria.fr">olivier.devillers@inria.fr</ulink></computeroutput>) </para>
+</simplesect>
+<simplesect kind="authors"><para>Marc Glisse (<computeroutput><ulink url="mailto:marc.glisse@inria.fr">marc.glisse@inria.fr</ulink></computeroutput>) </para>
+</simplesect>
+<simplesect kind="authors"><para>Stefan Schirra</para>
+</simplesect>
+The layer of geometry kernels provides basic geometric entities of constant sizeIn dimension <formula id="0">$ d$</formula>, an entity of size <formula id="5">$O(d)$</formula> is considered to be of constant size. and primitive operations on them. Each entity is provided as both a stand-alone class, which is parameterized by a kernel class, and as a type in the kernel class. Each operation in the kernel is provided via a functor classA class which defines a member <computeroutput>operator()</computeroutput>. in the kernel class and also as either a member function or a global function. See <ref refid="citelist_1CITEREF_hhkps-aegk-01" kindref="member">[5]</ref> for more details about this design. Ideally, if the kernel provides all the primitives required, you can use any kernel as a traits class directly with your algorithm or data structure; see also Chapter <ref refid="devman_traits_classes" kindref="compound">Traits Classes</ref> . If you need primitives not provided by the kernel (yet), please read Section <ref refid="devman_kernels_1secNewKernelTraits" kindref="member">Missing functionality</ref> below.</para>
+<sect1 id="devman_kernels_1secdifferent_kernels">
+<title>Different kernels</title>
+<para>CGAL provides different kernels, they can differ by internal representation of objects (e.g. cartesian versus homogeneous) or provide different functionalities (e.g. circular kernel). When creating a new package, the authors have to specify clearly the requirements needed by the kernel used. For example they can specify the needs with respect to the arithmetic.</para>
+<para>The authors may specify a targeted kernel in the list of predefined kernels (e.g. <computeroutput>Exact_predicates_inexact_constructions_kernel</computeroutput>).</para>
+<sect2 id="devman_kernels_1secCartesianHomogeneousComputation">
+<title>Cartesian versus homogeneous   computation</title>
+<para>Point coordinates can be represented in a homogeneous or cartesian way. The developer of a package can keep in mind that cartesian will be usually more space consuming, while homogeneous can be interesting if exact rational computations are needed. In any way, a package has to work with both representations.</para>
+<para>Since CGAL uses homogeneous representation for affine geometry and not for projective geometry, the homogenizing coordinate is non zero. The cartesian representation corresponding to an homogeneous point <formula id="6">$ (x_0,x_1,...,x_d,w)$</formula> is <formula id="7">$ (x_0/w,x_1/w,...,x_d/w)$</formula>. Hence, homogeneous representation is not unique; <formula id="8">$ (\alpha x,\alpha y,\alpha z,\alpha w)$</formula> is an alternative representation to <formula id="9">$ (x,y,z,w)$</formula> for any <formula id="10">$ \alpha\neq 0$</formula>. Internally, CGAL always maintains a non-negative homogenizing coordinate.</para>
+</sect2>
+</sect1>
+<sect1 id="devman_kernels_1Developer_manualKerneldesignandconventions">
+<title>Kernel design and conventions</title>
+<para>Each kernel object is provided as both a stand-alone class, which is parameterized by a kernel class (<computeroutput>Geo_object_D&lt;K&gt;</computeroutput>), and as a type in the kernel class (<computeroutput>K::Geo_object_D</computeroutput>). While the former use may be more natural for users not interested in the flexibility of the kernel (and is compatible with the original kernel design <ref refid="citelist_1CITEREF_fgkss-dccga-00" kindref="member">[4]</ref>), the latter syntax should be used in all code distributed with the library as it allows types in the kernel to be easily exchanged and modified. Similarly, each operation and construction in the kernel is provided via a function object class in the kernel class and also as either a member function or a global function; developers should use the function object classes to gain access to the functionality. See <ref refid="citelist_1CITEREF_hhkps-aegk-01" kindref="member">[5]</ref> for more details about this design and how it is accomplished.</para>
+<para>The classes for the geometric objects in the kernel have a standardized interface. <itemizedlist>
+<listitem>
+<para>All classes (currently only in dimensions 2 and 3) have a <computeroutput>bbox()</computeroutput> member function computing a bounding box. </para>
+</listitem>
+<listitem>
+<para>All classes have a <computeroutput>transform(Aff_transformation_d t)</computeroutput> member function to compute the object transformed by <computeroutput>t</computeroutput>. </para>
+</listitem>
+<listitem>
+<para>Oriented <formula id="11">$ d-1$</formula> dimensional objectsNote that the dimension of an object might depend on its use. A line in the plane has dimension <formula id="11">$ d-1$</formula>. As a halfspace, it has dimension <formula id="0">$ d$</formula>. provide member functions <computeroutput>has_on_positive_side(Point_d)</computeroutput>, <computeroutput>has_on_boundary(Point_d)</computeroutput>, and <computeroutput>has_on_negative_side(Point_d)</computeroutput>. Furthermore, there is a member function <computeroutput>oriented_side(Point_d)</computeroutput> returning an object of type <computeroutput><ref refid="group__kernel__enums_1ga5006dd2552d97fa577d81bd819c0f979" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Oriented_side</ref></computeroutput>. </para>
+</listitem>
+<listitem>
+<para>Full-dimensional bounded objects provide member functions <computeroutput>has_on_bounded_side(Point_d)</computeroutput>, <computeroutput>has_on_boundary(Point_d)</computeroutput>, and <computeroutput>has_on_unbounded_side(Point_d)</computeroutput>. Furthermore, there is a member function <computeroutput>bounded_side(Point_d)</computeroutput> returning an object of type <computeroutput><ref refid="group__kernel__enums_1gaf6030e89dadcc1f45369b0cdc5d9e111" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Bounded_side</ref></computeroutput>. </para>
+</listitem>
+<listitem>
+<para>Oriented objects have a member function <computeroutput>opposite()</computeroutput> returning the same object with opposite orientation. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+<sect1 id="devman_kernels_1Developer_manualNumber">
+<title>Number-type based predicates</title>
+<para>For a number of predicates, there are versions that operate on the coordinates directly, not on the geometric objects. These number-type based predicates ease reuse with non-<emphasis><ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref></emphasis> types.</para>
+</sect1>
+<sect1 id="devman_kernels_1secNewKernelTraits">
+<title>Missing functionality</title>
+<para><ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref> traits should avoid redundant functionality, or if similar functionality is implemented with a different API, then one should really implement the functionality and the others call that one.</para>
+<para>Whenever you need a predicate that is not present in the current kernel traits, you should first try to reuse the available predicates (you might rewrite the code or implement the new predicate using existing ones). If this is not feasible (especially for efficiency reasons), we have to decide on adding the new predicate to the kernel traits. If the new predicate is not too special, it will be added. Otherwise you cannot use the kernel as a traits class, but have to use additional traits.</para>
+<para>See Section <ref refid="devman_kernels_1secCartesianHomogeneousComputation" kindref="member">Cartesian versus homogeneous computation</ref> on how to derive the homogeneous version of a predicate from the Cartesian version.</para>
+</sect1>
+<sect1 id="devman_kernels_1secAddingFunctionObject">
+<title>Adding Function Objects to the Kernel</title>
+<para>When adding a new function object to the kernel you must:</para>
+<para><itemizedlist>
+<listitem>
+<para>possibly change <computeroutput>include/CGAL/Kernel/function_objects.h</computeroutput> to add a new function object <emphasis>builder</emphasis> in namespace <computeroutput>internal::</computeroutput> </para>
+</listitem>
+<listitem>
+<para>change <computeroutput>include/CGAL/Kernel/interface_macros.h</computeroutput> to add the actual function object class and its corresponding member function that returns an object of this class </para>
+</listitem>
+<listitem>
+<para>change <computeroutput>test/Kernel/include/CGAL/_test_new_2.h</computeroutput> and/or <computeroutput>test/Kernel/include/CGAL/_test_new_3.h</computeroutput> to add the test for this function object. </para>
+</listitem>
+<listitem>
+<para>update <computeroutput>Kernel_23/doc/Kernel_23/Concepts/FunctionObjectConcepts.h</computeroutput> </para>
+</listitem>
+<listitem>
+<para>add <computeroutput>New_function_object</computeroutput> to the set of requirements for the <ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref> concept in the file <computeroutput>Kernel_23/doc/Kernel_23/Concepts/Kernel.h</computeroutput> </para>
+</listitem>
+<listitem>
+<para>update the classified reference manual in <computeroutput>Kernel_23/doc/Kernel_23/PackageDescription.txt</computeroutput> </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_kernels.txt"/>
+  </compounddef>
+</doxygen>

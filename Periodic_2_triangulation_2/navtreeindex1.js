@@ -1,0 +1,25 @@
+var NAVTREEINDEX1 =
+{
+"index.html#P2T2ExampleAddingHandles":[0,5,1,1],
+"index.html#P2T2ExampleBasic":[0,5,0],
+"index.html#P2T2ExampleColor":[0,5,1,0],
+"index.html#P2T2ExampleCovering":[0,5,2],
+"index.html#P2T2ExampleGeometricAccess":[0,5,4],
+"index.html#P2T2ExampleLargePointSet":[0,5,3],
+"index.html#P2T2ExampleVertexBase":[0,5,1],
+"index.html#P2T2FlexDesign":[0,4,2],
+"index.html#P2T2_Delaunay":[0,2],
+"index.html#P2T2_Design":[0,8],
+"index.html#P2T2_Draw_Periodic_Triangulation":[0,7],
+"index.html#P2T2_Hierarchy":[0,3],
+"index.html#P2T2_Performance":[0,6],
+"index.html#P2Triangulation2secTraits":[0,4,0],
+"index.html#P2Triangulation2secdesign":[0,4],
+"index.html#P2Triangulation2secexamples":[0,5],
+"index.html#P2Triangulation2secintro":[0,1],
+"index.html#P2Triangulation2secspace":[0,0],
+"index.html#P2Triangulation2sectds":[0,4,1],
+"modules.html":[1],
+"pages.html":[],
+"structCGAL_1_1Graphics__scene__options__periodic__2__triangulation__2.html":[1,0,5,0]
+};

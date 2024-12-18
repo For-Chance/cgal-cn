@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="classMPSFormat" kind="class" language="C++" prot="public">
+    <compoundname>MPSFormat</compoundname>
+    <includes local="no">Concepts/MPSFormat.h</includes>
+    <briefdescription>
+<para>MPS is a commonly used file format for storing linear and quadratic programs according to the concepts <computeroutput><ref refid="classQuadraticProgram" kindref="compound">QuadraticProgram</ref></computeroutput>, <computeroutput><ref refid="classLinearProgram" kindref="compound">LinearProgram</ref></computeroutput>, <computeroutput><ref refid="classNonnegativeQuadraticProgram" kindref="compound">NonnegativeQuadraticProgram</ref></computeroutput>, and <computeroutput><ref refid="classNonnegativeLinearProgram" kindref="compound">NonnegativeLinearProgram</ref></computeroutput>, see also <ulink url="https://en.wikipedia.org/wiki/MPS_(format)"><computeroutput>https://en.wikipedia.org/wiki/MPS_(format)</computeroutput></ulink>. </para>
+    </briefdescription>
+    <detaileddescription>
+<para></para>
+<para>CGAL supports a large subset of this format, but there are MPS files around that we cannot read (for example, files that encode integrality constraints on the variables). Also, there might be some other MPS-based solvers that will not be able to read the MPS files written by CGAL, since we do not strictly adhere to the very rigid layout requirements of the original MPS format.</para>
+<para>Let&apos;s look at an example first. The quadratic program</para>
+<para><formula id="97">\[
+\begin{array}{lrcl}
+\mbox{minimize} &amp; x^2 + 4(y-4)^2 &amp;(=&amp; x^2 + 4y^2 - 32y + 64) \\
+\mbox{subject to} &amp; x + y &amp;\leq&amp; 7 \\
+&amp; -x + 2y &amp;\leq&amp; 4 \\
+&amp; x &amp;\geq&amp; 0 \\
+&amp; y &amp;\geq&amp; 0 \\
+&amp; y &amp;\leq&amp; 4
+\end{array}
+\]</formula></para>
+<para>has the following description in MPS format.</para>
+<para><verbatim>NAME first_qp
+ROWS
+N obj
+L c0
+L c1
+COLUMNS
+x0 c0 1
+x0 c1 -1
+x1 obj -32
+x1 c0 1
+x1 c1 2
+RHS
+rhs obj -64
+rhs c0 7
+rhs c1 4
+BOUNDS
+UP BND x1 4
+QMATRIX
+x0 x0 2
+x1 x1 8
+</verbatim></para>
+<para>Here comes a semiformal description of the format in general.</para>
+<para><bold>NAME Section</bold><linebreak/>
+</para>
+<para>This (mandatory) section consists of a single line starting with <computeroutput>NAME</computeroutput>. Everything starting from the first non-whitespace after that until the end of the line constitutes the name of the problem.</para>
+<para><bold>ROWS Section</bold><linebreak/>
+</para>
+<para>In the (mandatory) <computeroutput>ROW</computeroutput> section, you find one line for every constraint, where the letter <computeroutput>L</computeroutput> indicates relation <formula id="52">$ \leq$</formula>, letter <computeroutput>G</computeroutput> stands for <formula id="53">$ \geq$</formula>, and <computeroutput>E</computeroutput> for <formula id="93">$ =$</formula>. In addition, there is a row for the linear objective function (indicated by letter <computeroutput>N</computeroutput>). In that section, names are assigned to the constraints (here: <computeroutput>c0, c1</computeroutput>) and the objective function (here: <computeroutput>obj</computeroutput>). An MPS file may encode several linear objective functions by using several rows starting with <computeroutput>N</computeroutput>, but we ignore all but the first.</para>
+<para><bold>COLUMNS Section</bold><linebreak/>
+</para>
+<para>The (mandatory) <computeroutput>COLUMNS</computeroutput> section encodes the constraint matrix <formula id="5">$ A$</formula> and the linear objective function vector <formula id="91">$ c$</formula>. Every line consists of one or two sequences of three tokens <formula id="98">$ j i val$</formula>, where <formula id="14">$ j$</formula> is the name of a variable (here, we have variables <computeroutput>x0,x1</computeroutput>), <formula id="29">$ i$</formula> is the name of a constraint or the objective function, and <formula id="99">$ val$</formula> is the value <formula id="30">$ A_{ij}$</formula> (if <formula id="29">$ i$</formula> names a constraint), or <formula id="37">$ c_j$</formula> (if <formula id="29">$ i$</formula> names the linear objective function). Values for pairs <formula id="100">$ (i,j)$</formula> that are not specified in this section default to <formula id="41">$ 0$</formula>. Otherwise, for every pair <formula id="100">$ (i,j)$</formula>, the <emphasis>last</emphasis> specified value determines <formula id="30">$ A_{ij}$</formula> or <formula id="37">$ c_j$</formula>.</para>
+<para><bold>RHS Section</bold><linebreak/>
+</para>
+<para>This (mandatory) section encodes the right-hand side vector <formula id="101">$ b$</formula> and the constant term <formula id="18">$ c_0$</formula> in the objective function. The first token in every line is an identifier (here: <computeroutput>rhs</computeroutput>). An MPS file may encode several right-hand sides <formula id="101">$ b$</formula> by using several such identifiers, but we ignore all lines having an identifier different from that of the first line.</para>
+<para>The right-hand side identifier is succeeded by one or two sequences of tokens <formula id="102">$ i val$</formula>, where <formula id="29">$ i$</formula> names a constraint or the linear objective function, and <formula id="99">$ val$</formula> specifies the value <formula id="31">$ b_i$</formula> (if <formula id="29">$ i$</formula> names a constraint), or <formula id="103">$ -c_0$</formula> (if <formula id="29">$ i$</formula> names the linear objective function). Values that are not specified in this section default to <formula id="41">$ 0$</formula>. Otherwise, for every <formula id="29">$ i$</formula>, the <emphasis>last</emphasis> specified value determines <formula id="104">$ b_{i}$</formula> or <formula id="103">$ -c_0$</formula>.</para>
+<para><bold>BOUNDS Section</bold><linebreak/>
+</para>
+<para>This (optional) section encodes the lower and upper bound vectors <formula id="105">$ l$</formula> and <formula id="106">$ u$</formula> for the variables. The default bounds for any variable <formula id="95">$ x_j$</formula> are <formula id="107">$ 0\leq x_j\leq \infty$</formula>; the <computeroutput>BOUNDS</computeroutput> section is used to override these defaults. In particular, if there is no <computeroutput>BOUNDS</computeroutput> section, the program is nonnegative and actually a model of the concept <computeroutput><ref refid="classNonnegativeQuadraticProgram" kindref="compound">NonnegativeQuadraticProgram</ref></computeroutput> or <computeroutput><ref refid="classNonnegativeLinearProgram" kindref="compound">NonnegativeLinearProgram</ref></computeroutput>.</para>
+<para>The first token in every line is succeeded by an (optional) identifier (here: <computeroutput>BND</computeroutput>). An MPS file may encode several bound vectors <formula id="105">$ l$</formula> and <formula id="106">$ u$</formula> by using several such identifiers, but we ignore all lines having an identifier different from that of the first line. The first token <formula id="108">$ t$</formula> itself determines the type of the bound, and the token <formula id="14">$ j$</formula> after the bound identifier names the variable to which the bound applies In case of bound types <computeroutput>FX</computeroutput>, <computeroutput>LO</computeroutput>, and <computeroutput>UP</computeroutput>, there is another token <formula id="99">$ val$</formula> that specifies the bound value. Here is how bound type and value determine a bound for variable <formula id="95">$ x_j$</formula>. There may be several bound specifications for a single variable, and they are processed in order of appearance.</para>
+<para><table rows="7" cols="2"><row>
+<entry thead="yes"><para>bound type   </para>
+</entry><entry thead="yes"><para>resulting bound    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>FX   </para>
+</entry><entry thead="no"><para><formula id="109">$x_j = val$</formula> ( <formula id="110">$x_j$</formula> becomes a fixed variable)    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>LO   </para>
+</entry><entry thead="no"><para><formula id="111">$x_j \geq val$</formula> (upper bound remains unchanged)    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>UP   </para>
+</entry><entry thead="no"><para><formula id="112">$x_j \leq val$</formula> (lower bound remains unchanged, except if <formula id="113">$val&lt;0$</formula>; then, a zero lower bound is reset to <formula id="87">$-\infty$</formula>)    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>FR   </para>
+</entry><entry thead="no"><para><formula id="114">$-\infty \leq x_j\leq\infty$</formula> (previous bounds are discarded)    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>MI   </para>
+</entry><entry thead="no"><para><formula id="115">$x_j\geq -\infty$</formula> (upper bound remains unchanged)    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>PL   </para>
+</entry><entry thead="no"><para><formula id="116">$x_j\leq \infty$</formula> (lower bound remains unchanged)   </para>
+</entry></row>
+</table>
+</para>
+<para><bold>QMATRIX / QUADOBJ / DMATRIX Section</bold><linebreak/>
+</para>
+<para>This (optional) section encodes the quadratic objective function matrix <formula id="23">$ D$</formula>. Every line is a sequence <formula id="117">$ i j val$</formula> of three tokens, where both <formula id="29">$ i$</formula> and <formula id="14">$ j$</formula> name variables, and <formula id="99">$ val$</formula> is the value <formula id="118">$ 2D_{i,j}$</formula> (in case of <computeroutput>QMATRIX</computeroutput> or <computeroutput>QUADOBJ</computeroutput>), or <formula id="119">$ D_{ij}$</formula> (in case of <computeroutput>DMATRIX</computeroutput>).</para>
+<para>In case of <computeroutput>QMATRIX</computeroutput> and <computeroutput>DMATRIX</computeroutput>, <emphasis>all</emphasis> nonzero entries must be specified: if there is a line <formula id="117">$ i j val$</formula>, then there must also be a line <formula id="98">$ j i val$</formula>, since <formula id="23">$ D$</formula> is required to be symmetric. In case of <computeroutput>QUADOBJ</computeroutput>, only the entries of <formula id="120">$ 2D$</formula> on or below the diagonal must be specified, entries above the diagonal are deduced from symmetry. It is not allowed to specify two or more <emphasis>different</emphasis> nonzero values for an unordered pair <formula id="121">$ \{i,j\}$</formula>.</para>
+<para>If this section is missing or does not contain nonzero values, the program is a model of the concept <computeroutput><ref refid="classLinearProgram" kindref="compound">LinearProgram</ref></computeroutput>.</para>
+<para><bold>Miscellaneous</bold><linebreak/>
+</para>
+<para>Our MPS format also supports an (optional) <computeroutput>RANGES</computeroutput> section, but we don&apos;t explain this here.</para>
+<para><simplesect kind="see"><para><computeroutput><ref refid="classCGAL_1_1Quadratic__program__from__mps" kindref="compound">CGAL::Quadratic_program_from_mps</ref>&lt;NT&gt;</computeroutput> </para>
+</simplesect>
+</para>
+    </detaileddescription>
+    <location file="Concepts/MPSFormat.h" line="168" column="1" bodyfile="Concepts/MPSFormat.h" bodystart="168" bodyend="171"/>
+    <listofallmembers>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,630 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="canonical" href="https://doc.cgal.org/latest/Manual/tuto_reconstruction.html"/>
+
+<link rel="icon" type="image/png" href="../Manual/g-196x196-doc.png">
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=11">
+<meta name="generator" content="Doxygen 1.9.6">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CGAL 6.0.1 - Manual: 点云的表面重建</title>
+<!-- <link href="../Manual/tabs.css" rel="stylesheet" type="text/css"/> -->
+<script type="text/javascript" src="../Manual/jquery.js"></script>
+<script type="text/javascript" src="../Manual/dynsections.js"></script>
+<script src="../Manual/hacks.js" type="text/javascript"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+  $(document).ready(function() { init_search(); });
+/* @license-end */
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  extensions: ["tex2jax.js", "TeX/AMSmath.js", "TeX/AMSsymbols.js"],
+  jax: ["input/TeX","output/HTML-CSS"],
+});
+//<![CDATA[
+MathJax.Hub.Config(
+{
+  TeX: {
+      Macros: {
+          qprel: [ "{\\gtreqless}", 0],
+          qpx: [ "{\\mathbf{x}}", 0],
+          qpl: [ "{\\mathbf{l}}", 0],
+          qpu: [ "{\\mathbf{u}}", 0],
+          qpc: [ "{\\mathbf{c}}", 0],
+          qpb: [ "{\\mathbf{b}}", 0],
+          qpy: [ "{\\mathbf{y}}", 0],
+          qpw: [ "{\\mathbf{w}}", 0],
+          qplambda: [ "{\\mathbf{\\lambda}}", 0],
+          ssWpoint: [ "{\\bf #1}", 1],
+          ssWeight: [ "{w_{#1}}", 1],
+          dabs: [ "{\\parallel\\! #1 \\!\\parallel}", 1],
+          E: [ "{\\mathrm{E}}", 0],
+          A: [ "{\\mathrm{A}}", 0],
+          R: [ "{\\mathrm{R}}", 0],
+          N: [ "{\\mathrm{N}}", 0],
+          Q: [ "{\\mathrm{Q}}", 0],
+          Z: [ "{\\mathrm{Z}}", 0],
+          ccSum: [ "{\\sum_{#1}^{#2}{#3}}", 3],
+          ccProd: [ "{\\prod_{#1}^{#2}{#3}}", 3],
+          pyr: [ "{\\operatorname{Pyr}}", 0],
+          aff: [ "{\\operatorname{aff}}", 0],
+          Ac: [ "{\\cal A}", 0],
+          Sc: [ "{\\cal S}", 0],
+      },
+      equationNumbers: { autoNumber: "AMS" }
+  }
+}
+);
+//]]>
+</script>
+<script type="text/javascript" async="async" src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css">
+<!-- This should probably be an extrastylesheet instead of hardcoded. -->
+<link href="../Manual/cgal_stylesheet.css" rel="stylesheet" type="text/css">
+<link href="cgal_stylesheet.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="back-nav">
+  <ul>
+    <li><a href="https://www.cgal.org/">cgal.org</a></li>
+    <li><a href="../Manual/index.html">Top</a></li>
+    <li><a href="../Manual/general_intro.html">Getting Started</a></li>
+    <li><a href="../Manual/tutorials.html">Tutorials</a></li>
+    <li><a href="../Manual/packages.html">Package Overview</a></li>
+    <li><a href="../Manual/how_to_cite_cgal.html">Acknowledging CGAL</a></li>
+  </ul>
+          <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()"> </span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S" onfocus="searchBox.OnSearchFieldFocus(true)" onblur="searchBox.OnSearchFieldFocus(false)" onkeyup="searchBox.OnSearchFieldChange(event)">
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""></a>
+          </span>
+        </div>
+</div>
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">CGAL 6.0.1 - Manual
+   </div>
+  </td>
+  <!-- We disable the search box because we have added it in the
+  back-nav for stylistic reasons. -->
+  <!-- <td>        <div id="MSearchBox" class="MSearchBoxInactive">
+        <span class="left">
+          <span id="MSearchSelect"                onmouseover="return searchBox.OnSearchSelectShow()"                onmouseout="return searchBox.OnSearchSelectHide()">&#160;</span>
+          <input type="text" id="MSearchField" value="" placeholder="Search" accesskey="S"
+               onfocus="searchBox.OnSearchFieldFocus(true)" 
+               onblur="searchBox.OnSearchFieldFocus(false)" 
+               onkeyup="searchBox.OnSearchFieldChange(event)"/>
+          </span><span class="right">
+            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.svg" alt=""/></a>
+          </span>
+        </div>
+</td> -->
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Generated by Doxygen 1.9.6 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync" style="display: none"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('tuto_reconstruction.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow" onmouseover="return searchBox.OnSearchSelectShow()" onmouseout="return searchBox.OnSearchSelectHide()" onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+</div>
+</div>
+</div>
+</div>
+
+<div><div class="header">
+  <div class="headertitle"><div class="title">点云的表面重建 </div></div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"> <div id="autotoc" class="toc"></div> <dl class="section author"><dt>Author</dt><dd>Simon Giraudot</dd></dl>
+<p>点云的表面重建是几何处理中的一个核心课题 <b>[cgal:btsag-asosr-16。这是一个病态问题：对于单个点云，存在无数个可以近似它的表面，而点云本身并不能定义一个确定的表面。因此，用户需要设定额外的假设和约束条件，重建可以通过多种不同的方式实现。本教程将指导您如何使用CGAL中的不同算法来有效地进行表面重建。]</b></p>
+<h1><a class="anchor" id="TutorialsReconstruction_algorithms"></a>
+我应该使用哪种算法？</h1>
+<p>CGAL提供了三种不同的表面重建算法：</p>
+<ul>
+<li><a class="elRef" href="../Poisson_surface_reconstruction_3/index.html#Chapter_Poisson_Surface_Reconstruction">泊松表面重建</a></li>
+<li><a class="elRef" href="../Advancing_front_surface_reconstruction/index.html#Chapter_Advancing_Front_Surface_Reconstruction">推进前沿表面重建</a></li>
+<li><a class="elRef" href="../Scale_space_reconstruction_3/index.html#Chapter_Scale_space_reconstruction">尺度空间表面重建</a></li>
+</ul>
+<p>由于重建是一个病态问题，必须通过先验知识来规范化。不同的先验会导致不同的算法，选择这些方法中的哪一个取决于这些先验条件。例如，泊松重建总是生成闭合形状（体积边界），需要法向量信息，但不会精确插值输入点（输出表面不会严格通过输入点）。下表列出了输入和输出的不同特性，以帮助用户选择最适合每个问题的方法：</p>
+<center> <table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone"></th><th class="markdownTableHeadCenter">泊松重建   </th><th class="markdownTableHeadCenter">推进前沿重建   </th><th class="markdownTableHeadCenter">尺度空间重建    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">是否需要法向量？   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">否   </td><td class="markdownTableBodyCenter">否    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">是否处理噪声？   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">通过预处理   </td><td class="markdownTableBodyCenter">是    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">是否处理变化的采样密度？   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">通过预处理    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">输入点是否严格位于表面上？   </td><td class="markdownTableBodyCenter">否   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">是    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">输出是否总是闭合的？   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">否   </td><td class="markdownTableBodyCenter">否    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">输出是否总是平滑的？   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">否   </td><td class="markdownTableBodyCenter">否    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">输出是否总是流形？   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">可选    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">输出是否总是可定向的？   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">是   </td><td class="markdownTableBodyCenter">可选   </td></tr>
+</table>
+</center><p><a class="anchor" id="fig__TutorialsReconstructionFigComparisons"></a> </p><div class="image">
+<img src="compare_reconstructions.png" alt="">
+</div>
+   <div class="cgal_figure_caption"> <p>  <a class="el" href="tuto_reconstruction.html#fig__TutorialsReconstructionFigComparisons">Figure 0.1</a> 对同一输入应用不同重建方法的比较（完整形状和局部放大）。从左到右：原始点云；泊松重建；推进前沿重建；尺度空间重建。 </p> </div> <p> <br>
+</p>
+<p>关于这些不同方法的更多信息可以在它们各自的手册页面和 <a class="el" href="tuto_reconstruction.html#TutorialsReconstruction_reconstruction">重建</a> 章节中找到。</p>
+<h1><a class="anchor" id="TutorialsReconstruction_overview"></a>
+流程概述</h1>
+<p>本教程旨在提供CGAL在处理点云和表面重建方面的更全面视角。下图展示了使用CGAL工具进行重建的常见步骤概述（非详尽）。</p>
+<p><a class="anchor" id="fig__TutorialsReconstructionFigPipeline"></a> </p><div class="image">
+<object type="image/svg+xml" data="reconstruction.svg" style="pointer-events: none;"></object>
+</div>
+   <div class="cgal_figure_caption"> <p>  <a class="el" href="tuto_reconstruction.html#fig__TutorialsReconstructionFigPipeline">Figure 0.2</a> 流程概述 </p> </div> <p> <br>
+</p>
+<p>接下来我们将详细介绍这些步骤。</p>
+<h1><a class="anchor" id="TutorialsReconstruction_input"></a>
+读取输入</h1>
+<p>CGAL中的重建算法以容器上的迭代器范围作为输入，并使用属性映射来访问点（以及在需要时访问法向量）。点通常以纯文本格式存储（称为'XYZ'格式），其中每个点由换行符分隔，每个坐标由空格分隔。其他可用格式包括'OFF'、'PLY'和'LAS'。CGAL提供了读取这些格式的函数：</p>
+<ul>
+<li><code>read_XYZ()</code></li>
+<li><code><a class="elRef" href="../Polyhedron/group__PkgPolyhedronIOFunc.html#gaccd9d4d15af1376dbc166eb501f28980">read_OFF()</a></code></li>
+<li><code>read_PLY()</code></li>
+<li><code>read_PLY_with_properties()</code> 用于读取额外的PLY属性</li>
+<li><code>read_LAS()</code></li>
+<li><code>read_LAS_with_properties()</code> 用于读取额外的LAS属性</li>
+</ul>
+<p>CGAL还提供了专门的容器 <code><a class="elRef" href="../Point_set_3/classCGAL_1_1Point__set__3.html">CGAL::Point_set_3</a></code> 来处理带有额外属性（如法向量）的点集。在这种情况下，属性映射的处理变得非常简单，如下面章节所示。该结构还支持流操作符，可以读取上述任何格式的点集。使用这种方法可以大大减少代码量，如下例所示：</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">  Point_set points;</div>
+<div class="line"> </div>
+<div class="line">  std::string fname = argc==1?CGAL::data_file_path(<span class="stringliteral">"points_3/kitten.xyz"</span>) : argv[1];</div>
+<div class="line">  <span class="keywordflow">if</span> (argc &lt; 2)</div>
+<div class="line">  {</div>
+<div class="line">    std::cerr &lt;&lt; <span class="stringliteral">"Usage: "</span> &lt;&lt; argv[0] &lt;&lt; <span class="stringliteral">" [input.xyz/off/ply/las]"</span> &lt;&lt; std::endl;</div>
+<div class="line">    std::cerr &lt;&lt;<span class="stringliteral">"Running "</span> &lt;&lt; argv[0] &lt;&lt; <span class="stringliteral">" data/kitten.xyz -1\n"</span>;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  std::ifstream stream (fname, std::ios_base::binary);</div>
+<div class="line">  <span class="keywordflow">if</span> (!stream)</div>
+<div class="line">  {</div>
+<div class="line">    std::cerr &lt;&lt; <span class="stringliteral">"Error: cannot read file "</span> &lt;&lt; fname &lt;&lt; std::endl;</div>
+<div class="line">    <span class="keywordflow">return</span> EXIT_FAILURE;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  stream &gt;&gt; points;</div>
+<div class="line"> </div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">"Read "</span> &lt;&lt; points.size () &lt;&lt; <span class="stringliteral">" point(s)"</span> &lt;&lt; std::endl;</div>
+<div class="line">  <span class="keywordflow">if</span> (points.empty())</div>
+<div class="line">    <span class="keywordflow">return</span> EXIT_FAILURE;</div>
+<div class="line"> </div>
+</div><!-- fragment --><h1><a class="anchor" id="TutorialsReconstruction_preprocessing"></a>
+预处理</h1>
+<p>由于重建算法有一些特定要求，而点云并不总是满足这些要求，因此可能需要进行一些预处理才能获得最佳结果。</p>
+<p>注意，这个预处理步骤是可选的：当输入点云没有缺陷时，可以直接对其进行重建，无需任何预处理。</p>
+<p><a class="anchor" id="fig__TutorialsReconstructionFigPreprocessing"></a> </p><div class="image">
+<img src="reconstruction_preproc.png" alt="">
+</div>
+   <div class="cgal_figure_caption"> <p>  <a class="el" href="tuto_reconstruction.html#fig__TutorialsReconstructionFigPreprocessing">Figure 0.3</a> 对同一输入使用不同预处理方法的推进前沿重建输出比较。平滑点云是使用喷射平滑（jet smoothing）生成的；简化点云是使用网格简化（grid simplification）生成的。 </p> </div> <p> <br>
+</p>
+<h2><a class="anchor" id="TutorialsReconstruction_preprocessing_outliers"></a>
+离群点去除</h2>
+<p>某些采集技术会产生远离表面的点。这些点通常被称为"离群点"，对重建没有意义。在包含离群点的点云上使用CGAL重建算法会产生严重扭曲的输出，因此强烈建议在执行重建之前过滤这些离群点。</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">  <span class="keyword">typename</span> Point_set::iterator rout_it = CGAL::remove_outliers&lt;CGAL::Sequential_tag&gt;</div>
+<div class="line">    (points,</div>
+<div class="line">     24, <span class="comment">// Number of neighbors considered for evaluation</span></div>
+<div class="line">     points.parameters().threshold_percent (5.0)); <span class="comment">// Percentage of points to remove</span></div>
+<div class="line">  points.remove(rout_it, points.end());</div>
+<div class="line"> </div>
+<div class="line">  std::cout &lt;&lt; points.number_of_removed_points()</div>
+<div class="line">            &lt;&lt; <span class="stringliteral">" point(s) are outliers."</span> &lt;&lt; std::endl;</div>
+<div class="line"> </div>
+<div class="line">  <span class="comment">// Applying point set processing algorithm to a CGAL::Point_set_3</span></div>
+<div class="line">  <span class="comment">// object does not erase the points from memory but place them in</span></div>
+<div class="line">  <span class="comment">// the garbage of the object: memory can be freed by the user.</span></div>
+<div class="line">  points.collect_garbage();</div>
+<div class="line"> </div>
+</div><!-- fragment --><h2><a class="anchor" id="TutorialsReconstruction_preprocessing_simplification"></a>
+简化</h2>
+<p>某些激光扫描仪生成的点具有很大的采样密度变化。通常，扫描线上的点采样非常密集，但两条扫描线之间的间隙较大，这导致点云过于庞大且采样密度变化很大。这种类型的输入点云可能会在使用那些通常只能处理小幅采样密度变化的算法时产生不完美的输出。</p>
+<p>CGAL提供了几种简化算法。除了减少输入点云的大小从而减少计算时间外，其中一些还可以帮助使输入更加均匀。<code><a class="elRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga7757ef9b3900e42fde26f5a0ac56e20f">grid_simplify_point_set()</a></code>函数就是这样的例子，它定义了一个用户指定大小的网格，并在每个被占用的单元格中保留一个点。</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">  <span class="comment">// Compute average spacing using neighborhood of 6 points</span></div>
+<div class="line">  <span class="keywordtype">double</span> spacing = CGAL::compute_average_spacing&lt;CGAL::Sequential_tag&gt; (points, 6);</div>
+<div class="line"> </div>
+<div class="line">  <span class="comment">// Simplify using a grid of size 2 * average spacing</span></div>
+<div class="line">  <span class="keyword">typename</span> Point_set::iterator gsim_it = <a class="code hl_functionRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga7757ef9b3900e42fde26f5a0ac56e20f">CGAL::grid_simplify_point_set</a> (points, 2. * spacing);</div>
+<div class="line">  points.remove(gsim_it, points.end());</div>
+<div class="line"> </div>
+<div class="line">  std::cout &lt;&lt; points.number_of_removed_points()</div>
+<div class="line">            &lt;&lt; <span class="stringliteral">" point(s) removed after simplification."</span> &lt;&lt; std::endl;</div>
+<div class="line"> </div>
+<div class="line">  points.collect_garbage();</div>
+<div class="line"> </div>
+<div class="ttc" id="agroup__PkgPointSetProcessing3Algorithms_html_ga7757ef9b3900e42fde26f5a0ac56e20f"><div class="ttname"><a href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga7757ef9b3900e42fde26f5a0ac56e20f">CGAL::grid_simplify_point_set</a></div><div class="ttdeci">PointRange::iterator grid_simplify_point_set(PointRange &amp;points, double epsilon, const NamedParameters &amp;np=parameters::default_values())</div></div>
+</div><!-- fragment --><h2><a class="anchor" id="TutorialsReconstruction_preprocessing_smoothing"></a>
+平滑</h2>
+<p>尽管"泊松"或"尺度空间"重建在内部处理噪声，但用户可能想要对平滑步骤有更精确的控制。例如，略带噪声的点云可以通过一些可靠的平滑算法进行处理，然后通过"推进前沿"方法重建，这种方法提供了相关的特性（带边界的定向网格）。</p>
+<p>CGAL提供了两个函数来对噪声点云进行良好的近似平滑（即不会降低曲率等特性）：</p>
+<ul>
+<li><code><a class="elRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga96a3738be3b2b9bd1587af78ae10e67a">jet_smooth_point_set()</a></code></li>
+<li><code><a class="elRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga01192a227578fee0c5676ba6a5e88931">bilateral_smooth_point_set()</a></code></li>
+</ul>
+<p>这些函数直接修改容器：</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">  CGAL::jet_smooth_point_set&lt;CGAL::Sequential_tag&gt; (points, 24);</div>
+<div class="line"> </div>
+</div><!-- fragment --><h2><a class="anchor" id="TutorialsReconstruction_preprocessing_normal"></a>
+法向量估计与定向</h2>
+<p><a class="elRef" href="../Poisson_surface_reconstruction_3/index.html#Chapter_Poisson_Surface_Reconstruction">泊松表面重建</a> 需要带有定向法向量的点。要将算法应用于原始点云，必须首先估计法向量，例如使用以下两个函数之一：</p>
+<ul>
+<li><code><a class="elRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga721aeb7af4b2d31e08e75bc5d53303cf">pca_estimate_normals()</a></code></li>
+<li><code><a class="elRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga078e25209373cab0e1f3524202489771">jet_estimate_normals()</a></code></li>
+</ul>
+<p>PCA方法更快，但在存在高曲率的情况下，喷射法（jet）更准确。这些函数只估计法向量的方向，而不是它们的定向（向量的方向可能在局部不一致）。要正确定向法向量，可以使用以下函数：</p>
+<ul>
+<li><code><a class="elRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga17c3c558c3799b65bd23fba971a82a5c">mst_orient_normals()</a></code></li>
+<li><code><a class="elRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#gafc3627234666e1fb458e9387e9d5f3c6">scanline_orient_normals()</a></code></li>
+</ul>
+<p>第一个函数使用最小生成树（minimum spanning tree）在逐渐扩大的邻域中一致地传播法向量的定向。对于具有许多尖锐特征和遮挡的数据（例如在机载激光雷达数据中很常见），第二种算法可能会产生更好的结果：它利用按扫描线排序的点云来估计每个点的视线方向，从而相应地定向法向量。</p>
+<p>注意，如果输入的法向量方向不一致，这些函数也可以直接用于输入的法向量。</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">    CGAL::jet_estimate_normals&lt;CGAL::Sequential_tag&gt;</div>
+<div class="line">      (points, 24); <span class="comment">// Use 24 neighbors</span></div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Orientation of normals, returns iterator to first unoriented point</span></div>
+<div class="line">    <span class="keyword">typename</span> Point_set::iterator unoriented_points_begin =</div>
+<div class="line">      <a class="code hl_functionRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga17c3c558c3799b65bd23fba971a82a5c">CGAL::mst_orient_normals</a>(points, 24); <span class="comment">// Use 24 neighbors</span></div>
+<div class="line"> </div>
+<div class="line">    points.remove (unoriented_points_begin, points.end());</div>
+<div class="line"> </div>
+<div class="ttc" id="agroup__PkgPointSetProcessing3Algorithms_html_ga17c3c558c3799b65bd23fba971a82a5c"><div class="ttname"><a href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga17c3c558c3799b65bd23fba971a82a5c">CGAL::mst_orient_normals</a></div><div class="ttdeci">PointRange::iterator mst_orient_normals(PointRange &amp;points, unsigned int k, const NamedParameters &amp;np=parameters::default_values())</div></div>
+</div><!-- fragment --><h1><a class="anchor" id="TutorialsReconstruction_reconstruction"></a>
+重建</h1>
+<h2><a class="anchor" id="TutorialsReconstruction_reconstruction_poisson"></a>
+泊松重建</h2>
+<p>泊松重建的原理是计算一个隐式函数，其梯度与输入的法向量场匹配：这个指示函数在推断形状的内部和外部具有相反的符号（因此需要闭合形状）。这种方法需要法向量，并产生平滑的闭合表面。如果期望表面精确插值输入点，这种方法就不合适。相反，如果目标是用平滑表面近似带噪声的点云，它的表现会很好。</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">    <a class="code hl_classRef" href="../Surface_mesh/classCGAL_1_1Surface__mesh.html">CGAL::Surface_mesh&lt;Point_3&gt;</a> output_mesh;</div>
+<div class="line">    <a class="code hl_functionRef" href="../Poisson_surface_reconstruction_3/group__PkgPoissonSurfaceReconstruction3Ref.html#ga2470854cf03552ecee02f11c17024ddf">CGAL::poisson_surface_reconstruction_delaunay</a></div>
+<div class="line">      (points.begin(), points.end(),</div>
+<div class="line">       points.point_map(), points.normal_map(),</div>
+<div class="line">       output_mesh, spacing);</div>
+<div class="line"> </div>
+<div class="ttc" id="aclassCGAL_1_1Surface__mesh_html"><div class="ttname"><a href="../Surface_mesh/classCGAL_1_1Surface__mesh.html">CGAL::Surface_mesh</a></div></div>
+<div class="ttc" id="agroup__PkgPoissonSurfaceReconstruction3Ref_html_ga2470854cf03552ecee02f11c17024ddf"><div class="ttname"><a href="../Poisson_surface_reconstruction_3/group__PkgPoissonSurfaceReconstruction3Ref.html#ga2470854cf03552ecee02f11c17024ddf">CGAL::poisson_surface_reconstruction_delaunay</a></div><div class="ttdeci">bool poisson_surface_reconstruction_delaunay(PointInputIterator begin, PointInputIterator end, PointMap point_map, NormalMap normal_map, PolygonMesh &amp;output_mesh, double spacing, double sm_angle=20.0, double sm_radius=30.0, double sm_distance=0.375, Tag tag=Tag())</div></div>
+</div><!-- fragment --><h2><a class="anchor" id="TutorialsReconstruction_reconstruction_advancing"></a>
+推进前沿重建</h2>
+<p>推进前沿是一种基于Delaunay三角剖分的方法，它对输入点的子集进行插值。它生成点索引的三元组来描述重建的三角形面片：它使用优先队列按顺序选择最可能成为表面一部分的Delaunay面片，基于大小准则（倾向于选择小面片）和角度准则（倾向于平滑性）。它的主要优点是可以生成带边界的定向流形表面：与泊松重建不同，它不需要法向量，也不局限于重建闭合形状。但是，如果点云有噪声，则需要预处理。</p>
+<p><a class="elRef" href="../Advancing_front_surface_reconstruction/index.html#Chapter_Advancing_Front_Surface_Reconstruction">推进前沿</a> 包提供了几种构造函数的方法。这里是一个简单的例子：</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">    <span class="keyword">typedef</span> std::array&lt;std::size_t, 3&gt; Facet; <span class="comment">// Triple of indices</span></div>
+<div class="line"> </div>
+<div class="line">    std::vector&lt;Facet&gt; facets;</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// The function is called using directly the points raw iterators</span></div>
+<div class="line">    <a class="code hl_functionRef" href="../Advancing_front_surface_reconstruction/group__PkgAdvancingFrontSurfaceReconstructionRef.html#gaa2b1f41291920247fd5c6ef7c09f70a4">CGAL::advancing_front_surface_reconstruction</a>(points.points().begin(),</div>
+<div class="line">                                                 points.points().end(),</div>
+<div class="line">                                                 std::back_inserter(facets));</div>
+<div class="line">    std::cout &lt;&lt; facets.size ()</div>
+<div class="line">              &lt;&lt; <span class="stringliteral">" facet(s) generated by reconstruction."</span> &lt;&lt; std::endl;</div>
+<div class="line"> </div>
+<div class="ttc" id="agroup__PkgAdvancingFrontSurfaceReconstructionRef_html_gaa2b1f41291920247fd5c6ef7c09f70a4"><div class="ttname"><a href="../Advancing_front_surface_reconstruction/group__PkgAdvancingFrontSurfaceReconstructionRef.html#gaa2b1f41291920247fd5c6ef7c09f70a4">CGAL::advancing_front_surface_reconstruction</a></div><div class="ttdeci">IndicesOutputIterator advancing_front_surface_reconstruction(PointInputIterator b, PointInputIterator e, IndicesOutputIterator out, double radius_ratio_bound=5, double beta=0.52)</div></div>
+</div><!-- fragment --><h2><a class="anchor" id="TutorialsReconstruction_reconstruction_scale_space"></a>
+尺度空间重建</h2>
+<p>尺度空间重建的目标是生成一个插值输入点的表面（插值器），同时对噪声具有一定的鲁棒性。具体来说，它首先对输入点集多次应用平滑滤波器（如喷射平滑）以产生尺度空间；然后，对最平滑的尺度进行网格化（例如使用推进前沿网格生成器）；最后，将平滑点之间的连接关系传播到原始输入点集。如果输入点云有噪声但用户仍然希望表面精确通过这些点，这种方法是正确的选择。</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">    <a class="code hl_classRef" href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__surface__reconstruction__3.html">CGAL::Scale_space_surface_reconstruction_3&lt;Kernel&gt;</a> reconstruct</div>
+<div class="line">      (points.points().begin(), points.points().end());</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Smooth using 4 iterations of Jet Smoothing</span></div>
+<div class="line">    reconstruct.increase_scale (4, <a class="code hl_classRef" href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__reconstruction__3_1_1Jet__smoother.html">CGAL::Scale_space_reconstruction_3::Jet_smoother&lt;Kernel&gt;</a>());</div>
+<div class="line">    <span class="comment">// Mesh with the Advancing Front mesher with a maximum facet length of 0.5</span></div>
+<div class="line">    reconstruct.reconstruct_surface (<a class="code hl_classRef" href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__reconstruction__3_1_1Advancing__front__mesher.html">CGAL::Scale_space_reconstruction_3::Advancing_front_mesher&lt;Kernel&gt;</a>(0.5));</div>
+<div class="line"> </div>
+<div class="ttc" id="aclassCGAL_1_1Scale__space__reconstruction__3_1_1Advancing__front__mesher_html"><div class="ttname"><a href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__reconstruction__3_1_1Advancing__front__mesher.html">CGAL::Scale_space_reconstruction_3::Advancing_front_mesher</a></div></div>
+<div class="ttc" id="aclassCGAL_1_1Scale__space__reconstruction__3_1_1Jet__smoother_html"><div class="ttname"><a href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__reconstruction__3_1_1Jet__smoother.html">CGAL::Scale_space_reconstruction_3::Jet_smoother</a></div></div>
+<div class="ttc" id="aclassCGAL_1_1Scale__space__surface__reconstruction__3_html"><div class="ttname"><a href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__surface__reconstruction__3.html">CGAL::Scale_space_surface_reconstruction_3</a></div></div>
+</div><!-- fragment --><h1><a class="anchor" id="TutorialsReconstruction_postprocessing"></a>
+输出和后处理</h1>
+<p>这些方法每一个都以不同的方式生成三角网格。如果输出网格存在缺陷，如孔洞或自相交，CGAL在 <a class="el" href="packages.html#PkgPolygonMeshProcessing">多边形网格处理</a> 包中提供了几种算法来进行后处理（孔洞填充、重新网格化等）。</p>
+<p>我们在这里不详细讨论这些函数，因为有许多后处理的可能性，其相关性强烈依赖于用户对输出网格的期望。</p>
+<p>网格（经过后处理或未经后处理）可以轻松保存为PLY格式（这里使用二进制变体）：</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">    std::ofstream f (<span class="stringliteral">"out_poisson.ply"</span>, std::ios_base::binary);</div>
+<div class="line">    <a class="code hl_functionRef" href="../Stream_support/group__PkgStreamSupportRef.html#ga7eb5683e79d8aa69059a453dc44cbaa7">CGAL::IO::set_binary_mode</a> (f);</div>
+<div class="line">    <a class="code hl_functionRef" href="../Surface_mesh/group__PkgSurfaceMeshIOFuncPLY.html#ga50f0e9f2b293855d2c7f1a62939cbe8d">CGAL::IO::write_PLY</a>(f, output_mesh);</div>
+<div class="line">    f.close ();</div>
+<div class="line"> </div>
+<div class="ttc" id="agroup__PkgStreamSupportRef_html_ga7eb5683e79d8aa69059a453dc44cbaa7"><div class="ttname"><a href="../Stream_support/group__PkgStreamSupportRef.html#ga7eb5683e79d8aa69059a453dc44cbaa7">CGAL::IO::set_binary_mode</a></div><div class="ttdeci">Mode set_binary_mode(std::ios &amp;s)</div></div>
+<div class="ttc" id="agroup__PkgSurfaceMeshIOFuncPLY_html_ga50f0e9f2b293855d2c7f1a62939cbe8d"><div class="ttname"><a href="../Surface_mesh/group__PkgSurfaceMeshIOFuncPLY.html#ga50f0e9f2b293855d2c7f1a62939cbe8d">CGAL::IO::write_PLY</a></div><div class="ttdeci">bool write_PLY(std::ostream &amp;os, const Surface_mesh&lt; P &gt; &amp;sm, const std::string &amp;comments, const NamedParameters &amp;np=parameters::default_values())</div></div>
+</div><!-- fragment --><p>多边形汤（polygon soup）也可以通过遍历点和面保存为OFF格式：</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">    std::ofstream f (<span class="stringliteral">"out_sp.off"</span>);</div>
+<div class="line">    f &lt;&lt; <span class="stringliteral">"OFF"</span> &lt;&lt; std::endl &lt;&lt; points.size () &lt;&lt; <span class="stringliteral">" "</span></div>
+<div class="line">      &lt;&lt; reconstruct.number_of_facets() &lt;&lt; <span class="stringliteral">" 0"</span> &lt;&lt; std::endl;</div>
+<div class="line">    <span class="keywordflow">for</span> (Point_set::Index idx : points)</div>
+<div class="line">      f &lt;&lt; points.point (idx) &lt;&lt; std::endl;</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; facet : <a class="code hl_functionRef" href="../STL_Extension/namespaceCGAL.html#ac87cfb03dd80e388d2fe53af9e53e9ed">CGAL::make_range</a> (reconstruct.facets_begin(), reconstruct.facets_end()))</div>
+<div class="line">      f &lt;&lt; <span class="stringliteral">"3 "</span>&lt;&lt; facet[0] &lt;&lt; <span class="stringliteral">" "</span> &lt;&lt; facet[1] &lt;&lt; <span class="stringliteral">" "</span> &lt;&lt; facet[2] &lt;&lt; std::endl;</div>
+<div class="line">    f.close ();</div>
+<div class="line"> </div>
+<div class="ttc" id="anamespaceCGAL_html_ac87cfb03dd80e388d2fe53af9e53e9ed"><div class="ttname"><a href="../STL_Extension/namespaceCGAL.html#ac87cfb03dd80e388d2fe53af9e53e9ed">CGAL::make_range</a></div><div class="ttdeci">Iterator_range&lt; T &gt; make_range(const T &amp;b, const T &amp;e)</div></div>
+</div><!-- fragment --><p>最后，如果多边形汤可以转换为多边形网格，也可以使用流操作符直接保存为OFF格式：</p>
+<div class="fragment"><div class="line"> </div>
+<div class="line">    <span class="comment">// copy points for random access</span></div>
+<div class="line">    std::vector&lt;Point_3&gt; vertices;</div>
+<div class="line">    vertices.reserve (points.size());</div>
+<div class="line">    std::copy (points.points().begin(), points.points().end(), std::back_inserter (vertices));</div>
+<div class="line"> </div>
+<div class="line">    <a class="code hl_classRef" href="../Surface_mesh/classCGAL_1_1Surface__mesh.html">CGAL::Surface_mesh&lt;Point_3&gt;</a> output_mesh;</div>
+<div class="line">    <a class="code hl_functionRef" href="../Polygon_mesh_processing/group__PMP__combinatorial__repair__grp.html#ga2ba9722ec8472a1455107ffce7145e46">CGAL::Polygon_mesh_processing::polygon_soup_to_polygon_mesh</a> (vertices, facets, output_mesh);</div>
+<div class="line">    std::ofstream f (<span class="stringliteral">"out_af.off"</span>);</div>
+<div class="line">    f &lt;&lt; output_mesh;</div>
+<div class="line">    f.close ();</div>
+<div class="line"> </div>
+<div class="ttc" id="agroup__PMP__combinatorial__repair__grp_html_ga2ba9722ec8472a1455107ffce7145e46"><div class="ttname"><a href="../Polygon_mesh_processing/group__PMP__combinatorial__repair__grp.html#ga2ba9722ec8472a1455107ffce7145e46">CGAL::Polygon_mesh_processing::polygon_soup_to_polygon_mesh</a></div><div class="ttdeci">void polygon_soup_to_polygon_mesh(const PointRange &amp;points, const PolygonRange &amp;polygons, PolygonMesh &amp;out, const NamedParameters_PS &amp;np_ps=parameters::default_values(), const NamedParameters_PM &amp;np_pm=parameters::default_values())</div></div>
+</div><!-- fragment --><h1><a class="anchor" id="TutorialsReconstruction_recap"></a>
+完整代码示例</h1>
+<p>本教程中使用的所有代码片段可以组合成一个完整的算法流程（需要使用正确的 _includes_）。我们提供了一个完整的代码示例，实现了本教程中描述的所有步骤。用户可以在运行时通过第二个参数选择重建方法。</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Point_set_3.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Point_set_3/IO.h&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/remove_outliers.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/grid_simplify_point_set.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/jet_smooth_point_set.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/jet_estimate_normals.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/mst_orient_normals.h&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/poisson_surface_reconstruction.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Advancing_front_surface_reconstruction.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Scale_space_surface_reconstruction_3.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Scale_space_reconstruction_3/Jet_smoother.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Scale_space_reconstruction_3/Advancing_front_mesher.h&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Surface_mesh.h&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="preprocessor">#include &lt;cstdlib&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;vector&gt;</span></div>
+<div class="line"><span class="preprocessor">#include &lt;fstream&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// types</span></div>
+<div class="line"><span class="keyword">typedef</span> <a class="code hl_classRef" href="../Kernel_23/classCGAL_1_1Exact__predicates__inexact__constructions__kernel.html">CGAL::Exact_predicates_inexact_constructions_kernel</a> <a class="code hl_namespaceRef" href="../Kernel_23/namespaceKernel.html">Kernel</a>;</div>
+<div class="line"><span class="keyword">typedef</span> Kernel::FT FT;</div>
+<div class="line"><span class="keyword">typedef</span> <a class="code hl_classRef" href="../Kernel_23/classKernel_1_1Point__3.html">Kernel::Point_3</a> Point_3;</div>
+<div class="line"><span class="keyword">typedef</span> <a class="code hl_classRef" href="../Kernel_23/classKernel_1_1Vector__3.html">Kernel::Vector_3</a> Vector_3;</div>
+<div class="line"><span class="keyword">typedef</span> <a class="code hl_classRef" href="../Kernel_23/classKernel_1_1Sphere__3.html">Kernel::Sphere_3</a> Sphere_3;</div>
+<div class="line"><span class="keyword">typedef</span> <a class="code hl_classRef" href="../Point_set_3/classCGAL_1_1Point__set__3.html">CGAL::Point_set_3&lt;Point_3, Vector_3&gt;</a> Point_set;</div>
+<div class="line"> </div>
+<div class="line"><span class="keywordtype">int</span> main(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span>*argv[])</div>
+<div class="line">{</div>
+<div class="line"> </div>
+<div class="line">  Point_set points;</div>
+<div class="line"> </div>
+<div class="line">  std::string fname = argc==1?CGAL::data_file_path(<span class="stringliteral">"points_3/kitten.xyz"</span>) : argv[1];</div>
+<div class="line">  <span class="keywordflow">if</span> (argc &lt; 2)</div>
+<div class="line">  {</div>
+<div class="line">    std::cerr &lt;&lt; <span class="stringliteral">"Usage: "</span> &lt;&lt; argv[0] &lt;&lt; <span class="stringliteral">" [input.xyz/off/ply/las]"</span> &lt;&lt; std::endl;</div>
+<div class="line">    std::cerr &lt;&lt;<span class="stringliteral">"Running "</span> &lt;&lt; argv[0] &lt;&lt; <span class="stringliteral">" data/kitten.xyz -1\n"</span>;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  std::ifstream stream (fname, std::ios_base::binary);</div>
+<div class="line">  <span class="keywordflow">if</span> (!stream)</div>
+<div class="line">  {</div>
+<div class="line">    std::cerr &lt;&lt; <span class="stringliteral">"Error: cannot read file "</span> &lt;&lt; fname &lt;&lt; std::endl;</div>
+<div class="line">    <span class="keywordflow">return</span> EXIT_FAILURE;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  stream &gt;&gt; points;</div>
+<div class="line"> </div>
+<div class="line">  std::cout &lt;&lt; <span class="stringliteral">"Read "</span> &lt;&lt; points.size () &lt;&lt; <span class="stringliteral">" point(s)"</span> &lt;&lt; std::endl;</div>
+<div class="line">  <span class="keywordflow">if</span> (points.empty())</div>
+<div class="line">    <span class="keywordflow">return</span> EXIT_FAILURE;</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">  <span class="keyword">typename</span> Point_set::iterator rout_it = CGAL::remove_outliers&lt;CGAL::Sequential_tag&gt;</div>
+<div class="line">    (points,</div>
+<div class="line">     24, <span class="comment">// Number of neighbors considered for evaluation</span></div>
+<div class="line">     points.parameters().threshold_percent (5.0)); <span class="comment">// Percentage of points to remove</span></div>
+<div class="line">  points.remove(rout_it, points.end());</div>
+<div class="line"> </div>
+<div class="line">  std::cout &lt;&lt; points.number_of_removed_points()</div>
+<div class="line">            &lt;&lt; <span class="stringliteral">" point(s) are outliers."</span> &lt;&lt; std::endl;</div>
+<div class="line"> </div>
+<div class="line">  <span class="comment">// Applying point set processing algorithm to a CGAL::Point_set_3</span></div>
+<div class="line">  <span class="comment">// object does not erase the points from memory but place them in</span></div>
+<div class="line">  <span class="comment">// the garbage of the object: memory can be freed by the user.</span></div>
+<div class="line">  points.collect_garbage();</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">  <span class="comment">// Compute average spacing using neighborhood of 6 points</span></div>
+<div class="line">  <span class="keywordtype">double</span> spacing = CGAL::compute_average_spacing&lt;CGAL::Sequential_tag&gt; (points, 6);</div>
+<div class="line"> </div>
+<div class="line">  <span class="comment">// Simplify using a grid of size 2 * average spacing</span></div>
+<div class="line">  <span class="keyword">typename</span> Point_set::iterator gsim_it = <a class="code hl_functionRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga7757ef9b3900e42fde26f5a0ac56e20f">CGAL::grid_simplify_point_set</a> (points, 2. * spacing);</div>
+<div class="line">  points.remove(gsim_it, points.end());</div>
+<div class="line"> </div>
+<div class="line">  std::cout &lt;&lt; points.number_of_removed_points()</div>
+<div class="line">            &lt;&lt; <span class="stringliteral">" point(s) removed after simplification."</span> &lt;&lt; std::endl;</div>
+<div class="line"> </div>
+<div class="line">  points.collect_garbage();</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">  CGAL::jet_smooth_point_set&lt;CGAL::Sequential_tag&gt; (points, 24);</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">  <span class="keywordtype">int</span> reconstruction_choice</div>
+<div class="line">    = argc==1? -1 : (argc &lt; 3 ? 0 : atoi(argv[2]));</div>
+<div class="line"> </div>
+<div class="line">  <span class="keywordflow">if</span> (reconstruction_choice == 0 || reconstruction_choice==-1) <span class="comment">// Poisson</span></div>
+<div class="line">  {</div>
+<div class="line"> </div>
+<div class="line">    CGAL::jet_estimate_normals&lt;CGAL::Sequential_tag&gt;</div>
+<div class="line">      (points, 24); <span class="comment">// Use 24 neighbors</span></div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Orientation of normals, returns iterator to first unoriented point</span></div>
+<div class="line">    <span class="keyword">typename</span> Point_set::iterator unoriented_points_begin =</div>
+<div class="line">      <a class="code hl_functionRef" href="../Point_set_processing_3/group__PkgPointSetProcessing3Algorithms.html#ga17c3c558c3799b65bd23fba971a82a5c">CGAL::mst_orient_normals</a>(points, 24); <span class="comment">// Use 24 neighbors</span></div>
+<div class="line"> </div>
+<div class="line">    points.remove (unoriented_points_begin, points.end());</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">    <a class="code hl_classRef" href="../Surface_mesh/classCGAL_1_1Surface__mesh.html">CGAL::Surface_mesh&lt;Point_3&gt;</a> output_mesh;</div>
+<div class="line">    <a class="code hl_functionRef" href="../Poisson_surface_reconstruction_3/group__PkgPoissonSurfaceReconstruction3Ref.html#ga2470854cf03552ecee02f11c17024ddf">CGAL::poisson_surface_reconstruction_delaunay</a></div>
+<div class="line">      (points.begin(), points.end(),</div>
+<div class="line">       points.point_map(), points.normal_map(),</div>
+<div class="line">       output_mesh, spacing);</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">    std::ofstream f (<span class="stringliteral">"out_poisson.ply"</span>, std::ios_base::binary);</div>
+<div class="line">    <a class="code hl_functionRef" href="../Stream_support/group__PkgStreamSupportRef.html#ga7eb5683e79d8aa69059a453dc44cbaa7">CGAL::IO::set_binary_mode</a> (f);</div>
+<div class="line">    <a class="code hl_functionRef" href="../Surface_mesh/group__PkgSurfaceMeshIOFuncPLY.html#ga50f0e9f2b293855d2c7f1a62939cbe8d">CGAL::IO::write_PLY</a>(f, output_mesh);</div>
+<div class="line">    f.close ();</div>
+<div class="line"> </div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">if</span> (reconstruction_choice == 1 || reconstruction_choice==-1) <span class="comment">// Advancing front</span></div>
+<div class="line">  {</div>
+<div class="line"> </div>
+<div class="line">    <span class="keyword">typedef</span> std::array&lt;std::size_t, 3&gt; Facet; <span class="comment">// Triple of indices</span></div>
+<div class="line"> </div>
+<div class="line">    std::vector&lt;Facet&gt; facets;</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// The function is called using directly the points raw iterators</span></div>
+<div class="line">    <a class="code hl_functionRef" href="../Advancing_front_surface_reconstruction/group__PkgAdvancingFrontSurfaceReconstructionRef.html#gaa2b1f41291920247fd5c6ef7c09f70a4">CGAL::advancing_front_surface_reconstruction</a>(points.points().begin(),</div>
+<div class="line">                                                 points.points().end(),</div>
+<div class="line">                                                 std::back_inserter(facets));</div>
+<div class="line">    std::cout &lt;&lt; facets.size ()</div>
+<div class="line">              &lt;&lt; <span class="stringliteral">" facet(s) generated by reconstruction."</span> &lt;&lt; std::endl;</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// copy points for random access</span></div>
+<div class="line">    std::vector&lt;Point_3&gt; vertices;</div>
+<div class="line">    vertices.reserve (points.size());</div>
+<div class="line">    std::copy (points.points().begin(), points.points().end(), std::back_inserter (vertices));</div>
+<div class="line"> </div>
+<div class="line">    <a class="code hl_classRef" href="../Surface_mesh/classCGAL_1_1Surface__mesh.html">CGAL::Surface_mesh&lt;Point_3&gt;</a> output_mesh;</div>
+<div class="line">    <a class="code hl_functionRef" href="../Polygon_mesh_processing/group__PMP__combinatorial__repair__grp.html#ga2ba9722ec8472a1455107ffce7145e46">CGAL::Polygon_mesh_processing::polygon_soup_to_polygon_mesh</a> (vertices, facets, output_mesh);</div>
+<div class="line">    std::ofstream f (<span class="stringliteral">"out_af.off"</span>);</div>
+<div class="line">    f &lt;&lt; output_mesh;</div>
+<div class="line">    f.close ();</div>
+<div class="line"> </div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">if</span> (reconstruction_choice == 2 || reconstruction_choice==-1) <span class="comment">// Scale space</span></div>
+<div class="line">  {</div>
+<div class="line"> </div>
+<div class="line">    <a class="code hl_classRef" href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__surface__reconstruction__3.html">CGAL::Scale_space_surface_reconstruction_3&lt;Kernel&gt;</a> reconstruct</div>
+<div class="line">      (points.points().begin(), points.points().end());</div>
+<div class="line"> </div>
+<div class="line">    <span class="comment">// Smooth using 4 iterations of Jet Smoothing</span></div>
+<div class="line">    reconstruct.increase_scale (4, <a class="code hl_classRef" href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__reconstruction__3_1_1Jet__smoother.html">CGAL::Scale_space_reconstruction_3::Jet_smoother&lt;Kernel&gt;</a>());</div>
+<div class="line">    <span class="comment">// Mesh with the Advancing Front mesher with a maximum facet length of 0.5</span></div>
+<div class="line">    reconstruct.reconstruct_surface (<a class="code hl_classRef" href="../Scale_space_reconstruction_3/classCGAL_1_1Scale__space__reconstruction__3_1_1Advancing__front__mesher.html">CGAL::Scale_space_reconstruction_3::Advancing_front_mesher&lt;Kernel&gt;</a>(0.5));</div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line"> </div>
+<div class="line">    std::ofstream f (<span class="stringliteral">"out_sp.off"</span>);</div>
+<div class="line">    f &lt;&lt; <span class="stringliteral">"OFF"</span> &lt;&lt; std::endl &lt;&lt; points.size () &lt;&lt; <span class="stringliteral">" "</span></div>
+<div class="line">      &lt;&lt; reconstruct.number_of_facets() &lt;&lt; <span class="stringliteral">" 0"</span> &lt;&lt; std::endl;</div>
+<div class="line">    <span class="keywordflow">for</span> (Point_set::Index idx : points)</div>
+<div class="line">      f &lt;&lt; points.point (idx) &lt;&lt; std::endl;</div>
+<div class="line">    <span class="keywordflow">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span>&amp; facet : <a class="code hl_functionRef" href="../STL_Extension/namespaceCGAL.html#ac87cfb03dd80e388d2fe53af9e53e9ed">CGAL::make_range</a> (reconstruct.facets_begin(), reconstruct.facets_end()))</div>
+<div class="line">      f &lt;&lt; <span class="stringliteral">"3 "</span>&lt;&lt; facet[0] &lt;&lt; <span class="stringliteral">" "</span> &lt;&lt; facet[1] &lt;&lt; <span class="stringliteral">" "</span> &lt;&lt; facet[2] &lt;&lt; std::endl;</div>
+<div class="line">    f.close ();</div>
+<div class="line"> </div>
+<div class="line">  }</div>
+<div class="line">  <span class="keywordflow">else</span> <span class="comment">// Handle error</span></div>
+<div class="line">  {</div>
+<div class="line">    std::cerr &lt;&lt; <span class="stringliteral">"Error: invalid reconstruction id: "</span> &lt;&lt; reconstruction_choice &lt;&lt; std::endl;</div>
+<div class="line">    <span class="keywordflow">return</span> EXIT_FAILURE;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keywordflow">return</span> EXIT_SUCCESS;</div>
+<div class="line">}</div>
+<div class="ttc" id="aclassCGAL_1_1Exact__predicates__inexact__constructions__kernel_html"><div class="ttname"><a href="../Kernel_23/classCGAL_1_1Exact__predicates__inexact__constructions__kernel.html">CGAL::Exact_predicates_inexact_constructions_kernel</a></div></div>
+<div class="ttc" id="aclassCGAL_1_1Point__set__3_html"><div class="ttname"><a href="../Point_set_3/classCGAL_1_1Point__set__3.html">CGAL::Point_set_3</a></div></div>
+<div class="ttc" id="aclassKernel_1_1Point__3_html"><div class="ttname"><a href="../Kernel_23/classKernel_1_1Point__3.html">Kernel::Point_3</a></div></div>
+<div class="ttc" id="aclassKernel_1_1Sphere__3_html"><div class="ttname"><a href="../Kernel_23/classKernel_1_1Sphere__3.html">Kernel::Sphere_3</a></div></div>
+<div class="ttc" id="aclassKernel_1_1Vector__3_html"><div class="ttname"><a href="../Kernel_23/classKernel_1_1Vector__3.html">Kernel::Vector_3</a></div></div>
+<div class="ttc" id="anamespaceKernel_html"><div class="ttname"><a href="../Kernel_23/namespaceKernel.html">Kernel</a></div></div>
+</div><!-- fragment --><h1><a class="anchor" id="TutorialsReconstruction_pipeline"></a>
+完整流程图示</h1>
+<p>以下图示展示了应用于一个熊雕像（由 <em>EPFL Computer Graphics and Geometry Laboratory</em> 提供 <b>[cgal:e-esmr）的完整重建流程。同时还应用了两个网格处理算法（孔洞填充和各向同性重网格化）（更多信息请参考]</b> <a class="el" href="packages.html#PkgPolygonMeshProcessing">多边形网格处理</a> 章节）。</p>
+<p><a class="anchor" id="fig__TutorialsReconstructionFigFull"></a> </p><div class="image">
+<img src="reconstruction_pipeline.png" alt="">
+</div>
+   <div class="cgal_figure_caption"> <p>  <a class="el" href="tuto_reconstruction.html#fig__TutorialsReconstructionFigFull">Figure 0.4</a> 完整重建流程（包含局部放大视图）。 </p> </div> <p> <br>
+ </p>
+</div></div><!-- contents -->
+</div><!-- PageDoc -->
+</div><!-- doc-content -->
+<!-- HTML footer for doxygen 1.9.6-->
+<!-- start footer part -->
+<!-- The footer div is not part of the default but we require it to
+move the footer to the bottom of the page. -->
+<div id="footer">
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"></a> 1.9.6 </li>
+  </ul>
+</div>
+</div>
+</body>
+
+
+</html>

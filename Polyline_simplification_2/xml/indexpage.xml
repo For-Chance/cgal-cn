@@ -1,0 +1,366 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_Polyline_simplification"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Andreas Fabri</para>
+</simplesect>
+<image type="html" name="kilimanjaro.png"></image>
+</para>
+<para>This package allows to simplify polylines with the guarantee that the topology of the polylines does not change. This can be done for a single polyline as well as for a set of polyline constraints in a constrained triangulation. The simplification can be controlled with cost and stop functions.</para>
+<sect1 id="index_1Section_PolylineSimplification_Introduction">
+<title>Introduction</title>
+<para><emphasis>Polyline simplification</emphasis> is the process of reducing the number of vertices used in a set of polylines while keeping the overall shape as much as possible.</para>
+<para><emphasis>Topology preserving polyline simplification</emphasis> means that neither intersections are introduced, nor the nesting level of a polygon changes: islands do not intersect a simplified coastline, and islands stay in the water.</para>
+<para>The method implemented in this package is based on <ref refid="citelist_1CITEREF_cgal:dds-scs-09" kindref="member">[1]</ref>. It can simplify any set of polylines, open or closed, and possibly intersecting themselves or each other. The method consists of iteratively replacing edges <computeroutput>(p,q)</computeroutput> and <computeroutput>(q,r)</computeroutput> with edge <computeroutput>(p,r)</computeroutput> by removing the vertex <computeroutput>q</computeroutput> from one polyline. The topology of the polyline set is preserved during the simplification as the algorithm guarantees that no new intersections occur as a result of removing a vertex.</para>
+<para>Vertices are removed according to a priority given for the vertex by a user-supplied <emphasis>cost</emphasis> function which calculates the <emphasis>simplification error</emphasis>. The cost function is a measure of the deviation between the original polyline and the current polyline without the vertex.</para>
+<para>The algorithm terminates when a user-supplied <emphasis>stop predicate</emphasis> returns true, for instance, upon reaching a desired number of vertices or reaching a maximum simplification error.</para>
+<para>The polyline simplification algorithm operates on a triangulation class from Chapter <ref refid="packages_1PkgTriangulation2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">2D Triangulations</ref>, namely <computeroutput><ref refid="classCGAL_1_1Constrained__triangulation__plus__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Constrained_triangulation_plus_2</ref></computeroutput>. This data structure allows to remove vertices of a polyline constraint, while keeping the points of the removed vertices of the polyline constraint. The fact that it is a triangulation allows to perform the topology check for vertices <computeroutput>p,q,r</computeroutput> efficiently, as this can be decided based on the set of vertices adjacent to <computeroutput>q</computeroutput> in the triangulation.</para>
+<para><anchor id="index_1fig__figure_platelet"/> <image type="html" name="platelet.png"></image>
+ <image type="latex" name="platelet.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figure_platelet" kindref="member">fig__figure_platelet</ref> Check if vertex <computeroutput>q</computeroutput> can be removed. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Section_PolylineSimplification_Cost_Functions">
+<title>Cost Functions</title>
+<para>The specific way in which the removal cost is calculated is called the <emphasis>cost</emphasis> function. The user can choose different strategies by choosing a cost function object.</para>
+<para>This package provides the three cost functions formulated in <ref refid="citelist_1CITEREF_cgal:dds-scs-09" kindref="member">[1]</ref>. As the cost function is a template argument of the simplification function, users can write and use their own. The provided cost functions are all based on measuring the Euclidean distance between a subsequence of the original polyline and the corresponding subsequence of the simplified polyline with the vertex whose cost is calculated being removed.</para>
+<para>Let vertices <computeroutput>p</computeroutput>, <computeroutput>q</computeroutput>, and <computeroutput>r</computeroutput> be three consecutive vertices of a polyline constraint. If the vertex <computeroutput>q</computeroutput> is removed, the edges <computeroutput>(p,q)</computeroutput> and <computeroutput>(q,r)</computeroutput> would be replaced by the edge <computeroutput>(p,r)</computeroutput>.</para>
+<sect2 id="index_1Subsection_PolylineSimplification_Maximum_Squared_Distance">
+<title>Maximum Squared Distance</title>
+<para>The maximum squared distance is the maximum of the squared Euclidean distances between each point on the original polyline between <computeroutput>p</computeroutput> and <computeroutput>r</computeroutput> and the line segment <computeroutput>(p,r)</computeroutput>. Let <formula id="0">$s_0,...,s_n$</formula> be the points strictly between <computeroutput>p</computeroutput> and <computeroutput>r</computeroutput> on the original polyline. The cost of removing vertex <computeroutput>q</computeroutput> is: <formula id="1">$ v_1 = \max \{ \mathrm{squared\_distance}((p,r), s_i) |
+i=0,..,n\} $</formula></para>
+<para><anchor id="index_1fig__figure_maxDist"/> <image type="html" name="maxDist.png"></image>
+ <image type="latex" name="maxDist.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figure_maxDist" kindref="member">fig__figure_maxDist</ref> The maximum squared distance between <computeroutput>q</computeroutput> and <computeroutput>(p,r)</computeroutput> <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Subsection_PolylineSimplification_Scaled_Maximum_Squared_Distance">
+<title>Scaled Maximum Squared Distance</title>
+<para>When it is important to preserve the separation of adjacent polylines, a variation of the maximum squared distance cost can be used. Here the maximum is divided by the minimum squared Euclidean distance between the candidate vertex <computeroutput>q</computeroutput> and all its adjacent vertices (except <computeroutput>p</computeroutput> and <computeroutput>r</computeroutput>). Those are all vertices in adjacent polylines, or adjacent regions of the same polyline.</para>
+<para>Let <formula id="2">$t_0,...,t_m$</formula> be the points of the vertices adjacent to vertex <computeroutput>q</computeroutput>, different from <computeroutput>p</computeroutput> and <computeroutput>r</computeroutput> and let <formula id="3">$ v_2 = \min \{ \mathrm{squared\_distance}((p,r),
+t_i) | i=0,..,n\}$</formula>. The cost of removing vertex <computeroutput>q</computeroutput> is <formula id="4">$v_1/v_2$</formula>, and it is +infinity when the set of points <formula id="5">${t_1..t_m}$</formula> is empty (possible if the point <computeroutput>q</computeroutput> is on the convex hull). See also <ref refid="index_1fig__figure_scaledAndHybrid" kindref="member">fig__figure_scaledAndHybrid</ref>.</para>
+<para>This distance measure gives lower priority to vertices with close neighboring polylines.</para>
+</sect2>
+<sect2 id="index_1Subsection_PolylineSimplification_Hybrid_Maximum_Squared_Distance">
+<title>Hybrid Maximum Squared Distance</title>
+<para>The scaled maximum works well in areas with close neighboring polylines, while the absolute maximum works <emphasis>better</emphasis> in areas where the polylines are far apart. In certain applications such as cartographic contours, there are both dense and spare areas, so a good strategy is to use a scaled or an absolute maximum depending on the case.</para>
+<para>The hybrid distance measure uses a parameter <formula id="6">$R$</formula> to indicate which measure to use: if <formula id="7">$v_2$</formula> , i.e., the minimum distance to adjacent vertices, is below <formula id="6">$R$</formula>, the scaled maximum is used, otherwise the absolute maximum is used.</para>
+<para>The cost of removing vertex <computeroutput>q</computeroutput> is <formula id="4">$v_1/v_2$</formula>, if <formula id="8">$v_2 &lt;R$</formula>, and <formula id="9">$v_1/R$</formula>, otherwise.</para>
+<para>As Dyken&amp;al. explain, the choice of a good value for <formula id="6">$R$</formula> is problem specific. It may depend on the pen size or the pixel size when drawing, or on the grid size when the polyline points are on a grid.</para>
+<para><anchor id="index_1fig__figure_scaledAndHybrid"/> <image type="html" name="scaledAndHybridMaxDist.png"></image>
+ <image type="latex" name="scaledAndHybridMaxDist.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figure_scaledAndHybrid" kindref="member">fig__figure_scaledAndHybrid</ref> The scaled and hybrid maximum squared distance between <computeroutput>q</computeroutput> and <computeroutput>(p,r)</computeroutput>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_PolylineSimplification_Examples">
+<title>Examples</title>
+<para>The first example shows how to simplify a <computeroutput><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref></computeroutput>. We then show how to simplify simultaneously several polylines, and show how to mark polyline vertices so that they do not get removed. The last example shows how to keep, access, and really remove points of polyline vertices that got removed by the simplification.</para>
+<sect2 id="index_1Subsection_PolylineSimplification_Simplifying">
+<title>Simplifying a Polygon</title>
+<para>The first example shows how to simplify a single polyline by halving the number of vertices.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Polyline_simplification_2_2simplify_polygon_8cpp-example" kindref="compound">Polyline_simplification_2/simplify_polygon.cpp</ref> <programlisting filename="Polyline_simplification_2/simplify_polygon.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/simplify.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/WKT.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PS<sp/>=<sp/><ref refid="namespaceCGAL_1_1Polyline__simplification__2" kindref="compound">CGAL::Polyline_simplification_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Stop_below_count_ratio_threshold<sp/>Stop;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Squared_distance_cost<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Cost;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>ifs(<sp/>(argc==1)?</highlight><highlight class="stringliteral">&quot;data/polygon.wkt&quot;</highlight><highlight class="normal">:argv[1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref><sp/>polygon;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::IO::read_polygon_WKT(ifs,<sp/>polygon);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Cost<sp/>cost;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>polygon<sp/>=<sp/>PS::simplify(polygon,<sp/>cost,<sp/>Stop(0.5));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.precision(12);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::IO::write_polygon_WKT(std::cout,<sp/>polygon)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Subsection_PolylineSimplification_Simplifying_Several">
+<title>Simplifying Several Polylines</title>
+<para>In the second example we insert several polygons in a <computeroutput><ref refid="classCGAL_1_1Constrained__triangulation__plus__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Constrained_triangulation_plus_2</ref></computeroutput>. As a vertex type we have to use <computeroutput><ref refid="classCGAL_1_1Polyline__simplification__2_1_1Vertex__base__2" kindref="compound">CGAL::Polyline_simplification_2::Vertex_base_2</ref></computeroutput> as vertices may be marked as non-removable. The simplification algorithm marks the first and last vertex of polyline constraints as well as intersections. Finally, we iterate over all vertices of all polyline constraints.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Polyline_simplification_2_2simplify_8cpp-example" kindref="compound">Polyline_simplification_2/simplify.cpp</ref> <programlisting filename="Polyline_simplification_2/simplify.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_triangulation_plus_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/simplify.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/Squared_distance_cost.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/WKT.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PS<sp/>=<sp/><ref refid="namespaceCGAL_1_1Polyline__simplification__2" kindref="compound">CGAL::Polyline_simplification_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Vertex_base_2&lt;K&gt;<sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__face__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, TDS, CGAL::Exact_predicates_tag&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__plus__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_plus_2&lt;CDT&gt;</ref><sp/><sp/><sp/><sp/><sp/>CT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Constraint_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Vertices_in_constraint_iterator<sp/>Vertices_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Points_in_constraint_iterator<sp/><sp/><sp/>Points_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Stop_below_count_ratio_threshold<sp/>Stop;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Squared_distance_cost<sp/>Cost;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>ifs(<sp/>(argc==1)?</highlight><highlight class="stringliteral">&quot;data/polygon.wkt&quot;</highlight><highlight class="normal">:argv[1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CT<sp/>ct;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref><sp/>P;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(CGAL::IO::read_polygon_WKT(ifs,<sp/>P)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref>&amp;<sp/>poly<sp/>=<sp/>P.outer_boundary();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ct.insert_constraint(poly);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Polygon_with_holes_2::Hole_const_iterator<sp/>it<sp/>=<sp/>P.holes_begin();<sp/>it<sp/>!=<sp/>P.holes_end();<sp/>++it){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref>&amp;<sp/>hole<sp/>=<sp/>*it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ct.insert_constraint(hole);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PS::simplify(ct,<sp/>Cost(),<sp/>Stop(0.5));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Constraint_iterator<sp/>cit<sp/>=<sp/>ct.constraints_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>cit<sp/>!=<sp/>ct.constraints_end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++cit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;simplified<sp/>polyline&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Points_in_constraint_iterator<sp/>vit<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ct.points_in_constraint_begin(*cit);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>ct.points_in_constraint_end(*cit);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>++vit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*vit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Note that when polylines share subsequences of polyline vertices they can get simplified simultaneously.</para>
+<para><anchor id="index_1fig__figure_overlapping_polylines"/> <image type="html" name="overlapping_polylines.png"></image>
+ <image type="latex" name="overlapping_polylines.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figure_overlapping_polylines" kindref="member">fig__figure_overlapping_polylines</ref> Simplification of overlapping subsequence of polyline vertices <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Polyline_simplification_2_2simplify_overlapping_polylines_8cpp-example" kindref="compound">Polyline_simplification_2/simplify_overlapping_polylines.cpp</ref> <programlisting filename="Polyline_simplification_2/simplify_overlapping_polylines.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_triangulation_plus_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/simplify.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/Squared_distance_cost.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PS<sp/>=<sp/><ref refid="namespaceCGAL_1_1Polyline__simplification__2" kindref="compound">CGAL::Polyline_simplification_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Vertex_base_2&lt;K&gt;<sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__face__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, TDS, CGAL::Exact_predicates_tag&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__plus__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_plus_2&lt;CDT&gt;</ref><sp/><sp/><sp/><sp/><sp/>CT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Constraint_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Vertices_in_constraint_iterator<sp/>Vertices_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Points_in_constraint_iterator<sp/><sp/><sp/>Points_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Stop_below_count_ratio_threshold<sp/>Stop;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Squared_distance_cost<sp/>Cost;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CT<sp/>ct;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>P<sp/>=<sp/>{<sp/>Point(0,1),<sp/>Point(1,1),<sp/>Point(2,2),<sp/>Point(3,1),<sp/>Point(4,1),<sp/><sp/><sp/>Point(4,2),<sp/>Point(4,1),<sp/>Point(5,1)<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>Q<sp/>=<sp/>{<sp/>Point(5,0),<sp/>Point(4,1),<sp/>Point(3,1),<sp/>Point(2,2),<sp/>Point(1,1),<sp/>Point(0,0)<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>R<sp/>=<sp/>{<sp/>Point(3,1),<sp/>Point(4,1)<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ct.insert_constraint(P);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ct.insert_constraint(Q);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ct.insert_constraint(R);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PS::simplify(ct,<sp/>Cost(),<sp/>Stop(0.5));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Constraint_iterator<sp/>cit<sp/>=<sp/>ct.constraints_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>cit<sp/>!=<sp/>ct.constraints_end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++cit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;simplified<sp/>polyline&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Points_in_constraint_iterator<sp/>vit<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ct.points_in_constraint_begin(*cit);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>ct.points_in_constraint_end(*cit);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>++vit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*vit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Subsection_PolylineSimplification_Keeping">
+<title>Keeping Points While Removing Vertices</title>
+<para>In this example we show the version of <computeroutput><ref refid="group__PkgPolylineSimplification2Functions_1ga99791f32d185db9a6e529aacba87e676" kindref="member">Polyline_simplification_2::simplify()</ref></computeroutput> that simplifies a single polyline constraint, and keeps the points while removing vertices.</para>
+<para>During the simplification the cost functions need the original sequence of points. As explained in the introduction the <computeroutput><ref refid="classCGAL_1_1Constrained__triangulation__plus__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Constrained_triangulation_plus_2</ref></computeroutput> allows to remove vertices from a polyline constraint, and hence from the triangulation, while keeping the points in the polyline constraint. This explains why there is a <ref refid="classCGAL_1_1Constrained__triangulation__plus__2_1a0d38b6bac2db9859af3ff67c2226f3e8" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag"><computeroutput>Vertices_in_constraint_iterator</computeroutput></ref> and a <ref refid="classCGAL_1_1Constrained__triangulation__plus__2_1ab375f52ab119f4c636371ea6daf7b128" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag"><computeroutput>Point_in_constraint_iterator</computeroutput></ref>.</para>
+<para>With the last argument of <computeroutput><ref refid="group__PkgPolylineSimplification2Functions_1ga99791f32d185db9a6e529aacba87e676" kindref="member">Polyline_simplification_2::simplify()</ref></computeroutput> set to <computeroutput>true</computeroutput>, we can keep the points even when the simplification function has returned. We might want to keep them, because we want to call <computeroutput><ref refid="group__PkgPolylineSimplification2Functions_1ga99791f32d185db9a6e529aacba87e676" kindref="member">Polyline_simplification_2::simplify()</ref></computeroutput> once again for the same polyline constraint, while measuring the simplification error against the original polyline.</para>
+<para>The print function traverses each polyline constraint twice. First we print the points on the simplified polyline, and then we print the points of the original polyline.</para>
+<para>At the end we remove the points that were kept from the constraints.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Polyline_simplification_2_2points_and_vertices_8cpp-example" kindref="compound">Polyline_simplification_2/points_and_vertices.cpp</ref> <programlisting filename="Polyline_simplification_2/points_and_vertices.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_triangulation_plus_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/simplify.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/WKT.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PS<sp/>=<sp/><ref refid="namespaceCGAL_1_1Polyline__simplification__2" kindref="compound">CGAL::Polyline_simplification_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Vertex_base_2&lt;K&gt;<sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__face__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Exact__predicates__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Exact_predicates_tag</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Itag;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K,TDS, Itag&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__plus__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_plus_2&lt;CDT&gt;</ref><sp/><sp/><sp/><sp/><sp/>CT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Constraint_id<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Constraint_id;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Constraint_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Vertices_in_constraint_iterator<sp/>Vertices_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Points_in_constraint_iterator<sp/><sp/><sp/>Points_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Stop_below_count_ratio_threshold<sp/>Stop;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Squared_distance_cost<sp/>Cost;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>print(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>CT&amp;<sp/>ct,<sp/>Constraint_id<sp/>cid)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;simplified<sp/>polyline&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Vertices_in_constraint_iterator<sp/>vit<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ct.vertices_in_constraint_begin(cid);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>ct.vertices_in_constraint_end(cid);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++vit){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*vit)-&gt;point()<sp/>&lt;&lt;<sp/>std::endl<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;original<sp/>points&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Points_in_constraint_iterator<sp/>pit<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ct.points_in_constraint_begin(cid);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>pit<sp/>!=<sp/>ct.points_in_constraint_end(cid);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++pit){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*pit<sp/>&lt;&lt;<sp/>std::endl<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>ifs(<sp/>(argc==1)?</highlight><highlight class="stringliteral">&quot;data/polygon.wkt&quot;</highlight><highlight class="normal">:argv[1]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>remove_points<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CT<sp/>ct;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polygon_with_holes_2<sp/>P;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Constraint_id<sp/>cid;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>largest<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(CGAL::IO::read_polygon_WKT(ifs,<sp/>P)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Polygon_2&amp;<sp/>poly<sp/>=<sp/>P.outer_boundary();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Constraint_id<sp/>cid2<sp/>=<sp/>ct.insert_constraint(poly);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(poly.size()<sp/>&gt;<sp/>largest){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>cid<sp/>=<sp/>cid2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PS::simplify(ct,<sp/>cid,<sp/>Cost(),<sp/>Stop(0.5),<sp/>remove_points);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print(ct,<sp/>cid);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PS::simplify(ct,<sp/>cid,<sp/>Cost(),<sp/>Stop(0.5),<sp/>remove_points);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ct.remove_points_without_corresponding_vertex(cid);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>print(ct,<sp/>cid);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Subsection_PolylineSimplification_Terrain">
+<title>Simplification of a Terrain</title>
+<para>It is possible to use the class <computeroutput><ref refid="classCGAL_1_1Projection__traits__xy__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Projection_traits_xy_3</ref></computeroutput> in order to simplify polylines in space. Note that the segment length is computed in the xy-plane, and the polyline must not have any vertical segment.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Polyline_simplification_2_2simplify_terrain_8cpp-example" kindref="compound">Polyline_simplification_2/simplify_terrain.cpp</ref> <programlisting filename="Polyline_simplification_2/simplify_terrain.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Projection_traits_xy_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_Delaunay_triangulation_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Constrained_triangulation_plus_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/simplify.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyline_simplification_2/Squared_distance_cost.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PS<sp/>=<sp/><ref refid="namespaceCGAL_1_1Polyline__simplification__2" kindref="compound">CGAL::Polyline_simplification_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>Epic;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Projection__traits__xy__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Projection_traits_xy_3&lt;Epic&gt;</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Vertex_base_2&lt;K&gt;<sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__face__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_face_base_2&lt;K&gt;</ref><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_data_structure_2&lt;Vb,<sp/>Fb&gt;<sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_Delaunay_triangulation_2&lt;K, TDS, CGAL::Exact_predicates_tag&gt;</ref><sp/>CDT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Constrained__triangulation__plus__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Constrained_triangulation_plus_2&lt;CDT&gt;</ref><sp/><sp/><sp/><sp/><sp/>CT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Constraint_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Vertices_in_constraint_iterator<sp/>Vertices_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CT::Points_in_constraint_iterator<sp/><sp/><sp/>Points_in_constraint_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Stop_below_count_ratio_threshold<sp/>Stop;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PS::Squared_distance_cost<sp/>Cost;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CT<sp/>ct;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>P;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(std::cin<sp/>&gt;&gt;<sp/>P){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ct.insert_constraint(P);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PS::simplify(ct,<sp/>Cost(),<sp/>Stop(0.5));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Constraint_iterator<sp/>cit<sp/>=<sp/>ct.constraints_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>cit<sp/>!=<sp/>ct.constraints_end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++cit)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;simplified<sp/>polyline&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(Points_in_constraint_iterator<sp/>vit<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ct.points_in_constraint_begin(*cit);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>ct.points_in_constraint_end(*cit);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>++vit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>*vit<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_PolylineSimplification_History">
+<title>Design and Implementation History</title>
+<para>Dyken et al <ref refid="citelist_1CITEREF_cgal:dds-scs-09" kindref="member">[1]</ref> combine a classical polyline simplification algorithm with the triangulation of polylines in order to check if an elementary simplification step can be performed. In our implementation we simplified this test even further.</para>
+<para>Fernando Cacciola made a first prototype implementation for GeometryFactory. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Polyline_simplification_2.txt"/>
+  </compounddef>
+</doxygen>

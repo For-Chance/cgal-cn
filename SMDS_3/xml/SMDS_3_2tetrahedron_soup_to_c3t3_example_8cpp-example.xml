@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="SMDS_3_2tetrahedron_soup_to_c3t3_example_8cpp-example" kind="example">
+    <compoundname>SMDS_3/tetrahedron_soup_to_c3t3_example.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="SMDS_3/tetrahedron_soup_to_c3t3_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Tetrahedral_remeshing/Remeshing_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_complex_3_in_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedron_soup_to_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/File_medit.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;unordered_map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">K<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">DT3<sp/>=<sp/><ref refid="classCGAL_1_1Delaunay__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Delaunay_triangulation_3&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Remeshing_triangulation<sp/>=<sp/><ref refid="classCGAL_1_1Tetrahedral__remeshing_1_1Remeshing__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Tetrahedral_remeshing.tag">CGAL::Tetrahedral_remeshing::Remeshing_triangulation_3&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">C3T3<sp/>=<sp/><ref refid="classCGAL_1_1Mesh__complex__3__in__triangulation__3" kindref="compound">CGAL::Mesh_complex_3_in_triangulation_3&lt;Remeshing_triangulation&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_3<sp/>=<sp/>K::Point_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Tetrahedron_3<sp/>=<sp/>K::Tetrahedron_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_handle<sp/>=<sp/>DT3::Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Subdomain_index<sp/>=<sp/>C3T3::Subdomain_index;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nbv<sp/>=<sp/>100;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//a<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>DT3<sp/>delaunay;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::unordered_map&lt;Vertex_handle,<sp/>int&gt;<sp/>v2i;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;DT3::Point&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>points(nbv);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Tetrahedron_3&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tetrahedra;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::array&lt;int,<sp/>4&gt;<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>tets_by_indices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;<sp/>Subdomain_index&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>subdomains;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//insert<sp/>random<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random_points_in_cube_3&lt;Point_3&gt;<sp/>randp(2.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(i<sp/>&lt;<sp/>nbv)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points[i]<sp/>=<sp/>*randp++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vertex_handle<sp/>v<sp/>=<sp/>delaunay.insert(points[i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>v2i[v]<sp/>=<sp/>i++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>tetrahedra.reserve(delaunay.number_of_finite_cells());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>tets_by_indices.reserve(delaunay.number_of_finite_cells());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>subdomains.reserve(delaunay.number_of_finite_cells());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(DT3::Cell_handle<sp/>c<sp/>:<sp/>delaunay.finite_cell_handles())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>tetrahedra.push_back(delaunay.tetrahedron(c));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>tets_by_indices.push_back(<sp/>{<sp/>v2i.at(c-&gt;vertex(0)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>v2i.at(c-&gt;vertex(1)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>v2i.at(c-&gt;vertex(2)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>v2i.at(c-&gt;vertex(3))<sp/>}<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>subdomains.push_back(Subdomain_index(1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//build<sp/>triangulation<sp/>from<sp/>tetrahedra</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Remeshing_triangulation<sp/>tr</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>=<sp/>CGAL::tetrahedron_soup_to_triangulation_3&lt;Remeshing_triangulation&gt;(tetrahedra);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//build<sp/>triangulation<sp/>from<sp/>indices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Remeshing_triangulation<sp/>tr2</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>=<sp/>CGAL::tetrahedron_soup_to_triangulation_3&lt;Remeshing_triangulation&gt;(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>points,<sp/>tets_by_indices,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::subdomain_indices(std::cref(subdomains)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//build<sp/>a<sp/>C3T3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>C3T3<sp/>c3t3;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>c3t3.triangulation()<sp/>=<sp/>tr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>ofs(</highlight><highlight class="stringliteral">&quot;c3t3_output.mesh&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1ga9e9fc0fac6919241501c228e438fa2b2" kindref="member">CGAL::IO::write_MEDIT</ref>(ofs,<sp/>c3t3);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

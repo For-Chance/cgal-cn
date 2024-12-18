@@ -1,0 +1,28 @@
+var classArrangementBasicTraits__2 =
+[
+    [ "Bottom_side_category", "classArrangementBasicTraits__2.html#ad1c0c7aecbb67a46314b49271af64795", null ],
+    [ "Compare_x_2", "classArrangementBasicTraits__2.html#a50f0e201b051be81f31257feab0cdab7", null ],
+    [ "Compare_xy_2", "classArrangementBasicTraits__2.html#a293a8cbafe9449891fd1480f34d0c31c", null ],
+    [ "Compare_y_at_x_2", "classArrangementBasicTraits__2.html#ac87c7d7779ddf778dd8be68ad5a4fb37", null ],
+    [ "Compare_y_at_x_left_2", "classArrangementBasicTraits__2.html#a88da529dbddab3034e71ca82d414e7e1", null ],
+    [ "Compare_y_at_x_right_2", "classArrangementBasicTraits__2.html#a1eeadafe6fc9b9de597e61bdce250f23", null ],
+    [ "Construct_max_vertex_2", "classArrangementBasicTraits__2.html#a04f2fbd7da5f539f94fab902f9bcf37d", null ],
+    [ "Construct_min_vertex_2", "classArrangementBasicTraits__2.html#ac00c8a45688aeaa21496f4a21c8e22d5", null ],
+    [ "Equal_2", "classArrangementBasicTraits__2.html#aee2d448e95348f47d37aeb1d9d0f705c", null ],
+    [ "Has_left_category", "classArrangementBasicTraits__2.html#a928de1a5dac72286c1e2dd811dcb559f", null ],
+    [ "Is_vertical_2", "classArrangementBasicTraits__2.html#a64064c1508c2560a6bab217ad1b969f8", null ],
+    [ "Left_side_category", "classArrangementBasicTraits__2.html#a71e663e1e6e125a70aedf6ab2c82e95f", null ],
+    [ "Point_2", "classArrangementBasicTraits__2.html#a8cfc873dc62ce86f9479c4689845d4b3", null ],
+    [ "Right_side_category", "classArrangementBasicTraits__2.html#a51ec39783adcc206066f6075bee4ba77", null ],
+    [ "Top_side_category", "classArrangementBasicTraits__2.html#ad4077ad8b432735b265f25aa8aafa083", null ],
+    [ "X_monotone_curve_2", "classArrangementBasicTraits__2.html#a0fc1f7acfd69a5eae393294b6870a1d2", null ],
+    [ "compare_x_2_object", "classArrangementBasicTraits__2.html#a74fc80d51f47966867d517ca686835b8", null ],
+    [ "compare_xy_2_object", "classArrangementBasicTraits__2.html#a4215458305c1fefd2668133f1c9793dd", null ],
+    [ "compare_y_at_x_2_object", "classArrangementBasicTraits__2.html#acaddede02797a9c2b1585e0effa03869", null ],
+    [ "compare_y_at_x_left_2_object", "classArrangementBasicTraits__2.html#a307ffdd2bf7c6f998515db7970ab2b2a", null ],
+    [ "compare_y_at_x_right_2_object", "classArrangementBasicTraits__2.html#af0980610c3bfc719419e36a8e1c9819e", null ],
+    [ "construct_max_vertex_2_object", "classArrangementBasicTraits__2.html#ade4859ca5e515d38e35d7ed83b7de9b7", null ],
+    [ "construct_min_vertex_2_object", "classArrangementBasicTraits__2.html#a8b42bfd0931ec93c811584f5997e2564", null ],
+    [ "equal_2_object", "classArrangementBasicTraits__2.html#ae73906c3617838d19ad865af38bd2964", null ],
+    [ "is_vertical_2_object", "classArrangementBasicTraits__2.html#a4270c257515a6a68aa8d8d25be41c2c3", null ]
+];

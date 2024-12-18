@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Barycentric_coordinates_2_2terrain_height_modeling_8cpp-example" kind="example">
+    <compoundname>Barycentric_coordinates_2/terrain_height_modeling.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Barycentric_coordinates_2/terrain_height_modeling.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Projection_traits_xy_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/interpolation_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Barycentric_coordinates_2/Delaunay_domain_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Barycentric_coordinates_2/Mean_value_coordinates_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Projection<sp/>=<sp/><ref refid="classCGAL_1_1Projection__traits__xy__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Projection_traits_xy_3&lt;Kernel&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Projection::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Projection::Point_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_range<sp/>=<sp/>std::vector&lt;Point&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Domain<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Barycentric__coordinates_1_1Delaunay__domain__2" kindref="compound">CGAL::Barycentric_coordinates::Delaunay_domain_2&lt;Point_range, Projection&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mean_value_coordinates_2<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Barycentric__coordinates_1_1Mean__value__coordinates__2" kindref="compound">CGAL::Barycentric_coordinates::Mean_value_coordinates_2&lt;Point_range, Projection&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_function_value<sp/>=<sp/>std::map&lt;Point,<sp/>FT,<sp/>typename<sp/>Projection::Less_xy_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Function_value_access<sp/>=<sp/><ref refid="structCGAL_1_1Data__access" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Interpolation.tag">CGAL::Data_access&lt;Vertex_function_value&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_with_coordinate<sp/>=<sp/>std::pair&lt;Point,<sp/>FT&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Construct<sp/>a<sp/>polygon<sp/>that<sp/>bounds<sp/>a<sp/>three-dimensional<sp/>terrain.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>the<sp/>z-coordinate<sp/>of<sp/>each<sp/>vertex<sp/>represents<sp/>the<sp/>height<sp/>function.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Projection<sp/>in<sp/>2D<sp/>is<sp/>performed<sp/>automatically<sp/>by<sp/>the<sp/>Projection<sp/>traits<sp/>class.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;Point&gt;<sp/>polygon<sp/>=<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.03,<sp/>0.05,<sp/>0.00),<sp/>Point(0.07,<sp/>0.04,<sp/>0.02),<sp/>Point(0.10,<sp/>0.04,<sp/>0.04),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.14,<sp/>0.04,<sp/>0.06),<sp/>Point(0.17,<sp/>0.07,<sp/>0.08),<sp/>Point(0.20,<sp/>0.09,<sp/>0.10),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.22,<sp/>0.11,<sp/>0.12),<sp/>Point(0.25,<sp/>0.11,<sp/>0.14),<sp/>Point(0.27,<sp/>0.10,<sp/>0.16),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.30,<sp/>0.07,<sp/>0.18),<sp/>Point(0.31,<sp/>0.04,<sp/>0.20),<sp/>Point(0.34,<sp/>0.03,<sp/>0.22),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.37,<sp/>0.02,<sp/>0.24),<sp/>Point(0.40,<sp/>0.03,<sp/>0.26),<sp/>Point(0.42,<sp/>0.04,<sp/>0.28),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.44,<sp/>0.07,<sp/>0.30),<sp/>Point(0.45,<sp/>0.10,<sp/>0.32),<sp/>Point(0.46,<sp/>0.13,<sp/>0.34),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.46,<sp/>0.19,<sp/>0.36),<sp/>Point(0.47,<sp/>0.26,<sp/>0.38),<sp/>Point(0.47,<sp/>0.31,<sp/>0.40),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.47,<sp/>0.35,<sp/>0.42),<sp/>Point(0.45,<sp/>0.37,<sp/>0.44),<sp/>Point(0.41,<sp/>0.38,<sp/>0.46),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.38,<sp/>0.37,<sp/>0.48),<sp/>Point(0.35,<sp/>0.36,<sp/>0.50),<sp/>Point(0.32,<sp/>0.35,<sp/>0.52),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.30,<sp/>0.37,<sp/>0.54),<sp/>Point(0.28,<sp/>0.39,<sp/>0.56),<sp/>Point(0.25,<sp/>0.40,<sp/>0.58),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.23,<sp/>0.39,<sp/>0.60),<sp/>Point(0.21,<sp/>0.37,<sp/>0.62),<sp/>Point(0.21,<sp/>0.34,<sp/>0.64),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.23,<sp/>0.32,<sp/>0.66),<sp/>Point(0.24,<sp/>0.29,<sp/>0.68),<sp/>Point(0.27,<sp/>0.24,<sp/>0.70),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.29,<sp/>0.21,<sp/>0.72),<sp/>Point(0.29,<sp/>0.18,<sp/>0.74),<sp/>Point(0.26,<sp/>0.16,<sp/>0.76),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.24,<sp/>0.17,<sp/>0.78),<sp/>Point(0.23,<sp/>0.19,<sp/>0.80),<sp/>Point(0.24,<sp/>0.22,<sp/>0.82),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.24,<sp/>0.25,<sp/>0.84),<sp/>Point(0.21,<sp/>0.26,<sp/>0.86),<sp/>Point(0.17,<sp/>0.26,<sp/>0.88),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.12,<sp/>0.24,<sp/>0.90),<sp/>Point(0.07,<sp/>0.20,<sp/>0.92),<sp/>Point(0.03,<sp/>0.15,<sp/>0.94),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point(0.01,<sp/>0.10,<sp/>0.97),<sp/>Point(0.02,<sp/>0.07,<sp/>1.00)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Construct<sp/>a<sp/>Delaunay<sp/>domain.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>seeds;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>seeds.push_back(Point(0.1,<sp/>0.1,<sp/>0.0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Domain<sp/>domain(polygon);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>domain.create(0.05,<sp/>seeds);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Associate<sp/>each<sp/>polygon<sp/>vertex<sp/>with<sp/>the<sp/>corresponding<sp/>function<sp/>value.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_function_value<sp/>vertex_function_value;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>vertex<sp/>:<sp/>polygon)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vertex_function_value.insert(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::make_pair(vertex,<sp/>vertex.z()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Construct<sp/>the<sp/>class<sp/>with<sp/>the<sp/>mean<sp/>value<sp/>weights.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mean_value_coordinates_2<sp/><ref refid="group__PkgBarycentricCoordinates2RefFunctions_1gad9337f53ea56d65708bb42e4ee3415aa" kindref="member">mean_value_coordinates_2</ref>(polygon);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>mean<sp/>value<sp/>coordinates<sp/>and<sp/>use<sp/>them<sp/>to<sp/>interpolate<sp/>data</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>from<sp/>the<sp/>polygon<sp/>boundary<sp/>to<sp/>its<sp/>interior.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;FT&gt;<sp/>coordinates;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>coordinates.reserve(polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_with_coordinate&gt;<sp/>boundary;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boundary.resize(polygon.size());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>queries;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>queries.reserve(domain.number_of_vertices());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>domain.number_of_vertices();<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>query<sp/>=<sp/>domain.vertex(i);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>coordinates.clear();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgBarycentricCoordinates2RefFunctions_1gad9337f53ea56d65708bb42e4ee3415aa" kindref="member">mean_value_coordinates_2</ref>(query,<sp/>std::back_inserter(coordinates));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>polygon.size();<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>boundary[i]<sp/>=<sp/>std::make_pair(polygon[i],<sp/>coordinates[i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>f<sp/>=<sp/><ref refid="group__PkgInterpolation2Interpolation_1ga2f8a2f88b5b91b9f3db2d5e40bfa1df7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Interpolation.tag">CGAL::linear_interpolation</ref>(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>boundary.begin(),<sp/>boundary.end(),<sp/>FT(1),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Function_value_access(vertex_function_value));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>queries.push_back(Point(query.x(),<sp/>query.y(),<sp/>f));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Output<sp/>interpolated<sp/>heights.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;interpolated<sp/>heights<sp/>(all<sp/>queries):<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>query<sp/>:<sp/>queries)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>query.z()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

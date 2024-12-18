@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_dD_Range_and_Segment_Trees"/><anchor id="index_1Trees"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Gabriele Neyer</para>
+</simplesect>
+</para>
+<sect1 id="index_1SearchStructuresIntroduction">
+<title>Introduction</title>
+<para>This chapter presents the CGAL range tree and segment tree data structures.</para>
+</sect1>
+<sect1 id="index_1SearchStructuresDefinitions">
+<title>Definitions</title>
+<para>This section presents <computeroutput>d</computeroutput>-dimensional range and segment trees. A one-dimensional range tree is a binary search tree on <emphasis>one-dimensional point data</emphasis>. Here we call all one-dimensional data types having a strict ordering (like integer and double) <emphasis>point data</emphasis>. <emphasis><computeroutput>d</computeroutput>-dimensional point data</emphasis> are <computeroutput>d</computeroutput>-tuples of one-dimensional point data.</para>
+<para>A one-dimensional segment tree is a binary search tree as well, but with <emphasis>one-dimensional interval data</emphasis> as input data. One-dimensional interval data is a pair (i.e., 2-tuple) <computeroutput>(a,b)</computeroutput>, where <computeroutput>a</computeroutput> and <computeroutput>b</computeroutput> are one-dimensional point data of the same type and <computeroutput>a&lt; b</computeroutput>. The pair <computeroutput>(a,b)</computeroutput> represents a half open interval <computeroutput>[a,b)</computeroutput>. Analogously, a <computeroutput>d</computeroutput>-dimensional interval is represented by a <computeroutput>d</computeroutput>-tuple of one-dimensional intervals.</para>
+<para>The <emphasis>input data type</emphasis> for a <computeroutput>d</computeroutput>-dimensional tree is a container class consisting of a <computeroutput>d</computeroutput>-dimensional point data type, interval data type or a mixture of both, and optionally a <emphasis>value type</emphasis>, which can be used to store arbitrary data. E.g., the <computeroutput>d</computeroutput>-dimensional bounding box of a <computeroutput>d</computeroutput>-dimensional polygon may define the interval data of a <computeroutput>d</computeroutput>-dimensional segment tree and the polygon itself can be stored as its value. An <emphasis>input data item</emphasis> is an instance of an input data type.</para>
+<para>The range and segment tree classes are fully generic in the sense that they can be used to define <emphasis>multilayer trees</emphasis>. A multilayer tree of dimension (number of layers) <computeroutput>d</computeroutput> is a simple tree in the <computeroutput>d</computeroutput>-th layer, whereas the <computeroutput>k</computeroutput>-th layer, <computeroutput>1 &lt;= k &lt;= d-1</computeroutput>, of the tree defines a tree where each (inner) vertex contains a multilayer tree of dimension <computeroutput>d-k+1</computeroutput>. The <computeroutput>k-1</computeroutput>-dimensional tree which is nested in the <computeroutput>k</computeroutput>-dimensional tree (<computeroutput>T</computeroutput>) is called the <emphasis>sublayer tree</emphasis> (of <computeroutput>T</computeroutput>). For example, a <computeroutput>d</computeroutput>-dim tree can be a range tree on the first layer, constructed with respect to the first dimension of <computeroutput>d</computeroutput>-dimensional data items. On all the data items in each subtree, a <computeroutput>(d-1)</computeroutput>-dimensional tree is built, either a range or a segment tree, with respect to the second dimension of the data items. And so on.</para>
+<para>The figures in Sections <ref refid="index_1secrange_trees" kindref="member">Range Trees</ref> and <ref refid="index_1secsegment_trees" kindref="member">Segment Trees</ref> illustrate the means of a sublayer tree graphically.</para>
+<para>After creation of the tree, further insertions or deletions of data items are disallowed. The tree class does neither depend on the type of data nor on the concrete physical representation of the data items. E.g., let a multilayer tree be a segment tree for which each vertex defines a range tree. We can choose the data items to consist of intervals of type <computeroutput>double</computeroutput> and the point data of type <computeroutput>integer</computeroutput>. As value type we can choose <computeroutput>string</computeroutput>.</para>
+<para>For this generality we have to define what the tree of each dimension looks like and how the input data is organized. For dimension <computeroutput>k</computeroutput>, <computeroutput>1 &lt; k &lt; 4</computeroutput>, CGAL provides ready-to-use range and segment trees that can store k-dimensional keys (intervals resp.). Examples illustrating the use of these classes are given in Sections <ref refid="index_1secrange_tree_ex" kindref="member">Example for Range Tree on Map-like Data</ref> and <ref refid="index_1secsegment_tree_ex" kindref="member">Example for Segment Tree on Map-like Data</ref>. The description of the functionality of these classes as well as the definition of higher dimensional trees and mixed multilayer trees is given in the reference manual.</para>
+<para>In the following two sections we give short definitions of the version of the range tree and segment tree implemented here together with some examples. The presentation closely follows <ref refid="citelist_1CITEREF_bkos-cgaa-97" kindref="member">[1]</ref>.</para>
+</sect1>
+<sect1 id="index_1SearchStructuresSoftware">
+<title>Software Design</title>
+<para>In order to be able to define a multilayer tree we first designed the range and segment tree to have a template argument defining the type of the sublayer tree. With this sublayer tree type information the sublayers could be created. This approach lead to nested template arguments, since the sublayer tree can again have a template argument defining the sublayer. Therefore, the internal class and function identifiers got longer than a compiler-dependent limit. This happened already for <computeroutput>d=2</computeroutput>.</para>
+<para>Therefore, we chose another, object oriented, design. We defined a pure virtual base class called <computeroutput>Tree_base</computeroutput> from which we derived the classes <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput>. The constructor of these classes expects an argument called <computeroutput>sublayer_prototype</computeroutput> of type <computeroutput>Tree_base</computeroutput>. Since class <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> and class <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> are derived from class <computeroutput>Tree_base</computeroutput>, one can use an instantiation of class <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> or class <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> as constructor argument. This argument defines the sublayer tree of the tree. E.g., you can construct a <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> with an instantiation of class <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> as constructor argument. You then have defined a range tree with a segment tree as sublayer tree. Since both classes <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> expect a sublayer tree in their constructor we had to derive a third class called <computeroutput><ref refid="classCGAL_1_1Tree__anchor" kindref="compound">Tree_anchor</ref></computeroutput> from class <computeroutput>Tree_base</computeroutput> which does not expect a constructor argument. An instantiation of this class is used as constructor argument of class <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> or <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> in order to stop the recursion.</para>
+<para>All classes provide a <computeroutput>clone()</computeroutput> function which returns an instance (a copy) of the same tree type. The <computeroutput>clone()</computeroutput> function of the <computeroutput>sublayer_prototype</computeroutput> is called in the construction of the tree. In case that the sublayer tree again has a sublayer, it also has a <computeroutput>sublayer_prototype</computeroutput> which is also cloned and so on. Thus, a call to the <computeroutput>clone()</computeroutput> function generates a sublayer tree which has the complete knowledge about its sublayer tree.</para>
+<para>The trees allow to perform window queries, enclosing queries, and inverse range queries on the keys. Clearly, an inverse range query makes only sense in the segment tree. In order to perform an inverse range query, a range query of <formula id="9">$ \epsilon$</formula> width has to be performed. We preferred not to offer an extra function for this sort of query, since the inverse range query is a special case of the range query. Furthermore, offering an inverse range query in the segment tree class implies offering this function also in the range tree class and having an extra item in the traits class that accesses the inverse range query point.</para>
+<para>The trees are templatized with three arguments: <computeroutput>Data, Window</computeroutput> and <computeroutput>Traits</computeroutput>. Type <computeroutput>Data</computeroutput> defines the input data type and type <computeroutput>Window</computeroutput> defines the query window type. The tree uses a well defined set of functions in order to access data. These functions have to be provided by class <computeroutput>Traits</computeroutput>.</para>
+<para>The design partly follows the <emphasis>prototype design pattern</emphasis> in <ref refid="citelist_1CITEREF_cgal:ghjv-dpero-95" kindref="member">[2]</ref>. In comparison to our first approach using templates we want to note the following: In this approach the sublayer type is defined in use of object oriented programming at run time, while in the approach using templates, the sublayer type is defined at compile time.</para>
+<para>The runtime overhead caused in use of virtual member functions in this object oriented design is negligible since all virtual functions are non trivial.</para>
+<para>The design concept is illustrated in the figure below.</para>
+<para><anchor id="index_1fig__Search_rsd"/> <image type="html" name="rsd.png"></image>
+ <image type="latex" name="rsd.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Search_rsd" kindref="member">fig__Search_rsd</ref> Design of the range and segment tree data structure. The symbol triangle means that the lower class is derived from the upper class. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>E.g. in order to define a two dimensional multilayer tree, which consists of a range tree in the first dimension and a segment tree in the second dimension we proceed as follows: We construct an object of type <computeroutput><ref refid="classCGAL_1_1Tree__anchor" kindref="compound">Tree_anchor</ref></computeroutput> which stops the recursion. Then we construct an object of type <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput>, which gets as prototype argument our object of type <computeroutput><ref refid="classCGAL_1_1Tree__anchor" kindref="compound">Tree_anchor</ref></computeroutput>. After that, we define an object of type <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> which is constructed with the object of type <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> as prototype argument. The following piece of code illustrates the construction of the two-dimensional multilayer tree.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Tree_Anchor<sp/>*anchor=</highlight><highlight class="keyword">new</highlight><highlight class="normal"><sp/>Tree_Anchor;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment_Tree_d<sp/>*segment_tree<sp/>=<sp/></highlight><highlight class="keyword">new</highlight><highlight class="normal"><sp/>Segment_Tree_d(*anchor);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Range_Tree_d<sp/>*range_segment_tree<sp/>=<sp/></highlight><highlight class="keyword">new</highlight><highlight class="normal"><sp/>Range_Tree_d(*segment_tree);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>let<sp/>data_items<sp/>be<sp/>a<sp/>list<sp/>of<sp/>Data<sp/>items</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>range_segment_tree-&gt;make_tree(data_items.begin(),data_items.end());</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Here, class <computeroutput>Tree_Anchor, Segment_Tree_d</computeroutput>, and<computeroutput>Range_Tree_d</computeroutput> are defined by <computeroutput>typedef</computeroutput>s:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Tree__anchor" kindref="compound">Tree_anchor&lt;Data,Window&gt;</ref><sp/>Tree_Anchor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d&lt;Data,Window,Interval_traits&gt;</ref><sp/>Segment_Tree_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d&lt;Data,Window,Point_traits&gt;</ref><sp/>Range_Tree_d;</highlight></codeline>
+</programlisting></para>
+<para>Class <computeroutput>Tree_base</computeroutput> and class <computeroutput><ref refid="classCGAL_1_1Tree__anchor" kindref="compound">Tree_anchor</ref></computeroutput> get two template arguments: a class <computeroutput>Data</computeroutput> which defines the type of data that is stored in the tree, and a class <computeroutput>Window</computeroutput> which defines the type of a query range. The derived classes <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> additionally get an argument called <computeroutput>Tree_traits</computeroutput> which defines the interface between the <computeroutput>Data</computeroutput> and the tree. Let the <computeroutput>Data</computeroutput> type be a <computeroutput>d</computeroutput>-dimensional tuple, which is either a point data or an interval data in each dimension. Then, the class <computeroutput>Tree_traits</computeroutput> provides accessors to the point (resp. interval) data of that tree layer and a compare function. Remind our example of the two-dimensional tree which is a range tree in the first dimension and a segment tree in the second dimension. Then, the <computeroutput>Tree_traits</computeroutput> class template argument of class <computeroutput><ref refid="classCGAL_1_1Segment__tree__d" kindref="compound">Segment_tree_d</ref></computeroutput> defines an accessor to the interval data of the <computeroutput>Data</computeroutput>, and the <computeroutput>Tree_traits</computeroutput> class template argument of class <computeroutput><ref refid="classCGAL_1_1Range__tree__d" kindref="compound">Range_tree_d</ref></computeroutput> defines an accessor to the point data of <computeroutput>Data</computeroutput>. An example implementation for these classes is listed below.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Data{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>min,max;<sp/></highlight><highlight class="comment">//<sp/>interval<sp/>data</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>point;<sp/></highlight><highlight class="comment">//<sp/>point<sp/>data</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Window{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>min,max;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>min_point,<sp/>max_point;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Point_traits{</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>Key;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Key<sp/>get_key(Data&amp;<sp/>d){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>d.point;}<sp/></highlight><highlight class="comment">//<sp/>key<sp/>accesso</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Key<sp/>get_left(Window&amp;<sp/>w){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>w.min_point;}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Key<sp/>get_right(Window&amp;<sp/>w){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>w.max_point;}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>comp(Key&amp;<sp/>key1,<sp/>Key&amp;<sp/>key2){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(key1<sp/>&lt;<sp/>key2);}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Interval_traits{</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Key;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Key<sp/>get_left(Data&amp;<sp/>d){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>d.min;}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Key<sp/>get_right(Data&amp;<sp/>d){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>d.max;}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Key<sp/>get_left_win(Window&amp;<sp/>w){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>w.min;}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Key<sp/>get_right_win(Window&amp;<sp/>w){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>w.max;}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>comp(Key&amp;<sp/>key1,<sp/>Key&amp;<sp/>key2){</highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(key1<sp/>&lt;<sp/>key2);}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1general">
+<title>Creating an Arbitrary Multilayer Tree</title>
+<para>Now let us have a closer look on how a multilayer tree is built. In case of creating a <computeroutput>d</computeroutput>-dimensional tree, we handle a sequence of arbitrary data items, where each item defines a <computeroutput>d</computeroutput>-dimensional interval, point or other object. The tree is constructed with an iterator over this structure. In the <computeroutput>i</computeroutput>-th layer, the tree is built with respect to the data slot that defines the <computeroutput>i</computeroutput>-th dimension. Therefore, we need to define which data slot corresponds to which dimension. In addition we want our tree to work with arbitrary data items. This requires an adaptor between the algorithm and the data item. This is resolved by the use of traits classes, implemented in form of a traits class using function objects. These classes provide access functions to a specified data slot of a data item. A <computeroutput>d</computeroutput>-dimensional tree is then defined separately for each layer by defining a traits class for each layer.</para>
+</sect1>
+<sect1 id="index_1secrange_trees">
+<title>Range Trees</title>
+<para>A one-dimensional range tree is a binary search tree on one-dimensional point data. The point data of the tree is stored in the leaves. Each inner vertex stores the highest entry of its left subtree. The version of a range tree implemented here is static, which means that after construction of the tree, no elements be inserted or deleted. A <computeroutput>d</computeroutput>-dimensional range tree is a binary leaf search tree according to the first dimension of the <computeroutput>d</computeroutput>-dimensional point data, where each vertex contains a <computeroutput>(d-1)</computeroutput>-dimensional search tree of the points in the subtree (sublayer tree) with respect to the second dimension. See <ref refid="citelist_1CITEREF_bkos-cgaa-97" kindref="member">[1]</ref> and <ref refid="citelist_1CITEREF_s-dasds-90" kindref="member">[3]</ref> for more detailed information.</para>
+<para>A <computeroutput>d</computeroutput>-dimensional range tree can be used to determine all <computeroutput>d</computeroutput>-dimensional points that lie inside a given <computeroutput>d</computeroutput>-dimensional interval (<computeroutput>window_query</computeroutput>).</para>
+<para>The pictures below show a two-dimensional and a <computeroutput>d</computeroutput>-dimensional range tree.</para>
+<para><anchor id="index_1fig__Search_range2"/> <image type="html" name="range2.png"></image>
+ <image type="latex" name="range2.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Search_range2" kindref="member">fig__Search_range2</ref> A two and a d-dimensional range tree. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The 2-dimensional tree is a binary search tree on the first dimension. Each sublayer tree of a vertex <computeroutput>v</computeroutput> is a binary search tree on the second dimension. The data items in a sublayer tree of <computeroutput>v</computeroutput> are all data items of the subtree of <computeroutput>v</computeroutput>.</para>
+<para>For the d-dimensional range tree, the figure shows one sublayer tree for each layer of the tree.</para>
+<para>The tree can be built in <formula id="16">$O(n\log^{d-1} n)$</formula> time and needs <formula id="16">$O(n\log^{d-1} n)$</formula> space. The <computeroutput>d</computeroutput>-dimensional points that lie in the <computeroutput>d</computeroutput>-dimensional query interval can be reported in <formula id="17">$O(\log^dn+k)$</formula> time, where <computeroutput>n</computeroutput> is the total number of points and <computeroutput>k</computeroutput> is the number of reported points.</para>
+<sect2 id="index_1secrange_tree_ex">
+<title>Example for Range Tree on Map-like Data</title>
+<para>The following example program uses the predefined <computeroutput>Range_tree_2</computeroutput> data structure together with the predefined traits class <computeroutput><ref refid="classCGAL_1_1Range__tree__map__traits__2" kindref="compound">Range_tree_map_traits_2</ref></computeroutput> which has two template arguments specifying the type of the point data in each dimension (<computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref>&lt;double&gt;</computeroutput>) and the value type of the 2-dimensional point data (<computeroutput>char</computeroutput>). Therefore the <computeroutput>Range_tree_2</computeroutput> is defined on 2-dimensional point data each of which is associated with a character. Then, a few data items are created and put into a list. After that the tree is constructed according to that list, a window query is performed, and the query elements are given out.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Range_segment_tree_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Range_tree_k.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Range__tree__map__traits__2" kindref="compound">CGAL::Range_tree_map_traits_2&lt;K, char&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Range_tree_2&lt;Traits&gt;<sp/>Range_tree_2_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Key<sp/>Key;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Interval<sp/>Interval;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Key&gt;<sp/>InputList,<sp/>OutputList;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Key(K::Point_2(8,5.1),<sp/></highlight><highlight class="charliteral">&apos;a&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Key(K::Point_2(1,1.1),<sp/></highlight><highlight class="charliteral">&apos;b&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Key(K::Point_2(3,2.1),<sp/></highlight><highlight class="charliteral">&apos;c&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Range_tree_2_type<sp/>Range_tree_2(InputList.begin(),InputList.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Interval<sp/>win(Interval(K::Point_2(4,8.1),K::Point_2(5,8.2)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>Window<sp/>Query:\n<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Range_tree_2.window_query(win,<sp/>std::back_inserter(OutputList));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Key&gt;::iterator<sp/>current=OutputList.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(current!=OutputList.end()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*current).first.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*current).first.y()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*current++).second<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1SearchStructuresExampleforRangeTreeonSetlike">
+<title>Example for Range Tree on Set-like Data</title>
+<para>This example illustrates the use of the range tree on 2-dimensional point data (no value is associated to a data item). After the definition of the tree, some input data items are created and the tree is constructed according to the input data items. After that, a window query is performed and the query elements are given to standard out.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Range_segment_tree_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Range_tree_k.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Range__segment__tree__set__traits__2" kindref="compound">CGAL::Range_segment_tree_set_traits_2&lt;K&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Range_tree_2&lt;Traits&gt;<sp/>Range_tree_2_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Key<sp/>Key;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Interval<sp/>Interval;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Key&gt;<sp/>InputList,<sp/>OutputList;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Key&gt;::iterator<sp/>first,<sp/>last,<sp/>current;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Key(8,5.1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Key(1,1.1));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Key(3,2.1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Range_tree_2_type<sp/>Range_tree_2(InputList.begin(),InputList.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Interval<sp/>win=Interval(Key(4,8.1),Key(5,8.2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Window<sp/>Query:<sp/>lower<sp/>left<sp/>point:<sp/>(4.0,5.0),&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;upper<sp/>right<sp/>point:<sp/>(8.1,8.2)&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Range_tree_2.window_query(win,<sp/>std::back_inserter(OutputList));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>current=OutputList.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(current!=OutputList.end()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*current).x()&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;-&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*current).y()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>current++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1secsegment_trees">
+<title>Segment Trees</title>
+<para>A segment tree is a static binary search tree for a given set of coordinates. The set of coordinates is defined by the endpoints of the input data intervals. Any two adjacent coordinates build an elementary interval. Every leaf corresponds to an elementary interval. Inner vertices correspond to the union of the subtree intervals of the vertex. Each vertex or leaf <computeroutput>v</computeroutput> contains a sublayer type (or a list, if it is one-dimensional) that will contain all intervals <computeroutput>I</computeroutput>, such that <computeroutput>I</computeroutput> contains the interval of vertex <computeroutput>v</computeroutput> but not the interval of the parent vertex of <computeroutput>v</computeroutput>.</para>
+<para>A <computeroutput>d</computeroutput>-dimensional segment tree can be used to solve the following problems: <itemizedlist>
+<listitem>
+<para>Determine all <computeroutput>d</computeroutput>-dimensional intervals that contain a <computeroutput>d</computeroutput>-dimensional point. This query type is called <emphasis>inverse range query</emphasis>. </para>
+</listitem>
+<listitem>
+<para>Determine all <computeroutput>d</computeroutput>-dimensional intervals that enclose a given <computeroutput>d</computeroutput>-dimensional interval (<emphasis>enclosing query</emphasis>). </para>
+</listitem>
+<listitem>
+<para>Determine all <computeroutput>d</computeroutput>-dimensional intervals that partially overlap or are contained in a given <computeroutput>d</computeroutput>-dimensional interval (<emphasis>window query</emphasis>). </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>An example of a one-dimensional segment tree and an example of a two-dimensional segment tree are shown below.</para>
+<para><anchor id="index_1fig__Search_segment2"/> <image type="html" name="segment2.png"></image>
+ <image type="latex" name="segment2.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Search_segment2" kindref="member">fig__Search_segment2</ref> A one and a two dimensional segment tree <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>For the one-dimensional segment tree the segments and the corresponding elementary intervals are shown below the tree. The arcs from the nodes point to their subsets.</para>
+<para>For the two-dimensional segment tree we see that the first layer of the tree is built according to the elementary intervals of the first dimension. Each sublayer tree of a vertex <computeroutput>v</computeroutput> is a segment tree according to the second dimension of all data items of <computeroutput>v</computeroutput>.</para>
+<para>The tree can be built in <formula id="18">$O(n\log^{d} n)$</formula> time and needs <formula id="18">$O(n\log^{d} n)$</formula> space. The processing time for inverse range queries in an <computeroutput>d</computeroutput>-dimensional segment tree is <formula id="19">$O(\log^d n
++k)$</formula> time, where <computeroutput>n</computeroutput> is the total number of intervals and <computeroutput>k</computeroutput> is the number of reported intervals.</para>
+<para>One possible application of a two-dimensional segment tree is the following. Given a set of convex polygons in two-dimensional space (Polygon_2), we want to determine all polygons that intersect a given rectangular query window. Therefore, we define a two-dimensional segment tree, where the two-dimensional interval of a data item corresponds to the bounding box of a polygon and the value type corresponds to the polygon itself. The segment tree is created with a sequence of all data items, and a window query is performed. The polygons of the resulting data items are finally tested independently for intersections.</para>
+<sect2 id="index_1secsegment_tree_ex">
+<title>Example for Segment Tree on Map-like Data</title>
+<para>The following example program uses the predefined <computeroutput>Segment_tree_2</computeroutput> data structure together with the predefined traits class <computeroutput><ref refid="classCGAL_1_1Segment__tree__map__traits__2" kindref="compound">Segment_tree_map_traits_2</ref></computeroutput> which has two template arguments specifying the type of the point data in each dimension (<computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref>&lt;double&gt;</computeroutput>) and the value type of the 2-dimensional point data (<computeroutput>char</computeroutput>). Therefore the <computeroutput>Segment_tree_2</computeroutput> is defined on 2-dimensional point data (<computeroutput><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>&lt;<ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref>&lt;double&gt; &gt;</computeroutput>) each of which is associated with a character. Then, a few data items are created and put into a list. After that the tree is constructed according to that list, a window query is performed, and the query elements are given out.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Segment_tree_k.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Range_segment_tree_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Segment__tree__map__traits__2" kindref="compound">CGAL::Segment_tree_map_traits_2&lt;K, char&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Segment_tree_2&lt;Traits<sp/>&gt;<sp/>Segment_tree_2_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Interval<sp/>Interval;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Pure_interval<sp/>Pure_interval;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Key<sp/>Key;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Interval&gt;<sp/>InputList,<sp/>OutputList1,<sp/>OutputList2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Pure_interval(Key(1,5),<sp/>Key(2,7)),</highlight><highlight class="charliteral">&apos;a&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Pure_interval(Key(2,7),<sp/>Key(3,8)),</highlight><highlight class="charliteral">&apos;b&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Pure_interval(Key(6,9),<sp/>Key(9,13)),</highlight><highlight class="charliteral">&apos;c&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Pure_interval(Key(1,3),<sp/>Key(3,9)),</highlight><highlight class="charliteral">&apos;d&apos;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment_tree_2_type<sp/>Segment_tree_2(InputList.begin(),InputList.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Interval<sp/>a=Interval(Pure_interval(Key(3,6),<sp/>Key(7,12)),</highlight><highlight class="charliteral">&apos;e&apos;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment_tree_2.window_query(a,std::back_inserter(OutputList1));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Interval&gt;::iterator<sp/>j<sp/>=<sp/>OutputList1.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>window_query<sp/>(3,6),(7,12)\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(j!=OutputList1.end()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*j).first.first.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;-&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*j).first.second.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>(*j).first.first.y()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;-&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*j).first.second.y()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>j++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Interval<sp/>b=Interval(Pure_interval(Key(6,10),Key(7,11)),<sp/></highlight><highlight class="charliteral">&apos;f&apos;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment_tree_2.enclosing_query(b,std::back_inserter(OutputList2));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>j<sp/>=<sp/>OutputList2.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>enclosing_query<sp/>(6,10),(7,11)\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(j!=OutputList2.end()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*j).first.first.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;-&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*j).first.second.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>(*j).first.first.y()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;-&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*j).first.second.y()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>j++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1SearchStructuresExampleforSegmentTreeonSetlike">
+<title>Example for Segment Tree on Set-like Data</title>
+<para>This example illustrates the use of the predefined segment tree on 3-dimensional interval data (with no value associated). After the definition of the traits type and tree type, some intervals are constructed and the tree is build according to the intervals. Then, a window query is performed and the query elements are given out.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Segment_tree_k.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Range_segment_tree_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;int&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Range__segment__tree__set__traits__3" kindref="compound">CGAL::Range_segment_tree_set_traits_3&lt;K&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Segment_tree_3&lt;Traits<sp/>&gt;<sp/>Segment_tree_3_type;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Interval<sp/>Interval;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Key<sp/>Key;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Interval&gt;<sp/>InputList,<sp/>OutputList;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Key(1,5,7),<sp/>Key(2,7,9)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Key(2,7,6),<sp/>Key(3,8,9)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Key(6,9,5),<sp/>Key(9,13,8)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>InputList.push_back(Interval(Key(1,3,4),<sp/>Key(3,9,8)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment_tree_3_type<sp/>Segment_tree_3(InputList.begin(),InputList.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Interval<sp/>a(Key(3,6,5),<sp/>Key(7,12,8));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment_tree_3.window_query(a,std::back_inserter(OutputList));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Interval&gt;::iterator<sp/>j<sp/>=<sp/>OutputList1.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n<sp/>window_query<sp/>(3,6,5),(7,12,8)<sp/>\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(j!=OutputList.end()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*j).first.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*j).first.y()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*j).first.z()<sp/>&lt;&lt;</highlight><highlight class="stringliteral">&quot;,<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*j).second.x()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>(*j).second.y()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;,&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(*j).second.z()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>j++;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="SearchStructures.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,229 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_iterators_and_circulators" kind="page">
+    <compoundname>devman_iterators_and_circulators</compoundname>
+    <title>Iterators, Circulators and Handles</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>Mariette Yvinec (<computeroutput><ulink url="mailto:yvinec@sophia.inria.fr">yvinec@sophia.inria.fr</ulink></computeroutput>)</para>
+</simplesect>
+Iterators are a generalization of pointers that allow a programmer to work with different data structures (containers) in a uniform manner. An iterator is the glue that allows one to write a single implementation of an algorithm that will work for data contained in an array, a list or some other container - even a container that did not yet exist when the algorithm was implemented.</para>
+<para>The concept of an iterator is one of the major tools of the genericity in STL. Iterators are used almost everywhere in the STL to achieve the communication between containers and algorithms. Iterators are widely used in CGAL too. CGAL extends the idea of the iterator, which works for linear data structures, to circular data structures by defining the concept of a circulator. <ref refid="packages_1PkgHandlesAndCirculators" kindref="member">Circulators</ref> are quite similar to iterators, with the major difference being the absence of a past-the-end position in a sequence. Note that circulators are NOT part of the STL, but of CGAL.</para>
+<para>In CGAL, we also define the concept of <ref refid="packages_1PkgHandlesAndCirculators" kindref="member">handle</ref>, which behaves roughly like a pointer to an object without an increment or decrement operation. More details about handles and their requirements can be found in the <ref refid="packages_1PkgHandlesAndCirculators" kindref="member">chapter Circulators and Handles</ref> of the Support Library part of CGAL manual. Section <ref refid="devman_iterators_and_circulators_1sechandle_vs_it_vs_circ" kindref="member">Handle, iterator, or circulator?</ref> below discusses when handles should be used in your code.</para>
+<para>The concepts of iterators is relatively well described in textbooks such as Stroustrup&apos;s book (<emphasis>The C++ Programming Language</emphasis> <ref refid="citelist_1CITEREF_cgal:s-cpl-97" kindref="member">[10]</ref>) and Austern&apos;s book (<emphasis>Generic Programming and the STL</emphasis> <ref refid="citelist_1CITEREF_cgal:a-gps-98" kindref="member">[2]</ref>) and in chapter <ref refid="packages_1PkgHandlesAndCirculators" kindref="member">Handles and Circulators</ref> of the <emphasis>Support Library</emphasis> part of the CGAL manual. which also presents the concepts of handles and circulators. Thus we will not give a full description of these concept here but only a few hints about how to use and write handle, iterators and circulators in CGAL. Developers should consult the above-mentioned references to become familiar with the iterator, circulator and handle concepts. In particular, the notions of iterator and circulator ranges, dereferenceable and past-the-end values, mutable and constant iterators and circulators, and the different categories (forward, bidirectional, random-access, etc.) of iterators and circulators, are fundamental.</para>
+<sect1 id="devman_iterators_and_circulators_1seciterator_traits">
+<title>Iterator and circulator traits</title>
+<para>Iterators and/or circulators are required to provide a set of types such as the <computeroutput>value_type</computeroutput> for the type of objects referred to by the iterator and circulator or the <computeroutput>difference_type</computeroutput> for the distance between two iterators or circulators. These types are usually declared in the iterator or circulator classes. The iterator traits have been introduced to attach such types to pointer classes, thus enabling the use of pointer classes as models of iterator and circulator concepts. Therefore, an algorithm using an iterator of the type <computeroutput>Iter</computeroutput> will find the relevant types in an instantiation of a small templated class <computeroutput>iterator_traits</computeroutput>.</para>
+<para>There is a general templated version of <computeroutput>iterator_traits</computeroutput> that looks like: <programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Iter&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">iterator_traits<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Iter::iterator_category<sp/><sp/>iterator_category<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Iter::value_type<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>value_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Iter::difference_type<sp/><sp/><sp/><sp/>difference_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Iter::pointer<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pointer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Iter::reference<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>reference;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting> and a partial specialization of <computeroutput>iterator_traits</computeroutput> classes for pointers:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>T&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">iterator_traits&lt;T*&gt;<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>random_access_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>iterator_category<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>T<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>value_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>ptrdiff_t<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>difference_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>T*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>pointer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>T&amp;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>reference;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="devman_iterators_and_circulators_1secinput_and_output_iterators">
+<title>Input and output iterators</title>
+<para><bold>Operator <computeroutput>*</computeroutput> for input and output iterators</bold></para>
+<para>The operator <computeroutput>*</computeroutput> of input and output iterators has a restricted semantics. Input iterators are designed for input operations, and it is not required that the value type <computeroutput>T</computeroutput> of an input iterator <computeroutput>it</computeroutput> be assignable. Thus, while assignments of the type <computeroutput>t = *it</computeroutput> are the usual way to get values from the input iterators, statements like <computeroutput>*it = ...</computeroutput> are likely to be illegal. On the other hand, output iterators are designed for write operations, and the only legal use of the operator * of an output iterator <computeroutput>it</computeroutput> is in the assignment <computeroutput>*it = ....</computeroutput>. The code of a standard copy function of the STL provides an example of both of these operations:</para>
+<para><anchor id="devman_iterators_and_circulators_1copy_function"/> <programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal">&lt;<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>InputIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>OutputIterator&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref><sp/>copy(<ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/>first,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/>last,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref><sp/>result)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(first<sp/>!=<sp/>last)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>*result<sp/>=<sp/>*first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>++first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>++result;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>result;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+<para>The first two arguments of <computeroutput>copy</computeroutput> are of type <computeroutput><ref refid="classInputIterator" kindref="compound">InputIterator</ref></computeroutput> (meaning any type that fulfills the requirements for an input iterator) while the third one is of type <computeroutput><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref></computeroutput>. If these types were exchanged, then the statement <computeroutput>*result = *first;</computeroutput> might not be valid.</para>
+<para><bold>Stream iterators</bold></para>
+<para>STL provides a special type of input iterator called <computeroutput>istream_iterator</computeroutput>, which is designed to be bound to an object of the class <computeroutput>istream</computeroutput> and provides a way to read a sequence of values from the input stream to which it is bound. For example, the following code reads numbers of type <computeroutput>double</computeroutput> from the standard input stream <computeroutput>cin</computeroutput> and computes their sum. <programlisting filename=".cpp"><codeline><highlight class="normal">istream_iterator&lt;double&gt;<sp/>it(cin);</highlight></codeline>
+<codeline><highlight class="normal">istream_iterator&lt;double&gt;<sp/>end();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>sum=0.0;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(it<sp/>!=<sp/>end)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>sum<sp/>+=<sp/>*it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>++it;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal">cout<sp/>&lt;&lt;<sp/>sum<sp/>&lt;&lt;<sp/>endl;</highlight></codeline>
+</programlisting></para>
+<para>In a similar fashion, STL provides the type <computeroutput>ostream_iterator</computeroutput>, which is designed to be bound to an object of the class <computeroutput>ostream</computeroutput> and used to output values to the output stream to which it is bound.</para>
+<para>CGAL provides extensions of the classes <computeroutput>istream_iterator</computeroutput> and <computeroutput>ostream_iterator</computeroutput>. The class <computeroutput><ref refid="classCGAL_1_1Ostream__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::Ostream_iterator</ref>&lt;T,Stream&gt;</computeroutput> is an output iterator adaptor for the stream class <computeroutput>Stream</computeroutput> and value</para>
+<para>type <computeroutput>T</computeroutput>. It provides output iterators that can be used to output values of type <computeroutput>T</computeroutput> to objects of the class <computeroutput>Stream</computeroutput>. For example, the following code fragment inserts a list of segments into a window stream (<emphasis>i.e.</emphasis>, it draws the segments in the window) using the standard copy function:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;double&gt;</ref><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">std::vector&lt;Segment&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal">Window_stream<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>W(<sp/>400,<sp/>400);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>initialize<sp/>segments</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::copy(<sp/>segments.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>segments.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Ostream__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::Ostream_iterator&lt; Segment, Window_stream&gt;</ref>(<sp/>W));</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Likewise, the class <computeroutput><ref refid="classCGAL_1_1Istream__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Stream_support.tag">CGAL::Istream_iterator</ref>&lt;T,Stream&gt;</computeroutput> is an input iterator adaptor for the stream class <computeroutput>Stream</computeroutput> and value type <computeroutput>T</computeroutput>. These adaptors are particularly useful for stream classes that are similar to but not derived from <computeroutput>std::istream</computeroutput> and <computeroutput>std::ostream</computeroutput>. The only requirements of the stream classes are that they define <computeroutput>operator&gt;&gt;</computeroutput> (for <computeroutput>Istream_iterator::value_type</computeroutput>) and <computeroutput>operator&lt;&lt;</computeroutput> (for <computeroutput>Ostream_iterator::value_type</computeroutput>).</para>
+<para><bold>Insert iterators</bold></para>
+<para>Insert iterators are output iterators that can be used to insert items into containers. With regular iterator classes, the code given above for the <computeroutput>copy</computeroutput> function of STL, causes the range <computeroutput>[first,last)</computeroutput> to be copied into an existing range starting with <computeroutput>result</computeroutput>. No memory allocation is involved and the existing range is overwritten. With an insert iterator supplied as the third argument, the same code will cause elements to be inserted into the container with which the output iterator is associated. That is, new memory may be allocated for these inserted elements.</para>
+<para>The STL provides three kinds of insert iterators: <computeroutput>insert_iterator</computeroutput>s, <computeroutput>back_insert_iterator</computeroutput>s and <computeroutput>front_insert_iterator</computeroutput>s. The <computeroutput>back_inserter_iterator</computeroutput>s are used to insert elements at the end of a container by using the <computeroutput>push_back</computeroutput> member function of the container. Similarly, <computeroutput>front_insert_iterator</computeroutput>s are used to insert elements at the beginning of a container by using the container&apos;s <computeroutput>push_front</computeroutput> function. The general <computeroutput>insert_iterator</computeroutput> is used to insert elements at any point in a container, by using the container&apos;s <computeroutput>insert</computeroutput> member function and a provided location of the insertion.</para>
+<para>For convenience, STL provides the templated functions (or adaptors) <computeroutput>front_inserter</computeroutput>, <computeroutput>back_inserter</computeroutput> and <computeroutput>inserter</computeroutput> to get insert iterators, also called inserters, from containers.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Container,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Iterator&gt;</highlight></codeline>
+<codeline><highlight class="normal">insert_iterators&lt;Container&gt;<sp/>inserter(<ref refid="classContainer" kindref="compound">Container</ref>&amp;<sp/>c,<sp/><ref refid="classIterator" kindref="compound">Iterator</ref><sp/>it);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Container&gt;</highlight></codeline>
+<codeline><highlight class="normal">back_insert_iterators&lt;Container&gt;<sp/>back_inserter(<ref refid="classContainer" kindref="compound">Container</ref>&amp;<sp/>c);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Container&gt;</highlight></codeline>
+<codeline><highlight class="normal">front_insert_iterators&lt;Container&gt;<sp/>front_inserter(<ref refid="classContainer" kindref="compound">Container</ref>&amp;<sp/>c);</highlight></codeline>
+</programlisting></para>
+<para>Thus, the <computeroutput>inserter</computeroutput> adaptor can be called for any container that has an <computeroutput>insert</computeroutput> member function, and <computeroutput>back_inserter</computeroutput> (resp. <computeroutput>front_inserter</computeroutput>) can be called for any container that has a <computeroutput>push_back</computeroutput> (resp. <computeroutput>push_front</computeroutput>) member function.</para>
+<para>The following code will insert 200 copies of the value 7 at the end of <computeroutput>vec</computeroutput>. <programlisting filename=".cpp"><codeline><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>g(vector&lt;int&gt;&amp;<sp/>vec)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>fill_n(std::back_inserter(vec),200,7);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> and this code will insert the points contained in the vector <computeroutput>vertices</computeroutput> into a Delaunay triangulation data structure:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_euclidean_traits_2&lt;K&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__vertex__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_vertex_base_2&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__face__base__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Triangulation_face_base_2&lt;Gt&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Fb;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Triangulation_default_data_structure_2&lt;Gt,Vb,Fb&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tds;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">CGAL::Delaunay_triangulation_2&lt;Gt,Tds&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>DT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">DT<sp/>triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">std::copy(<sp/>vertices.begin(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertices.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::back_inserter(<sp/>triangulation<sp/>));</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="devman_iterators_and_circulators_1Developer_manualWritingcodewithandforiterators">
+<title>Writing code with and for iterators, circulators, and handles</title>
+<para>Because you should write generic code for CGAL, algorithms that require a sequence of data for input should be written to take an iterator (or circulator) range as input instead of, say, a particular container. Similarly, algorithms that compute a sequence of data as output should place the output data into an output iterator range. Both of these points are illustrated by the prototype of the following function that computes the convex hull of a set of points in two dimensions:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="comment">//<sp/>generates<sp/>the<sp/>counterclockwise<sp/>sequence<sp/>of<sp/>extreme<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>of<sp/>the<sp/>points<sp/>in<sp/>the<sp/>range<sp/>[first,beyond).</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>The<sp/>resulting<sp/>sequence<sp/>is<sp/>placed<sp/>starting<sp/>at<sp/>position</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>result,<sp/>and<sp/>the<sp/>past-the-end<sp/>iterator<sp/>for<sp/>the<sp/>resulting</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>sequence<sp/>is<sp/>returned.<sp/>It<sp/>is<sp/>not<sp/>specified<sp/>at<sp/>which<sp/>point<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>cyclic<sp/>sequence<sp/>of<sp/>extreme<sp/>points<sp/>is<sp/>cut<sp/>into<sp/>a<sp/>linear<sp/>sequence.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>InputIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>OutputIterator&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref></highlight></codeline>
+<codeline><highlight class="normal">convex_hull_points_2(<ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/>first,<sp/><ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/>beyond,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref><sp/><sp/>result,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Traits<sp/>&amp;<sp/>ch_traits<sp/>);</highlight></codeline>
+</programlisting></para>
+<para>Also, when writing container classes, you should be sure to provide iterators and/or circulators for the containers and design the interfaces so they can be used with generic algorithms from the STL and other CGAL algorithm. Here we give a few more details about how to accomplish these goals.</para>
+<sect2 id="devman_iterators_and_circulators_1sechandle_vs_it_vs_circ">
+<title>Handle, iterator, or circulator?</title>
+<para>Handles are indirect references that do not move, so whenever you need a pointer-like reference to a single element of a data structure, and it is not necessary to iterate (or circulate), use a handle. In contrast, iterators should be used when you want to move (that is, iterate) over a linear sequences of elements. When the sequence is circular, prefer a circulator over an iterator.</para>
+</sect2>
+<sect2 id="devman_iterators_and_circulators_1secit_and_circ_code">
+<title>Writing functions for iterators AND circulators</title>
+<para>To make your code as generic as possible, you should, where appropriate, write functions that can accept either a circulator range or an iterator range to delimit the input values. Since empty circulator ranges are represented differently than empty iterator ranges, the following function is defined in <computeroutput>&lt;CGAL/circulator.h&gt;</computeroutput> so the test for an empty range can be done generically:</para>
+<para>One would use this function in conjunction with a <computeroutput>do-while</computeroutput> loop as follows:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!<sp/><ref refid="group__PkgHandlesAndCirculatorsFunctions_1gaf4e8c8285d91a1d8acd582191da0f255" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">CGAL::is_empty_range</ref>(<sp/>i,<sp/>j)<sp/>)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">do</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(<sp/>++i<sp/>!=<sp/>j<sp/>)</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The following two macros are also defined as a generic means for iterating over either a linear or circular sequence:<itemizedlist>
+<listitem><para><computeroutput><ref refid="group__PkgHandlesAndCirculatorsFunctions_1gae4f6b9dc3b933f01f2d0275a7bf8b308" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">CGAL_For_all( ic1, ic2)</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="group__PkgHandlesAndCirculatorsFunctions_1gace997aff7a7768aa76d2b2e19a7ef558" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">CGAL_For_all_backwards( ic1, ic2)</ref></computeroutput>.</para>
+</listitem></itemizedlist>
+</para>
+<para>See the chapter <ref refid="packages_1PkgHandlesAndCirculators" kindref="member">Handles and Circulators</ref> in the <emphasis>Support Library</emphasis> part of CGAL manual for more information and examples.</para>
+</sect2>
+<sect2 id="devman_iterators_and_circulators_1secclass_iterator">
+<title>Writing an iterator for your container</title>
+<para>Every container class in CGAL should strive to be a model for the STL concept of a container. As for all concepts, this means that certain types and functions are provided, as detailed, for example in <ref refid="citelist_1CITEREF_cgal:a-gps-98" kindref="member">[2]</ref>. For the purposes of this discussion, the relevant types are:</para>
+<para><table rows="2" cols="2"><row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>iterator</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>type of iterator </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>const_iterator</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>iterator type for container with constant elements </para>
+</entry></row>
+</table>
+</para>
+<para>and the relevant functions are:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">iterator<sp/>begin();<sp/></highlight><highlight class="comment">//<sp/>beginning<sp/>of<sp/>container</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">const_iterator<sp/>begin();<sp/></highlight><highlight class="comment">//<sp/>beginning<sp/>of<sp/>container<sp/>with<sp/>constant<sp/>elements</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">iterator<sp/>end();<sp/></highlight><highlight class="comment">//<sp/>past-the-end<sp/>value<sp/>for<sp/>container</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">const_iterator<sp/>end();<sp/></highlight><highlight class="comment">//<sp/>past-the-end<sp/>value<sp/>for<sp/>container<sp/>with<sp/>constant<sp/>elements</highlight></codeline>
+</programlisting></para>
+<para>Variations on the above names are possible when, for example, the container contains more than one thing that can be iterated over. See Section <ref refid="devman_code_format_1secnaming_scheme" kindref="member">Naming scheme</ref> for more details about the naming conventions for iterators and their access functions.</para>
+</sect2>
+<sect2 id="devman_iterators_and_circulators_1secclass_circulator">
+<title>Writing a circulator for your container</title>
+<para>When a container represents a circular data structure (<emphasis>i.e.</emphasis>, one without a defined beginning or end), one should provide circulators for the data elements in addition to (or, where appropriate, instead of) the iterators. This means that the following types should be defined:</para>
+<para><table rows="2" cols="2"><row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>circulator</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>type of circulator </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" valign="top"><para><computeroutput>const_circulator</computeroutput> </para>
+</entry><entry thead="no" align="left" valign="top"><para>circulator type for container with constant elements </para>
+</entry></row>
+</table>
+</para>
+<para>as well as two access functions, one for each of the two types, with names that end in the suffix <computeroutput>_circulator</computeroutput> (Section <ref refid="devman_code_format_1secnaming_scheme" kindref="member">Naming scheme</ref> ).</para>
+</sect2>
+</sect1>
+<sect1 id="devman_iterators_and_circulators_1it_and_circit_and_circ_req_and_rec">
+<title>Requirements and recommendations</title>
+<para>Requirements: <itemizedlist>
+<listitem>
+<para>All container classes should provide iterator types and access functions.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>All container classes that represent circular data structures should provide circulator types and access functions.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Take care that decrement of the past-the-end value is, in accordance with the standard, a legal operation for a bidirectional iterator.</para>
+<para>This can, for example, be used to get the last element of a sequence. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Recommendations: <itemizedlist>
+<listitem>
+<para>Be aware that postincrement (respectively, postdecrement) is more expensive than preincrement (predecrement) since the iterator or circulator value must be copied in the former case.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Remember that iterators and circulators are intended to be lightweight objects. That is, copying them should require only constant time.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>When writing a container-like structure, provide <computeroutput>push_back</computeroutput>, <computeroutput>push_front</computeroutput>, and <computeroutput>insert</computeroutput> member functions so all insert iterators can be used with your container.</para>
+<para></para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_iterators_and_circulators.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,247 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_3D_Surface_Mesh_Generation"/> <simplesect kind="authors"><para>Laurent Rineau and Mariette Yvinec</para>
+</simplesect>
+<htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><image type="html" name="segmented_head.png"></image>
+ <image type="latex" name="segmented_head.png"></image>
+</para>
+<para><xrefsect id="deprecated_1_deprecated000003"><xreftitle>Deprecated</xreftitle><xrefdescription><para>This package is deprecated since the version 6.0 of CGAL. The package <ref refid="packages_1PkgMesh3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Mesh Generation</ref> should be used instead.</para>
+</xrefdescription></xrefsect></para>
+<sect1 id="index_1SurfaceMesher_section_intro">
+<title>Introduction</title>
+<para>This package provides a function template to compute a triangular mesh approximating a surface.</para>
+<para>The meshing algorithm requires to know the surface to be meshed only through an oracle able to tell whether a given segment, line or ray intersects the surface or not and to compute an intersection point if any. This feature makes the package generic enough to be applied in a wide variety of situations. For instance, it can be used to mesh implicit surfaces described as the zero level set of some function. It may also be used in the field of medical imaging to mesh surfaces described as a gray level set in a three dimensional image.</para>
+<para>The meshing algorithm is based on the notion of the restricted Delaunay triangulation. Basically the algorithm computes a set of sample points on the surface, and extract an interpolating surface mesh from the three dimensional triangulation of these sample points. Points are iteratively added to the sample, as in a Delaunay refinement process, until some size and shape criteria on the elements of the surface mesh are satisfied.</para>
+<para>The size and shape criteria guide the behavior of the refinement process and control its termination. They also condition the size and shape of the elements in the final mesh. Naturally, those criteria can be customized to satisfy the user needs. The Surface mesh generation package offers a set of standard criteria that can be scaled through three numerical values. Also the user can also plug in its own set of refinement criteria.</para>
+<para>There is no restriction on the topology and number of components of the surface provided that the oracle (or the user) is able to provide one initial sample point on each connected component. If the surface is smooth enough, and if the size criteria are small enough, the algorithm guarantees that the output mesh is homeomorphic to the surface, and is within a small bounded distance (Hausdorff or even Frechet distance) from the surface. The algorithm can also be used for non smooth surfaces but then there is no guarantee.</para>
+</sect1>
+<sect1 id="index_1SurfaceMesher_section_interface">
+<title>The Surface Mesh Generator Interface for Smooth Surfaces</title>
+<para>The meshing process is launched through a call to a function template. There are two overloaded versions of the meshing function whose signatures are the following:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">SurfaceMeshC2T3,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Surface,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">FacetsCriteria,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Tag<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">make_surface_mesh</ref>(SurfaceMeshC2T3&amp;<sp/>c2t3,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Surface<sp/>surface,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FacetsCriteria<sp/>criteria,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tag);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;<sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">SurfaceMeshC2T3,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">SurfaceMeshTraits,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">FacetsCriteria,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">Tag<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">make_surface_mesh</ref>(SurfaceMeshC2T3&amp;<sp/>c2t3,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>SurfaceMeshTraits::Surface_3<sp/>surface,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>SurfaceMeshTraits<sp/>traits,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FacetsCriteria<sp/>criteria,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tag<sp/>);</highlight></codeline>
+</programlisting></para>
+<para>The template parameter <computeroutput>SurfaceMeshC2T3</computeroutput> stands for a data structure type that is used to store the surface mesh. This type is required to be a model of the concept <computeroutput><ref refid="classSurfaceMeshComplex__2InTriangulation__3" kindref="compound">SurfaceMeshComplex_2InTriangulation_3</ref></computeroutput>. Such a data structure has a pointer to a three dimensional triangulation and encodes the surface mesh as a subset of facets in this triangulation. An argument of type <computeroutput>SurfaceMeshC2T3</computeroutput> is passed by reference to the meshing function. This argument holds the output mesh at the end of the process.</para>
+<para>The template parameter <computeroutput>Surface</computeroutput> stands for the surface type. This type has to be a model of the concept <computeroutput><ref refid="classSurface__3" kindref="compound">Surface_3</ref></computeroutput>.</para>
+<para>The knowledge on the surface, required by the surface mesh generator is encapsulated in a traits class. Actually, the mesh generator accesses the surface to be meshed through this traits class only. The traits class is required to be a model of the concept <computeroutput><ref refid="classSurfaceMeshTraits__3" kindref="compound">SurfaceMeshTraits_3</ref></computeroutput>. The difference between the two overloaded versions of <computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">make_surface_mesh()</ref></computeroutput> can be explained as follows <itemizedlist>
+<listitem>
+<para>In the first overloaded version of <computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">make_surface_mesh()</ref></computeroutput>, the surface type is given as template parameter (<computeroutput>Surface</computeroutput>) and the <computeroutput>surface</computeroutput> to be meshed is passed as parameter to the mesh generator. In that case the surface mesh generator traits type is automatically generated from the surface type by an auxiliary class called the <computeroutput><ref refid="structCGAL_1_1Surface__mesh__traits__generator__3" kindref="compound">Surface_mesh_traits_generator_3</ref></computeroutput>. </para>
+</listitem>
+<listitem>
+<para>In the second overloaded version of <computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">make_surface_mesh()</ref></computeroutput>, the surface mesh generator traits type is provided by the template parameter <computeroutput><ref refid="classSurfaceMeshTraits__3" kindref="compound">SurfaceMeshTraits_3</ref></computeroutput> and the surface type is obtained from this traits type. Both a surface and a traits are passed to the mesh generator as arguments. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>The first overloaded version can be used whenever the surface type either provides a nested type <computeroutput>Surface::Surface_mesher_traits_3</computeroutput> that is a model of <computeroutput><ref refid="classSurfaceMeshTraits__3" kindref="compound">SurfaceMeshTraits_3</ref></computeroutput> or is a surface type for which a specialization of the traits generator <computeroutput><ref refid="structCGAL_1_1Surface__mesh__traits__generator__3" kindref="compound">Surface_mesh_traits_generator_3</ref>&lt;Surface&gt;</computeroutput> is provided. Currently, the library provides partial specializations of <computeroutput><ref refid="structCGAL_1_1Surface__mesh__traits__generator__3" kindref="compound">Surface_mesh_traits_generator_3</ref>&lt;Surface&gt;</computeroutput> for implicit surfaces (<computeroutput><ref refid="classCGAL_1_1Implicit__surface__3" kindref="compound">Implicit_surface_3</ref>&lt;Traits, Function&gt;</computeroutput>) and gray level images (<computeroutput><ref refid="classCGAL_1_1Gray__level__image__3" kindref="compound">Gray_level_image_3</ref>&lt;FT, Point&gt;</computeroutput>).</para>
+<para>The parameter <computeroutput>criteria</computeroutput> handles the description of the size and shape criteria driving the meshing process. The template parameter <computeroutput>FacetsCriteria</computeroutput> has to be instantiated by a model of the concept <computeroutput><ref refid="classSurfaceMeshFacetsCriteria__3" kindref="compound">SurfaceMeshFacetsCriteria_3</ref></computeroutput>.</para>
+<para>The parameter <computeroutput>Tag</computeroutput> is a tag whose type influences the behavior of the meshing algorithm. For instance, this parameter can be used to enforce the manifold property of the output mesh while avoiding an over-refinement of the mesh. Further details on this subject are given in Section <ref refid="index_1SurfaceMesher_section_criteria" kindref="member">Meshing Criteria, Guarantees and Variations</ref>.</para>
+<para>A call to <ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member"><computeroutput>make_surface_mesh(c2t3,surface, criteria, tag)</computeroutput> </ref> launches the meshing process with an initial set of points which is the union of two subsets: the set of vertices in the initial triangulation pointed to by <computeroutput>c2t3</computeroutput>, and a set of points provided by the <computeroutput>Construct_initial_points()</computeroutput> functor of the traits class. This initial set of points is required to include at least one point on each connected component of the surface to be meshed.</para>
+</sect1>
+<sect1 id="index_1Surface_mesherIO">
+<title>Input/Output</title>
+<para>It is possible to output a surface mesh to the OFF format. using the function <computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsIO_1ga7718d4e2047939882540d89fb5f28934" kindref="member">CGAL::output_surface_facets_to_off()</ref></computeroutput>.</para>
+</sect1>
+<sect1 id="index_1Surface_mesherExamples">
+<title>Examples</title>
+<para><anchor id="index_1SurfaceMesher_section_example"/> </para>
+<sect2 id="index_1Surface_mesherMeshingIsosurfacesDefinedby">
+<title>Meshing Isosurfaces Defined by Implicit Functions</title>
+<para>The first code example meshes a sphere given as the zero level set of a function <formula id="14">$ \mathbb{R}^3 \longrightarrow \mathbb{R}$</formula>. More precisely, the surface to be meshed is created by the constructor of the class <computeroutput><ref refid="classCGAL_1_1Implicit__surface__3" kindref="compound">Implicit_surface_3</ref>&lt;Traits, Function&gt;</computeroutput> from a pointer to the function (<computeroutput>sphere_function</computeroutput>) and a bounding sphere.</para>
+<para>The default meshing criteria are determined by three numerical values: <itemizedlist>
+<listitem>
+<para><computeroutput>angular_bound</computeroutput> is a lower bound in degrees for the angles of mesh facets. </para>
+</listitem>
+<listitem>
+<para><computeroutput>radius_bound</computeroutput> is an upper bound on the radii of surface Delaunay balls. A surface Delaunay ball is a ball circumscribing a mesh facet and centered on the surface. </para>
+</listitem>
+<listitem>
+<para><computeroutput>distance_bound</computeroutput> is an upper bound for the distance between the circumcenter of a mesh facet and the center of a surface Delaunay ball of this facet. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Given this surface type, the surface mesh generator will use an automatically generated traits class.</para>
+<para>The resulting mesh is shown in <ref refid="index_1fig__figureSurface_mesherspheresurface" kindref="member">fig__figureSurface_mesherspheresurface</ref>.</para>
+<para><anchor id="index_1fig__figureSurface_mesherspheresurface"/> <image type="html" name="sphere-surface.png"></image>
+ <image type="latex" name="sphere-surface.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figureSurface_mesherspheresurface" kindref="member">fig__figureSurface_mesherspheresurface</ref> Surface mesh of a sphere <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesher_2mesh_an_implicit_function_8cpp-example" kindref="compound">Surface_mesher/mesh_an_implicit_function.cpp</ref> <programlisting filename="Surface_mesher/mesh_an_implicit_function.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Installation/internal/disable_deprecation_warnings_and_errors.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_default_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Complex_2_in_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/make_surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Implicit_surface_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/facets_in_complex_2_to_triangle_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>default<sp/>triangulation<sp/>for<sp/>Surface_mesher</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__default__triangulation__3" kindref="compound">CGAL::Surface_mesh_default_triangulation_3</ref><sp/>Tr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>c2t3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Complex_2_in_triangulation_3&lt;Tr&gt;<sp/>C2t3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Tr::Geom_traits<sp/>GT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>GT::Sphere_3<sp/><ref refid="classCGAL_1_1Sphere__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Sphere_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>GT::Point_3<sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>GT::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>FT<sp/>(*Function)(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Implicit__surface__3" kindref="compound">CGAL::Implicit_surface_3&lt;GT, Function&gt;</ref><sp/><ref refid="classSurface__3" kindref="compound">Surface_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Surface_mesh&lt;Point_3&gt;<sp/>Surface_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">FT<sp/>sphere_function<sp/>(<ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>p)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>x2=p.<ref refid="classCGAL_1_1Point__3_1a49bb8a0c6391066bd91302b20e16eca7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">x</ref>()*p.<ref refid="classCGAL_1_1Point__3_1a49bb8a0c6391066bd91302b20e16eca7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">x</ref>(),<sp/>y2=p.<ref refid="classCGAL_1_1Point__3_1ac50814bb14217280097ebedad0f92586" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">y</ref>()*p.<ref refid="classCGAL_1_1Point__3_1ac50814bb14217280097ebedad0f92586" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">y</ref>(),<sp/>z2=p.<ref refid="classCGAL_1_1Point__3_1aa7b6371efb3e7aa179bcfa14c2667f87" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">z</ref>()*p.<ref refid="classCGAL_1_1Point__3_1aa7b6371efb3e7aa179bcfa14c2667f87" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">z</ref>();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>x2+y2+z2-1;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Tr<sp/>tr;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>3D-Delaunay<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>C2t3<sp/>c2t3<sp/>(tr);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>2D-complex<sp/>in<sp/>3D-Delaunay<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>defining<sp/>the<sp/>surface</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classSurface__3" kindref="compound">Surface_3</ref><sp/>surface(sphere_function,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>pointer<sp/>to<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Sphere_3(<ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>,<sp/>2.));<sp/></highlight><highlight class="comment">//<sp/>bounding<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>&quot;2.&quot;<sp/>above<sp/>is<sp/>the<sp/>*squared*<sp/>radius<sp/>of<sp/>the<sp/>bounding<sp/>sphere!</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>defining<sp/>meshing<sp/>criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__default__criteria__3" kindref="compound">CGAL::Surface_mesh_default_criteria_3&lt;Tr&gt;</ref><sp/>criteria(30.,<sp/><sp/></highlight><highlight class="comment">//<sp/>angular<sp/>bound</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>0.1,<sp/><sp/></highlight><highlight class="comment">//<sp/>radius<sp/>bound</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>0.1);<sp/></highlight><highlight class="comment">//<sp/>distance<sp/>bound</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>meshing<sp/>surface</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">CGAL::make_surface_mesh</ref>(c2t3,<sp/>surface,<sp/>criteria,<sp/><ref refid="structCGAL_1_1Non__manifold__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Non_manifold_tag</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMesher3FunctionsIO_1ga39a105bd1817a9200ec5df208888e8aa" kindref="member">CGAL::facets_in_complex_2_to_triangle_mesh</ref>(c2t3,<sp/>sm);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;sphere.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out<sp/>&lt;&lt;<sp/>sm<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Final<sp/>number<sp/>of<sp/>points:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>tr.number_of_vertices()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Surface_mesherMeshingIsosurfacesDefinedas">
+<title>Meshing Isosurfaces Defined as Gray Levels in 3D Images</title>
+<para>In this example the surface to be meshed is defined as the locus of points with a given gray level in a 3D image. The code is quite similar to the previous example.</para>
+<para>The main difference with the previous code is that the function used to define the surface is an object of type <computeroutput><ref refid="classCGAL_1_1Gray__level__image__3" kindref="compound">Gray_level_image_3</ref></computeroutput> created from an image file and a numerical value that is the gray value of the level one wishes to mesh.</para>
+<para>Note that surface, which is still an object of type <computeroutput><ref refid="classCGAL_1_1Implicit__surface__3" kindref="compound">Implicit_surface_3</ref></computeroutput> is now, defined by three parameters that are the function, the bounding sphere and a numerical value called <emphasis>the precision</emphasis>. This precision, whose value is relative to the bounding sphere radius, is used in the intersection computation. This parameter has a default which was used in the previous example. Also note that the center of the bounding sphere is required to be internal a point where the function has a negative value.</para>
+<para>The chosen iso-value of this 3D image corresponds to a head skull. The resulting mesh is shown in <ref refid="index_1fig__figureSurface_mesherskull" kindref="member">fig__figureSurface_mesherskull</ref>.</para>
+<para><anchor id="index_1fig__figureSurface_mesherskull"/> <image type="html" name="skull-surface.png"></image>
+ <image type="latex" name="skull-surface.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figureSurface_mesherskull" kindref="member">fig__figureSurface_mesherskull</ref> Surface mesh of an iso-contour extracted from a gray level 3D image <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesher_2mesh_a_3d_gray_image_8cpp-example" kindref="compound">Surface_mesher/mesh_a_3d_gray_image.cpp</ref> <programlisting filename="Surface_mesher/mesh_a_3d_gray_image.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Installation/internal/disable_deprecation_warnings_and_errors.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_default_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_default_criteria_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Complex_2_in_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/Complex_2_in_triangulation_3_file_writer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/make_surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Gray_level_image_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Implicit_surface_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>default<sp/>triangulation<sp/>for<sp/>Surface_mesher</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__default__triangulation__3" kindref="compound">CGAL::Surface_mesh_default_triangulation_3</ref><sp/>Tr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>c2t3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Complex_2_in_triangulation_3&lt;Tr&gt;<sp/>C2t3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Tr::Geom_traits<sp/>GT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gray__level__image__3" kindref="compound">CGAL::Gray_level_image_3&lt;GT::FT, GT::Point_3&gt;</ref><sp/>Gray_level_image;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Implicit__surface__3" kindref="compound">CGAL::Implicit_surface_3&lt;GT, Gray_level_image&gt;</ref><sp/><ref refid="classSurface__3" kindref="compound">Surface_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Tr<sp/>tr;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>3D-Delaunay<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>C2t3<sp/>c2t3<sp/>(tr);<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>2D-complex<sp/>in<sp/>3D-Delaunay<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>&apos;function&apos;<sp/>is<sp/>a<sp/>3D<sp/>gray<sp/>level<sp/>image</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Gray_level_image<sp/>image(<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;images/skull_2.9.inr&quot;</highlight><highlight class="normal">),<sp/>2.9f);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Carefully<sp/>chosen<sp/>bounding<sp/>sphere:<sp/>the<sp/>center<sp/>must<sp/>be<sp/>inside<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>surface<sp/>defined<sp/>by<sp/>&apos;image&apos;<sp/>and<sp/>the<sp/>radius<sp/>must<sp/>be<sp/>high<sp/>enough<sp/>so<sp/>that</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>sphere<sp/>actually<sp/>bounds<sp/>the<sp/>whole<sp/>image.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>GT::Point_3<sp/>bounding_sphere_center(122.,<sp/>102.,<sp/>117.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>GT::FT<sp/>bounding_sphere_squared_radius<sp/>=<sp/>200.*200.*2.;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>GT::Sphere_3<sp/>bounding_sphere(bounding_sphere_center,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>bounding_sphere_squared_radius);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>definition<sp/>of<sp/>the<sp/>surface,<sp/>with<sp/>10^-5<sp/>as<sp/>relative<sp/>precision</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classSurface__3" kindref="compound">Surface_3</ref><sp/>surface(image,<sp/>bounding_sphere,<sp/>1e-5);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>defining<sp/>meshing<sp/>criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__default__criteria__3" kindref="compound">CGAL::Surface_mesh_default_criteria_3&lt;Tr&gt;</ref><sp/>criteria(30.,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>5.,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>5.);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>meshing<sp/>surface,<sp/>with<sp/>the<sp/>&quot;manifold<sp/>without<sp/>boundary&quot;<sp/>algorithm</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">CGAL::make_surface_mesh</ref>(c2t3,<sp/>surface,<sp/>criteria,<sp/><ref refid="structCGAL_1_1Manifold__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Manifold_tag</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;out.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSurfaceMesher3FunctionsIO_1ga7718d4e2047939882540d89fb5f28934" kindref="member">CGAL::output_surface_facets_to_off</ref><sp/>(out,<sp/>c2t3);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Final<sp/>number<sp/>of<sp/>points:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>tr.number_of_vertices()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1SurfaceMesher_section_criteria">
+<title>Meshing Criteria, Guarantees and Variations</title>
+<para><anchor id="index_1SurfaceMesher_section_variations"/> The guarantees on the output mesh depend on the mesh criteria. Theoretical guarantees are given in <ref refid="citelist_1CITEREF_cgal:bo-pgsms-05" kindref="member">[1]</ref>. First, the meshing algorithm is proved to terminate if the lower bound on facets angles is not bigger than <computeroutput>30</computeroutput> degrees. Furthermore, the output mesh is guaranteed to be homeomorphic to the surface, and there is a guaranteed bound on the distance (Hausdorff and even Frechet distance) between the mesh and the surface if the radius bound is everywhere smaller than <formula id="15">$ \epsilon$</formula> times the local feature size. Here <formula id="15">$ \epsilon$</formula> is a constant that has to be less than <computeroutput>0.16</computeroutput>, and the local feature size <formula id="16">$ \mathrm{lfs}(x)$</formula> is defined on each point <formula id="17">$ x$</formula> of the surface as the distance from <formula id="17">$ x$</formula> to the medial axis. Note that the radius bound need not be uniform, although it is a uniform bound in the default criteria.</para>
+<para>Naturally, such a theoretical guarantee can be only achieved for smooth surfaces that have a finite, non zero reach value. (The reach of a surface is the minimum value of local feature size on this surface).</para>
+<para>The value of the local feature size on any point of the surface or its minimum on the surface it usually unknown although it can sometimes be guessed. Also it happens frequently that setting the meshing criteria so as to fulfill the theoretical conditions yields an over refined mesh. On the other hand, when the size criteria are relaxed, no homeomorphism with the input surface is guaranteed, and the output mesh is not even guaranteed to be manifold. To remedy this problem and give a more flexible meshing algorithm, the function template <computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">make_surface_mesh()</ref></computeroutput> has a tag template parameter allowing to slightly change the behavior of the refinement process. This feature allows, for instance, to run the meshing algorithm with a relaxed size criteria, more coherent with the size of the mesh expected by the user, and still have a guarantee that the output mesh forms a manifold surface. The function <computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsMakeMesh_1ga7e188adef5bfadaafd08db82c8a25dc1" kindref="member">make_surface_mesh()</ref></computeroutput> has specialized versions for the following tag types:</para>
+<para><computeroutput><ref refid="structCGAL_1_1Manifold__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Manifold_tag</ref></computeroutput>: the output mesh is guaranteed to be a manifold surface without boundary.</para>
+<para><computeroutput><ref refid="structCGAL_1_1Manifold__with__boundary__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Manifold_with_boundary_tag</ref></computeroutput>: the output mesh is guaranteed to be manifold but may have boundaries.</para>
+<para><computeroutput><ref refid="structCGAL_1_1Non__manifold__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Non_manifold_tag</ref></computeroutput>: the algorithm relies on the given criteria and guarantees nothing else.</para>
+</sect1>
+<sect1 id="index_1Surface_mesherOutput">
+<title>Output</title>
+<para>This CGAL component also provides functions to write the reconstructed surface mesh to the Object File Format (OFF) <ref refid="citelist_1CITEREF_cgal:p-gmgv16-96" kindref="member">[2]</ref> and to convert it to a <computeroutput>FaceGraph</computeroutput> (when it is manifold):</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsIO_1ga7718d4e2047939882540d89fb5f28934" kindref="member">output_surface_facets_to_off()</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput>output_surface_facets_to_polyhedron()</computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="group__PkgSurfaceMesher3FunctionsIO_1ga39a105bd1817a9200ec5df208888e8aa" kindref="member">facets_in_complex_2_to_triangle_mesh()</ref></computeroutput></para>
+</listitem></itemizedlist>
+</para>
+</sect1>
+<sect1 id="index_1Surface_mesherUndocumented">
+<title>Undocumented Features Available in Demos</title>
+<para>The <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref> Lab application has a feature that allows to remesh a polyhedral surface, using the 3D Surface Mesh Generator. That has been implemented as a special model of <computeroutput><ref refid="classSurfaceMeshTraits__3" kindref="compound">SurfaceMeshTraits_3</ref></computeroutput>, for polyhedra. That traits class is not yet documented because its interface and code have not yet been stabilized.</para>
+<para>The Surface Mesh Generator demo allows to mesh not only gray level images, but also segmented images, when voxels are labeled with a domain index. Such images are for example the result of a segmentation of 3D medical images.</para>
+</sect1>
+<sect1 id="index_1Surface_mesherDesign">
+<title>Design and Implementation History</title>
+<para>The algorithm implemented in this package is mainly based on the work of Jean-Daniel Boissonnat and Steve Oudot <ref refid="citelist_1CITEREF_cgal:bo-pgsms-05" kindref="member">[1]</ref>. Steve Oudot implemented a first working prototype of the algorithm during his PhD thesis.</para>
+<para>The meshing algorithm is implemented using the design of mesher levels described in <ref refid="citelist_1CITEREF_cgal:ry-gsddrm-06" kindref="member">[3]</ref>.</para>
+<para>David Rey, Steve Oudot and Andreas Fabri have participated in the development of this package. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Surface_mesher.txt"/>
+  </compounddef>
+</doxygen>

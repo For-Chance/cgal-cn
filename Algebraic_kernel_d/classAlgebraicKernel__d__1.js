@@ -1,0 +1,25 @@
+var classAlgebraicKernel__d__1 =
+[
+    [ "Algebraic_real_1", "classAlgebraicKernel__d__1.html#a6b463d94115038aefb4e0f2aafc06a6e", null ],
+    [ "Approximate_absolute_1", "classAlgebraicKernel__d__1.html#ac477a67047349405e1d2f37681ccf6a1", null ],
+    [ "Approximate_relative_1", "classAlgebraicKernel__d__1.html#ae8a7f0aec1bb71f15039ab2698c03033", null ],
+    [ "Bound", "classAlgebraicKernel__d__1.html#a00c2a481bddf8a8812f517b1b81867c0", null ],
+    [ "Bound_between_1", "classAlgebraicKernel__d__1.html#afcab3e2cc953e64f9a72ce233efb8589", null ],
+    [ "Coefficient", "classAlgebraicKernel__d__1.html#a800674c4325a4c7dbc57186603fc8e3c", null ],
+    [ "Compare_1", "classAlgebraicKernel__d__1.html#af751e9c4a533114408633d43172f20f6", null ],
+    [ "Compute_polynomial_1", "classAlgebraicKernel__d__1.html#a321f08825328a48b7bf9ff7f4a40b149", null ],
+    [ "Construct_algebraic_real_1", "classAlgebraicKernel__d__1.html#a518f19a68780728a9cb63ce1f233d3a9", null ],
+    [ "Is_coprime_1", "classAlgebraicKernel__d__1.html#aa7bf3e9ccd2d87defd3eb8d500257ea6", null ],
+    [ "Is_square_free_1", "classAlgebraicKernel__d__1.html#a46259a3b5a5dbbb1565b5f5e471b714a", null ],
+    [ "Isolate_1", "classAlgebraicKernel__d__1.html#ac2babc1d9fa6131a8121ad3ae216ea76", null ],
+    [ "Make_coprime_1", "classAlgebraicKernel__d__1.html#a05c88217d056376af184469bdb032ec0", null ],
+    [ "Make_square_free_1", "classAlgebraicKernel__d__1.html#a0418a5b9fd01088731b4c2082bc17be2", null ],
+    [ "Multiplicity_type", "classAlgebraicKernel__d__1.html#a2341fd24ba67e86b1219c62effd9ed37", null ],
+    [ "Number_of_solutions_1", "classAlgebraicKernel__d__1.html#a4db228888900ccbe693666d8e8c5af91", null ],
+    [ "Polynomial_1", "classAlgebraicKernel__d__1.html#ae49b9882d6f700d17476e00933ed20f3", null ],
+    [ "Sign_at_1", "classAlgebraicKernel__d__1.html#a53c2b01c3d102eda8b92e6e403a6d79b", null ],
+    [ "size_type", "classAlgebraicKernel__d__1.html#aa03c01de0b6b3bc226840e681523fdd7", null ],
+    [ "Solve_1", "classAlgebraicKernel__d__1.html#a4ee56631ef707d030a0f2a506c898861", null ],
+    [ "Square_free_factorize_1", "classAlgebraicKernel__d__1.html#a352fc9cab7172529a5d9e78e481d3df9", null ],
+    [ "bound_between_1_object", "classAlgebraicKernel__d__1.html#afda3ec9c4cd69ecc5799fbd863cb5f2b", null ]
+];

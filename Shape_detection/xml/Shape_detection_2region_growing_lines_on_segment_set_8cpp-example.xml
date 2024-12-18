@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Shape_detection_2region_growing_lines_on_segment_set_8cpp-example" kind="example">
+    <compoundname>Shape_detection/region_growing_lines_on_segment_set.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Shape_detection/region_growing_lines_on_segment_set.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/PLY.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Shape_detection/Region_growing/Region_growing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Segment__set_8h" kindref="compound">CGAL/Shape_detection/Region_growing/Segment_set.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Polygon__mesh_8h" kindref="compound">CGAL/Shape_detection/Region_growing/Polygon_mesh.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;include/utils.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Typedefs.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Surface_mesh<sp/>=<sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Face_range<sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Surface_mesh::Face_range;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Edge_range<sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Surface_mesh::Edge_range;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">One_ring_query<sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Polygon__mesh_1_1One__ring__neighbor__query" kindref="compound">CGAL::Shape_detection::Polygon_mesh::One_ring_neighbor_query&lt;Surface_mesh&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Plane_region<sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Polygon__mesh_1_1Least__squares__plane__fit__region" kindref="compound">CGAL::Shape_detection::Polygon_mesh::Least_squares_plane_fit_region&lt;Kernel, Surface_mesh&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">RG_planes<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Region__growing" kindref="compound">CGAL::Shape_detection::Region_growing&lt;One_ring_query, Plane_region&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Polyline_graph<sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Polygon__mesh_1_1Polyline__graph" kindref="compound">CGAL::Shape_detection::Polygon_mesh::Polyline_graph&lt;Surface_mesh&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Segment_range<sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Polyline_graph::Segment_range;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Segment_map<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Polyline_graph::Segment_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Line_region<sp/><sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Segment__set_1_1Least__squares__line__fit__region" kindref="compound">CGAL::Shape_detection::Segment_set::Least_squares_line_fit_region&lt;Kernel, Surface_mesh::Edge_index, Segment_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Line_sorting<sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Segment__set_1_1Least__squares__line__fit__sorting" kindref="compound">CGAL::Shape_detection::Segment_set::Least_squares_line_fit_sorting&lt;Kernel, Surface_mesh::Edge_index, Polyline_graph, Segment_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">RG_lines<sp/><sp/><sp/><sp/><sp/>=<sp/><ref refid="classCGAL_1_1Shape__detection_1_1Region__growing" kindref="compound">CGAL::Shape_detection::Region_growing&lt;Polyline_graph, Line_region&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*argv[])<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>data<sp/>either<sp/>from<sp/>a<sp/>local<sp/>folder<sp/>or<sp/>a<sp/>user-provided<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_default_input<sp/>=<sp/>argc<sp/>&gt;<sp/>1<sp/>?<sp/>false<sp/>:<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>is_default_input<sp/>?<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/am.off&quot;</highlight><highlight class="normal">)<sp/>:<sp/>argv[1];</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh<sp/>surface_mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>surface_mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;ERROR:<sp/>cannot<sp/>read<sp/>the<sp/>input<sp/>file!&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Face_range<sp/>face_range<sp/>=<sp/>faces(surface_mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Edge_range<sp/>edge_range<sp/>=<sp/>edges(surface_mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>input<sp/>faces:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>face_range.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>input<sp/>edges:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>edge_range.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(!is_default_input<sp/>||<sp/>face_range.size()<sp/>==<sp/>7320);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(!is_default_input<sp/>||<sp/>edge_range.size()<sp/>==<sp/>10980);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Find<sp/>planar<sp/>regions.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>One_ring_query<sp/>one_ring_query(surface_mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Plane_region<sp/>plane_region(surface_mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RG_planes<sp/>rg_planes(face_range,<sp/>one_ring_query,<sp/>plane_region);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;typename<sp/>RG_planes::Primitive_and_region&gt;<sp/>regions;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>rg_planes.detect(std::back_inserter(regions));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>found<sp/>planar<sp/>regions:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>regions.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(!is_default_input<sp/>||<sp/>regions.size()<sp/>==<sp/>9);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>fullpath<sp/>=<sp/>(argc<sp/>&gt;<sp/>2<sp/>?<sp/>argv[2]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;regions_sm.ply&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>utils::save_polygon_mesh_regions(surface_mesh,<sp/>regions,<sp/>fullpath);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Find<sp/>linear<sp/>regions.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyline_graph<sp/>pgraph(surface_mesh,<sp/>rg_planes.region_map());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>segment_range<sp/>=<sp/>pgraph.segment_range();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>extracted<sp/>segments:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>segment_range.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Line_region<sp/>line_region(CGAL::parameters::segment_map(pgraph.segment_map()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Line_sorting<sp/>line_sorting(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segment_range,<sp/>pgraph,<sp/>CGAL::parameters::segment_map(pgraph.segment_map()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>line_sorting.sort();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>RG_lines<sp/>rg_lines(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segment_range,<sp/>line_sorting.ordered(),<sp/>pgraph,<sp/>line_region);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;typename<sp/>RG_lines::Primitive_and_region&gt;<sp/>subregions;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>rg_lines.detect(std::back_inserter(subregions));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;*<sp/>number<sp/>of<sp/>found<sp/>linear<sp/>regions:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>subregions.size()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(!is_default_input<sp/>||<sp/>subregions.size()<sp/>==<sp/>21);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>fullpath<sp/>=<sp/>(argc<sp/>&gt;<sp/>2<sp/>?<sp/>argv[2]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;subregions_sm.ply&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>utils::save_segment_regions_3&lt;Kernel,<sp/>std::vector&lt;typename<sp/>RG_lines::Primitive_and_region&gt;,<sp/>Segment_map&gt;(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>subregions,<sp/>fullpath,<sp/>pgraph.segment_map());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

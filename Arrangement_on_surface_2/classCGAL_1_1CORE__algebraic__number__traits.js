@@ -1,0 +1,26 @@
+var classCGAL_1_1CORE__algebraic__number__traits =
+[
+    [ "Algebraic", "classCGAL_1_1CORE__algebraic__number__traits.html#a2cc99f4b38eda55abeba0bfddc3e6c87", null ],
+    [ "Integer", "classCGAL_1_1CORE__algebraic__number__traits.html#aa585d0f040e13dd44f9be1ea3bbfc4ee", null ],
+    [ "Polynomial", "classCGAL_1_1CORE__algebraic__number__traits.html#a386295b11779a16aa35035d064038469", null ],
+    [ "Rational", "classCGAL_1_1CORE__algebraic__number__traits.html#a0d2106623317f08d0f30452242ef4138", null ],
+    [ "compute_polynomial_roots", "classCGAL_1_1CORE__algebraic__number__traits.html#a73af0b616b948919666523892b2c6089", null ],
+    [ "compute_polynomial_roots", "classCGAL_1_1CORE__algebraic__number__traits.html#a42539705e922ce67ba2405baa44ae753", null ],
+    [ "construct_polynomial", "classCGAL_1_1CORE__algebraic__number__traits.html#a6ef1b25d3456a310c997c3debb0194c2", null ],
+    [ "construct_polynomial", "classCGAL_1_1CORE__algebraic__number__traits.html#ad023b8c8c03dbcf6672b5e0029636457", null ],
+    [ "construct_polynomials", "classCGAL_1_1CORE__algebraic__number__traits.html#ae12e177ffcef70ba6e23c5ca2fdd089e", null ],
+    [ "convert", "classCGAL_1_1CORE__algebraic__number__traits.html#ac58e4296c35ed268ca3b7e8df28d0505", null ],
+    [ "convert", "classCGAL_1_1CORE__algebraic__number__traits.html#aa39020d105d35126cf7ccc55bff82622", null ],
+    [ "convert_coefficients", "classCGAL_1_1CORE__algebraic__number__traits.html#af00b01837c66c86bcdf7e6d783b0d6cc", null ],
+    [ "degree", "classCGAL_1_1CORE__algebraic__number__traits.html#ad8ff08d37fc9f23bd9ca2d15c081b8b0", null ],
+    [ "denominator", "classCGAL_1_1CORE__algebraic__number__traits.html#acc94529011f762229164092a040a4c4e", null ],
+    [ "derive", "classCGAL_1_1CORE__algebraic__number__traits.html#aea40e3725670861bb818faadd2b0018a", null ],
+    [ "divide", "classCGAL_1_1CORE__algebraic__number__traits.html#a3281a9f10e2acb5cd1d2302111147e8d", null ],
+    [ "double_interval", "classCGAL_1_1CORE__algebraic__number__traits.html#a3936277048c7239f51e16757e954ea0d", null ],
+    [ "evaluate_at", "classCGAL_1_1CORE__algebraic__number__traits.html#a4b65f6d08b3517c8ff4e4eafe18d82e4", null ],
+    [ "numerator", "classCGAL_1_1CORE__algebraic__number__traits.html#afdd6a7807206c7c655ddb84f6baa65fe", null ],
+    [ "rational_in_interval", "classCGAL_1_1CORE__algebraic__number__traits.html#ac3ee4c351f2283e28bc51df82477493a", null ],
+    [ "scale", "classCGAL_1_1CORE__algebraic__number__traits.html#a3327337c1378974ebecab7e67f538c2e", null ],
+    [ "solve_quadratic_equation", "classCGAL_1_1CORE__algebraic__number__traits.html#ac5e4e605cf479b7c99e7a8f930f8ed4c", null ],
+    [ "sqrt", "classCGAL_1_1CORE__algebraic__number__traits.html#a7dc9d6ea419922800bf04cc00cc987dd", null ]
+];

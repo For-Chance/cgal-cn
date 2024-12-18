@@ -1,0 +1,27 @@
+var classCGAL_1_1Approximate__min__ellipsoid__d =
+[
+    [ "Axes_direction_coordinate_iterator", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a7a6a1adb0e4590e5f07de50c03994de3", null ],
+    [ "Axes_lengths_iterator", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a72cb50febc6d4c7c24c68a8016bde351", null ],
+    [ "Cartesian_const_iterator", "classCGAL_1_1Approximate__min__ellipsoid__d.html#adf47ed5aabdb6ad61f6efac038e2fb41", null ],
+    [ "Center_coordinate_iterator", "classCGAL_1_1Approximate__min__ellipsoid__d.html#aff46f1085c9c9ccb446a8e57221ae157", null ],
+    [ "ET", "classCGAL_1_1Approximate__min__ellipsoid__d.html#ae80e0c15bae383fdbb2e72d8643fafc3", null ],
+    [ "FT", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a700b439e58f13a26cdc86ca4d156a88c", null ],
+    [ "Point", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a4a9ec257e6b8cb639810f3805316e68e", null ],
+    [ "Approximate_min_ellipsoid_d", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a5fc0bc1c66b59556c903bfbc844f15fa", null ],
+    [ "achieved_epsilon", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a9f9fad4c126ae57c4cd3727d9283229f", null ],
+    [ "axes_lengths_begin", "classCGAL_1_1Approximate__min__ellipsoid__d.html#aeb6940806e45031a391baf58c735ec13", null ],
+    [ "axes_lengths_end", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a25d9a8946ab4c81f8dbfb45dddb7f701", null ],
+    [ "axis_direction_cartesian_begin", "classCGAL_1_1Approximate__min__ellipsoid__d.html#ac04a27480671bd6e5a2eb4cc01fa47e2", null ],
+    [ "axis_direction_cartesian_end", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a7e8f229884c9903afa2aa39155c08f29", null ],
+    [ "center_cartesian_begin", "classCGAL_1_1Approximate__min__ellipsoid__d.html#aa687dcedc9b78b06f4c0e2aba9edb592", null ],
+    [ "center_cartesian_end", "classCGAL_1_1Approximate__min__ellipsoid__d.html#adb4dccfd4a16fe59e095c57d94498582", null ],
+    [ "defining_matrix", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a32b71cb636acb2f6b34e96465c5379e0", null ],
+    [ "defining_scalar", "classCGAL_1_1Approximate__min__ellipsoid__d.html#ad54fb77e5183d93d86840ba89ea95478", null ],
+    [ "defining_vector", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a4aa3e857cdd79771f39aad531157b5f0", null ],
+    [ "dimension", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a6642c2338f25f191e95232126bf9e729", null ],
+    [ "is_full_dimensional", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a636b12855568f4471e0dadc3d6fefb3f", null ],
+    [ "is_valid", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a2449d677fe6d12a445d5a090723d9349", null ],
+    [ "number_of_points", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a747a40738dc64031ddf3bb09144c7984", null ],
+    [ "traits", "classCGAL_1_1Approximate__min__ellipsoid__d.html#ad799fb3e56b6e4609963c4fd21663898", null ],
+    [ "write_eps", "classCGAL_1_1Approximate__min__ellipsoid__d.html#a1cd41640f8cf8b562772399a0fb00b13", null ]
+];

@@ -1,0 +1,1001 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Linear_and_Quadratic_Programming_Solver"/><anchor id="index_1QPsolver"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Kaspar Fischer, Bernd G<aumlaut/>rtner, Sven Sch<oumlaut/>nherr, and Frans Wessendorp</para>
+</simplesect>
+</para>
+<sect1 id="index_1secQPdef">
+<title>Which Programs can be Solved?</title>
+<para>This package lets you solve <emphasis>convex quadratic programs</emphasis> of the general form  <formula id="25">\begin{eqnarray*}
+\mbox{(QP)}&amp; \mbox{minimize}
+&amp; \qpx^{T}D\qpx+\qpc^{T}\qpx+c_0 \\
+&amp;\mbox{subject to} &amp; A\qpx\qprel \qpb, \\
+&amp; &amp; \qpl \leq \qpx \leq \qpu
+\end{eqnarray*}</formula> in <formula id="3">$ n$</formula> real variables <formula id="4">$ \qpx=(x_0,\ldots,x_{n-1})$</formula>.</para>
+<para>Here, <itemizedlist>
+<listitem>
+<para><formula id="5">$ A$</formula> is an <formula id="6">$ m\times n$</formula> matrix (the constraint matrix), </para>
+</listitem>
+<listitem>
+<para><formula id="7">$ \qpb$</formula> is an <formula id="8">$ m$</formula>-dimensional vector (the right-hand side), </para>
+</listitem>
+<listitem>
+<para><formula id="9">$ \qprel$</formula> is an <formula id="8">$ m$</formula>-dimensional vector of relations from <formula id="10">$ \{\leq, =, \geq\}$</formula>,</para>
+<para></para>
+</listitem>
+<listitem>
+<para><formula id="11">$ \qpl$</formula> is an <formula id="3">$ n$</formula>-dimensional vector of lower bounds for <formula id="12">$ \qpx$</formula>, where <formula id="13">$ l_j\in\mathbb{R}\cup\{-\infty\}$</formula> for all <formula id="14">$ j$</formula> </para>
+</listitem>
+<listitem>
+<para><formula id="15">$ \qpu$</formula> is an <formula id="3">$ n$</formula>-dimensional vector of upper bounds for <formula id="12">$ \qpx$</formula>, where <formula id="16">$ u_j\in\mathbb{R}\cup\{\infty\}$</formula> for all <formula id="14">$ j$</formula></para>
+<para></para>
+</listitem>
+<listitem>
+<para><formula id="23">$ D$</formula> is a symmetric positive-semidefinite <formula id="24">$ n\times n$</formula> matrix (the quadratic objective function),</para>
+<para></para>
+</listitem>
+<listitem>
+<para><formula id="17">$ \qpc$</formula> is an <formula id="3">$ n$</formula>-dimensional vector (the linear objective function), and </para>
+</listitem>
+<listitem>
+<para><formula id="18">$ c_0$</formula> is a constant.</para>
+<para></para>
+</listitem>
+</itemizedlist>
+</para>
+<para>If <formula id="26">$ D=0$</formula>, the program (QP) is actually a <emphasis>linear program</emphasis>. Section <ref refid="index_1secQProbustness" kindref="member">Robustness</ref> on robustness briefly discusses the case of <formula id="23">$ D$</formula> not being positive-semidefinite and therefore not defining a convex program.</para>
+<para><emphasis>Solving</emphasis> the program means to find an <formula id="3">$ n$</formula>-vector <formula id="45">$ \qpx^*$</formula> such that <formula id="127">$ A\qpx^*\qprel \qpb,
+\qpl\leq \qpx^*\leq \qpu$</formula> (a <emphasis>feasible solution</emphasis>), and with the smallest objective function value <formula id="128">$ {\qpx^*}^TD\qpx^*+\qpc^T\qpx^*+c_0$</formula> among all feasible solutions.</para>
+<para>There might be no feasible solution at all, in which case the quadratic program is <emphasis>infeasible</emphasis>, or there might be feasible solutions of arbitrarily small objective function value, in which case the program is <emphasis>unbounded</emphasis>.</para>
+</sect1>
+<sect1 id="index_1QP_solverDesign">
+<title>Design, Efficiency, and Robustness</title>
+<para>The design of the package is quite simple. The linear or quadratic program to be solved is supplied in form of an object of a class that is a model of the concept <computeroutput><ref refid="classQuadraticProgram" kindref="compound">QuadraticProgram</ref></computeroutput> (or some specialized other concepts, e.g. for linear programs). CGAL provides a number of easy-to-use and flexible models, see Section <ref refid="index_1secQPfirst" kindref="member">How to Enter and Solve a Program</ref> below. The input data may be of any given number type, such as <computeroutput>double</computeroutput>, <computeroutput>int</computeroutput>, or any exact type.</para>
+<para>Then the program is solved using the function <computeroutput><ref refid="group__PkgQPSolverFunctions_1gac28b937807a2f163f253b27a7ee85080" kindref="member">solve_quadratic_program()</ref></computeroutput> (or some specialized other functions, e.g. for linear programs). For this, you also have to provide a suitable <emphasis>exact</emphasis> number type <computeroutput>ET</computeroutput> used in the solution process. In case of input type <computeroutput>double</computeroutput>, solution methods that use floating-point-filtering are chosen by default for certain programs (in some cases, this is not appropriate, and the default should be changed; see Section <ref refid="index_1secQPcustomization" kindref="member">Customizing the Solver</ref> for details).</para>
+<para>The output of this is an object of <computeroutput><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">Quadratic_program_solution</ref>&lt;ET&gt;</computeroutput> which you can in turn query for various things: what is the status of the program (optimally solved, infeasible, or unbounded?), what are the values of the optimal solution <formula id="45">$ \qpx^*$</formula>, what is the associated objective function value, etc.</para>
+<para>You can in particular get <emphasis>certificates</emphasis> for the solution. In short, these are proofs that the output is correct. Thus, if you don&apos;t believe in the solution (whether it says &quot;optimally solved&quot;, &quot;infeasible&quot;, or &quot;unbounded&quot;), you can verify it yourself by using the certificates. Section <ref refid="index_1secQPcertificates" kindref="member">Solution Certificates</ref> says more about this.</para>
+<sect2 id="index_1QP_solverEfficiency">
+<title>Efficiency</title>
+<para>The concept <computeroutput><ref refid="classQuadraticProgram" kindref="compound">QuadraticProgram</ref></computeroutput> (as well as the other specialized ones) require a <emphasis>dense interface</emphasis> of the program, in terms of <emphasis>random-access iterators</emphasis> over the matrices and vectors of (QP). Zero entries therefore play no special role and are treated like all other entries by the interface.</para>
+<para>This has mainly historical reasons: the original motivation behind this package was low-dimensional geometric optimization where a dense representation is appropriate and efficient. In fact, the CGAL packages <computeroutput><ref refid="classCGAL_1_1Min__annulus__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Bounding_volumes.tag">Min_annulus_d</ref>&lt;Traits&gt;</computeroutput> and <computeroutput><ref refid="classCGAL_1_1Polytope__distance__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polytope_distance_d.tag">Polytope_distance_d</ref>&lt;Traits&gt;</computeroutput> internally use the linear and quadratic programming solver.</para>
+<para>As a user, however, you don&apos;t necessarily have to provide a dense <emphasis>representation</emphasis> of your program. You do not pass vectors or matrices to the solution functions, but rather specify the vectors and matrices through iterators. The iterator abstraction easily allows to build models that convert a sparse representation into a dense interface. The predefined models <computeroutput><ref refid="classCGAL_1_1Quadratic__program" kindref="compound">Quadratic_program</ref>&lt;NT&gt;</computeroutput> and <computeroutput><ref refid="classCGAL_1_1Quadratic__program__from__mps" kindref="compound">Quadratic_program_from_mps</ref>&lt;NT&gt;</computeroutput> do exactly this; in using them, you can forget about the dense interface.</para>
+<para>Nevertheless, if you care about efficiency, you cannot completely ignore the issue. If you think about a quadratic program in <formula id="3">$ n$</formula> variables and <formula id="8">$ m$</formula> constraints, its dense interface has <formula id="129">$ \Theta(n^2 + mn)$</formula> entries, even if actually very few of them are nonzero. This has consequences for the complexity of the internal computations. In fact, a single iteration of the solution process has complexity at least <formula id="130">$ \Omega(mn)$</formula>, since usually, all entries of the matrix <formula id="5">$ A$</formula> are accessed. This implies that problems where <formula id="131">$ \min(n,m)$</formula> is large cannot be solved efficiently, even if the number of nonzero entries in the problem description is very small.</para>
+<para>We can actually be quite precise about performance, in terms of the following parameters.</para>
+<para><variablelist>
+<varlistentry><term><formula id="74">$n$</formula></term></varlistentry>
+<listitem><para>the number of variables (or columns of <formula id="132">$A$</formula>), </para>
+</listitem>
+<varlistentry><term><formula id="65">$m$</formula></term></varlistentry>
+<listitem><para>the number of constraints (or rows of <formula id="132">$A$</formula>) </para>
+</listitem>
+<varlistentry><term><formula id="133">$e$</formula></term></varlistentry>
+<listitem><para>the number of equality constraints, </para>
+</listitem>
+<varlistentry><term><formula id="134">$r$</formula></term></varlistentry>
+<listitem><para>the rank of the quadratic objective function matrix <formula id="63">$D$</formula>. </para>
+</listitem>
+</variablelist>
+</para>
+<para>The time required to solve the problems is in most cases linear in <formula id="135">$ \max(n,m)$</formula>, but with a factor heavily depending on <formula id="136">$ \min(n,e)+r$</formula>. Therefore, the solver will be efficient only if <formula id="136">$ \min(n,e)+r$</formula> is small.</para>
+<para>Here are the scenarios in which this applies: <itemizedlist>
+<listitem>
+<para>Quadratic programs with a small number of variables, but possibly a large number of inequality constraints, </para>
+</listitem>
+<listitem>
+<para>Linear programs with a small number of equality constraints but possibly a large number of variables, </para>
+</listitem>
+<listitem>
+<para>Quadratic programs with a small number of equality constraints and <formula id="23">$ D$</formula> of small rank, but possibly with a large number of variables. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>How small is small? If <formula id="136">$ \min(n,e)+r$</formula> is up to <formula id="137">$ 10$</formula>, the solver will probably be very fast, even if <formula id="135">$ \max(n,m)$</formula> goes into the millions. If <formula id="138">$ \min(n,m)+r$</formula> is up to a few hundreds, you may still get a solution within reasonable time, depending on the problem characteristics.</para>
+<para>If you have a problem where both <formula id="3">$ n$</formula> and <formula id="139">$ e$</formula> are well above <formula id="140">$ 1,000$</formula>, say, then chances are high that CGAL cannot solve it within reasonable time.</para>
+</sect2>
+<sect2 id="index_1secQProbustness">
+<title>Robustness</title>
+<para>Given that you use an <emphasis>exact number type</emphasis> in the function <computeroutput>solve_quadratic_program</computeroutput> (or in the other, specialized solution functions), the solver will give you <emphasis>exact rational output</emphasis>, for <emphasis>every</emphasis> convex quadratic program. It may fail to compute a solution only if <orderedlist>
+<listitem>
+<para>The quadratic program is too large (see the previous subsection on efficiency). </para>
+</listitem>
+<listitem>
+<para>The quadratic objective function matrix <formula id="23">$ D$</formula> is not positive-semidefinite (see the discussion below). </para>
+</listitem>
+<listitem>
+<para>The floating-point filter used by default for certain programs and input type <computeroutput>double</computeroutput> fails due to a <emphasis>double</emphasis> exponent overflow. This happens in rare cases only, and it does not pay off to sacrifice the efficiency of the filtered approach in order to cope with these rare cases. There are means, however, to avoid such problems by switching to a slower non-filtered variant, see Section <ref refid="index_1secQPcustomizationfiltering" kindref="member">Exponent Overflow in Double Using Floating-Point Filters</ref>. </para>
+</listitem>
+<listitem>
+<para>The solver internally cycles. This also happens in rare cases only. However, if you have a hunch that the solver cycles on your problem, there are means to switch to a slower variant that is guaranteed not to cycle, see Section <ref refid="index_1secQPcustomizationcycling" kindref="member">The Solver Internally Cycles</ref>. </para>
+</listitem>
+</orderedlist>
+</para>
+<para>The second item merits special attention. First, you may ask why the solver does not check that <formula id="23">$ D$</formula> is positive semidefinite. But recall that <formula id="23">$ D$</formula> is given by a dense interface, and it would therefore cost <formula id="141">$ \Omega(n^2)$</formula> time already to access all entries of the matrix <formula id="23">$ D$</formula>. The solver itself gets away with accessing much less entries of <formula id="23">$ D$</formula> in the relevant case where <formula id="142">$ r$</formula>, the rank of <formula id="23">$ D$</formula>, is small.</para>
+<para>Nevertheless, the solver contains some runtime checks that may detect that the matrix <formula id="23">$ D$</formula> is not positive-semidefinite. But you may as well get an &quot;optimal solution&quot; in this case, even with valid certificates. The validity of these certificates, however, depends on <formula id="23">$ D$</formula> being positive-semidefinite; if this is not the case, the certificates only prove that the solver has found a &quot;critical point&quot; of your (nonconvex) program, but there are no guarantees whatsoever that this is a global optimum, or even a local optimum.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1secQPfirst">
+<title>How to Enter and Solve a Program</title>
+<para>In this section, we describe how you can supply and solve your problem, using the CGAL program models and solution functions. There are two essentially different ways to proceed, and we will discuss them in turn. In short, <itemizedlist>
+<listitem>
+<para>you can let the model take care of your program data; you start from an empty program and then simply insert the non-zero entries, or read them from a file (more generally, any input stream) in <computeroutput><ref refid="classMPSFormat" kindref="compound">MPSFormat</ref></computeroutput>. You can also change program entries at any time. This is usually the most convenient way if you don&apos;t want to care about representation issues; </para>
+</listitem>
+<listitem>
+<para>you can maintain the data yourself and only supply suitable random-access iterators over the matrices and vectors. This is advantageous if you already have the data (explicitly, or implicitly encoded, for example through iterators) and want to avoid copying of data. Typically, this happens if you write generic iterator-based code. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Our running example is the following quadratic program in two variables:  <formula id="97">\[
+\begin{array}{lrcl}
+\mbox{minimize} &amp; x^2 + 4(y-4)^2 &amp;(=&amp; x^2 + 4y^2 - 32y + 64) \\
+\mbox{subject to} &amp; x + y &amp;\leq&amp; 7 \\
+&amp; -x + 2y &amp;\leq&amp; 4 \\
+&amp; x &amp;\geq&amp; 0 \\
+&amp; y &amp;\geq&amp; 0 \\
+&amp; y &amp;\leq&amp; 4
+\end{array}
+\]</formula></para>
+<para><ref refid="index_1fig__figQPfirst_qp" kindref="member">fig__figQPfirst_qp</ref> shows a picture. It depicts the five inequalities of the program, along with the <emphasis>feasible region</emphasis> (green), the set of points that satisfy all the five constraints. The dashed elliptic curves represent <emphasis>contour lines</emphasis> of the objective function, i.e., along each dashed curve, the objective function value is constant.</para>
+<para>The global minimum of the objective function is attained at the point <formula id="143">$ (0,4)$</formula>, and the minimum within the feasible region appears at the point <formula id="144">$ (2,3)$</formula> marked with a black dot. The value of the objective function at this optimal solution is <formula id="145">$ 2^2 + 4(3-4)^2 = 8$</formula>.</para>
+<para><anchor id="index_1fig__figQPfirst_qp"/> <image type="html" name="first_qp.png"></image>
+ <image type="latex" name="first_qp.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figQPfirst_qp" kindref="member">fig__figQPfirst_qp</ref> A quadratic program in two variables <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect2 id="index_1QP_solverConstructingaProgramfromData">
+<title>Constructing a Program from Data</title>
+<para>Here is how this quadratic program can be solved in CGAL according to the first way (letting the model take care of the data). We use <computeroutput>int</computeroutput> as the input type, and <computeroutput><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">MP_Float</ref></computeroutput> or <computeroutput><ref refid="classCGAL_1_1Gmpz" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">Gmpz</ref></computeroutput> (which is faster and preferable if <computeroutput>GMP</computeroutput> is installed) as the exact type for the internal computations. In larger examples, it pays off to use <computeroutput>double</computeroutput> as input type in order to profit from the automatic floating-point filtering that takes place then.</para>
+<para>For examples how to work with the input type <computeroutput>double</computeroutput>, we refer to Sections <ref refid="index_1secQPiterators" kindref="member">Working from Iterators</ref> and <ref refid="index_1secQPcustomization" kindref="member">Customizing the Solver</ref>.</para>
+<para><bold>Note:</bold> For the quadratic objective function, the entries of the matrix <formula id="120">$ 2D$</formula> have to be provided, rather than <formula id="23">$ D$</formula>. Although this is common to almost all quadratic programming solvers, it can easily be overlooked by a novice.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2first_qp_8cpp-example" kindref="compound">QP_solver/first_qp.cpp</ref> <programlisting filename="QP_solver/first_qp.cpp"><codeline><highlight class="comment">//<sp/>example:<sp/>construct<sp/>a<sp/>quadratic<sp/>program<sp/>from<sp/>data</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>the<sp/>QP<sp/>below<sp/>is<sp/>the<sp/>first<sp/>quadratic<sp/>program<sp/>example<sp/>in<sp/>the<sp/>user<sp/>manual</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>choose<sp/>exact<sp/>integral<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_GMP</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Gmpz_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/Gmpz.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gmpz" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::Gmpz</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>program<sp/>and<sp/>solution<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program" kindref="compound">CGAL::Quadratic_program&lt;int&gt;</ref><sp/>Program;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref><sp/>Solution;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>by<sp/>default,<sp/>we<sp/>have<sp/>a<sp/>nonnegative<sp/>QP<sp/>with<sp/>Ax<sp/>&lt;=<sp/>b</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Program<sp/>qp<sp/>(<ref refid="group__kernel__enums_1gga84351c7e66be00efccd4ab1a61070469ab925c6b1ff8cd0bdea7f31fe18d3c38b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::SMALLER</ref>,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,<sp/>0,<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>now<sp/>set<sp/>the<sp/>non-default<sp/>entries:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>X<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>Y<sp/>=<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp.set_a(X,<sp/>0,<sp/><sp/>1);<sp/>qp.set_a(Y,<sp/>0,<sp/>1);<sp/>qp.set_b(0,<sp/>7);<sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>x<sp/>+<sp/>y<sp/><sp/>&lt;=<sp/>7</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp.set_a(X,<sp/>1,<sp/>-1);<sp/>qp.set_a(Y,<sp/>1,<sp/>2);<sp/>qp.set_b(1,<sp/>4);<sp/><sp/></highlight><highlight class="comment">//<sp/>-x<sp/>+<sp/>2y<sp/>&lt;=<sp/>4</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp.set_u(Y,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">,<sp/>4);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/>y<sp/>&lt;=<sp/>4</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp.set_d(X,<sp/>X,<sp/>2);<sp/>qp.set_d<sp/>(Y,<sp/>Y,<sp/>8);<sp/></highlight><highlight class="comment">//<sp/>!!specify<sp/>2D!!<sp/><sp/><sp/><sp/>x^2<sp/>+<sp/>4<sp/>y^2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp.set_c(Y,<sp/>-32);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>-32y</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>qp.set_c0(64);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>+64</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>solve<sp/>the<sp/>program,<sp/>using<sp/>ET<sp/>as<sp/>the<sp/>exact<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Solution<sp/>s<sp/>=<sp/><ref refid="group__PkgQPSolverFunctions_1gac28b937807a2f163f253b27a7ee85080" kindref="member">CGAL::solve_quadratic_program</ref>(qp,<sp/>ET());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(s.solves_quadratic_program(qp));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>solution</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>s;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Assuming that <computeroutput>GMP</computeroutput> is installed, the output of the of the above program is: <verbatim>status: OPTIMAL
+objective value: 8/1
+variable values:
+0: 2/1
+1: 3/1
+</verbatim> If <computeroutput>GMP</computeroutput> is not installed, the values are of course the same, but numerator and denominator might have a common divisor that is not factored out.</para>
+</sect2>
+<sect2 id="index_1QP_solverConstructingaProgramfromaStream">
+<title>Constructing a Program from a Stream</title>
+<para>Here, the program data must be available in <computeroutput><ref refid="classMPSFormat" kindref="compound">MPSFormat</ref></computeroutput> (the <computeroutput><ref refid="classMPSFormat" kindref="compound">MPSFormat</ref></computeroutput> page shows how our running example looks like in this format, and it briefly explains the format). Assuming that your working directory contains the file <computeroutput>first_qp.mps</computeroutput>, the following program will read and solve it, with the same output as before.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2first_qp_from_mps_8cpp-example" kindref="compound">QP_solver/first_qp_from_mps.cpp</ref> <programlisting filename="QP_solver/first_qp_from_mps.cpp"><codeline><highlight class="comment">//<sp/>example:<sp/>read<sp/>quadratic<sp/>program<sp/>in<sp/>MPS<sp/>format<sp/>from<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>the<sp/>QP<sp/>below<sp/>is<sp/>the<sp/>first<sp/>quadratic<sp/>program<sp/>example<sp/>in<sp/>the<sp/>user<sp/>manual</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>choose<sp/>exact<sp/>integral<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_GMP</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Gmpz_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/Gmpz.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gmpz" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::Gmpz</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>program<sp/>and<sp/>solution<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__from__mps" kindref="compound">CGAL::Quadratic_program_from_mps&lt;int&gt;</ref><sp/>Program;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref><sp/>Solution;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in<sp/>(</highlight><highlight class="stringliteral">&quot;first_qp.mps&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Program<sp/>qp(in);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>program<sp/>from<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(qp.is_valid());<sp/></highlight><highlight class="comment">//<sp/>we<sp/>should<sp/>have<sp/>a<sp/>valid<sp/>mps<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>solve<sp/>the<sp/>program,<sp/>using<sp/>ET<sp/>as<sp/>the<sp/>exact<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Solution<sp/>s<sp/>=<sp/><ref refid="group__PkgQPSolverFunctions_1gac28b937807a2f163f253b27a7ee85080" kindref="member">CGAL::solve_quadratic_program</ref>(qp,<sp/>ET());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>solution</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>s;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1QP_solverConstructingaProgramfromIterators">
+<title>Constructing a Program from Iterators</title>
+<para>The following program again solves our running example from above, with the same output, but this time with iterators over data stored in suitable containers. You can see that we also store zero entries here (in <formula id="23">$ D$</formula>). For this toy problem, the previous two approaches (program from data/stream) are clearly preferable, but Section <ref refid="index_1secQPiterators" kindref="member">Working from Iterators</ref> shows an example where it makes sense to use the iterator-based approach.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2first_qp_from_iterators_8cpp-example" kindref="compound">QP_solver/first_qp_from_iterators.cpp</ref> <programlisting filename="QP_solver/first_qp_from_iterators.cpp"><codeline><highlight class="comment">//<sp/>example:<sp/>construct<sp/>a<sp/>quadratic<sp/>program<sp/>from<sp/>given<sp/>iterators</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>the<sp/>QP<sp/>below<sp/>is<sp/>the<sp/>first<sp/>quadratic<sp/>program<sp/>example<sp/>in<sp/>the<sp/>user<sp/>manual</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>choose<sp/>exact<sp/>integral<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_GMP</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Gmpz_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/Gmpz.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gmpz" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::Gmpz</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>program<sp/>and<sp/>solution<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__from__iterators" kindref="compound">CGAL::Quadratic_program_from_iterators</ref></highlight></codeline>
+<codeline><highlight class="normal">&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">**,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>A</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>b</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator&lt;CGAL::Comparison_result&gt;</ref>,<sp/></highlight><highlight class="comment">//<sp/>for<sp/>r</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">*,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>fl</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>l</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal">*,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>fu</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>u</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">**,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>D</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Program;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref><sp/>Solution;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/>Ax[]<sp/>=<sp/>{1,<sp/>-1};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>column<sp/>for<sp/>x</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/>Ay[]<sp/>=<sp/>{1,<sp/><sp/>2};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>column<sp/>for<sp/>y</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*<sp/><sp/>A[]<sp/>=<sp/>{Ax,<sp/>Ay};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>A<sp/>comes<sp/>columnwise</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/><sp/>b[]<sp/>=<sp/>{7,<sp/>4};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>right-hand<sp/>side</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator&lt;CGAL::Comparison_result&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>r(<sp/><sp/><sp/><sp/><ref refid="group__kernel__enums_1gga84351c7e66be00efccd4ab1a61070469ab925c6b1ff8cd0bdea7f31fe18d3c38b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::SMALLER</ref>);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constraints<sp/>are<sp/>&quot;&lt;=&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>fl[]<sp/>=<sp/>{</highlight><highlight class="keyword">true</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>both<sp/>x,<sp/>y<sp/>are<sp/>lower-bounded</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/><sp/>l[]<sp/>=<sp/>{0,<sp/>0};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>fu[]<sp/>=<sp/>{</highlight><highlight class="keyword">false</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>only<sp/>y<sp/>is<sp/>upper-bounded</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/><sp/>u[]<sp/>=<sp/>{0,<sp/>4};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>x&apos;s<sp/>u-entry<sp/>is<sp/>ignored</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/>D1[]<sp/>=<sp/>{2};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>2D_{1,1}</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/>D2[]<sp/>=<sp/>{0,<sp/>8};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>2D_{2,1},<sp/>2D_{2,2}</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*<sp/><sp/>D[]<sp/>=<sp/>{D1,<sp/>D2};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>D-entries<sp/>on/below<sp/>diagonal</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/><sp/>c[]<sp/>=<sp/>{0,<sp/>-32};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/>c0<sp/><sp/><sp/>=<sp/>64;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constant<sp/>term</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>now<sp/>construct<sp/>the<sp/>quadratic<sp/>program;<sp/>the<sp/>first<sp/>two<sp/>parameters<sp/>are</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>number<sp/>of<sp/>variables<sp/>and<sp/>the<sp/>number<sp/>of<sp/>constraints<sp/>(rows<sp/>of<sp/>A)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Program<sp/>qp<sp/>(2,<sp/>2,<sp/>A,<sp/>b,<sp/>r,<sp/>fl,<sp/>l,<sp/>fu,<sp/>u,<sp/>D,<sp/>c,<sp/>c0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>solve<sp/>the<sp/>program,<sp/>using<sp/>ET<sp/>as<sp/>the<sp/>exact<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Solution<sp/>s<sp/>=<sp/><ref refid="group__PkgQPSolverFunctions_1gac28b937807a2f163f253b27a7ee85080" kindref="member">CGAL::solve_quadratic_program</ref>(qp,<sp/>ET());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>solution</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>s;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><bold>Note 1:</bold> The example shows an interesting feature of this approach: not all data need to come from containers. Here, the iterator over the vector of relations can be provided through the class <computeroutput><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Const_oneset_iterator</ref>&lt;T&gt;</computeroutput>, since all entries of this vector are equal to <computeroutput>SMALLER</computeroutput>. The same could have been done with the vector <computeroutput>fl</computeroutput> for the finiteness of the lower bounds.</para>
+<para><bold>Note 2:</bold> The program type looks a bit scary, with its total of 9 template arguments, one for each iterator type. In Section <ref refid="index_1secQPmakers" kindref="member">Using Makers</ref> we show how the explicit construction of this type can be circumvented.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1secQPlp">
+<title>Solving Linear and Nonnegative Programs</title>
+<para>Let us reconsider the general form of (QP) from Section <ref refid="index_1secQPdef" kindref="member">Which Programs can be Solved?</ref> above. If <formula id="26">$ D=0$</formula>, the quadratic program is in fact a <emphasis>linear program</emphasis>, and in the case that the bound vectors <formula id="105">$ l$</formula> is the zero vector and all entries of <formula id="106">$ u$</formula> are <formula id="36">$ \infty$</formula>, the program is said to be <emphasis>nonnegative</emphasis>. The package offers dedicated models and solution methods for these special cases.</para>
+<para>From an interface perspective, this is just syntactic sugar: in the model <computeroutput><ref refid="classCGAL_1_1Quadratic__program" kindref="compound">Quadratic_program</ref>&lt;NT&gt;</computeroutput>, we can easily set the default bounds so that a nonnegative program results, and a linear program is obtained by simply not inserting any <formula id="23">$ D$</formula>-entries. Even in the iterator-based approach (see <ref refid="QP_solver_2first_qp_from_iterators_8cpp-example" kindref="compound">QP_solver/first_qp_from_iterators.cpp</ref>), linear and nonnegative programs can easily be defined through suitable <computeroutput><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Const_oneset_iterator</ref>&lt;T&gt;</computeroutput>-style iterators.</para>
+<para>The main reason for having dedicated solution methods for linear and nonnegative programs is efficiency: if the solver knows that the program is linear, it can save some computations compared to the general solver that unknowingly has to fiddle around with a zero <formula id="23">$ D$</formula>-matrix. As in Section <ref refid="index_1secQProbustness" kindref="member">Robustness</ref> above, we can argue that checking in advance whether <formula id="26">$ D=0$</formula> is not an option in general, since this may require <formula id="141">$ \Omega(n^2)$</formula> time on the dense interface.</para>
+<para>Similarly, if the solver knows that the program is nonnegative, it will be more efficient than under the general bounds <formula id="146">$ \qpl\leq \qpx \leq \qpu$</formula>. You can argue that nonnegativity <emphasis>is</emphasis> something that could easily be checked in time <formula id="147">$O(n)$</formula> beforehand, but then again nonnegative programs are so frequent that the syntactic sugar aspect becomes somewhat important. After all, we can save four iterators in specifying a nonnegative linear program in terms of the concept <computeroutput><ref refid="classNonnegativeLinearProgram" kindref="compound">NonnegativeLinearProgram</ref></computeroutput> rather than <computeroutput><ref refid="classLinearProgram" kindref="compound">LinearProgram</ref></computeroutput>.</para>
+<para>Often, there are no bounds at all for the variables, i.e., all entries of <formula id="11">$ \qpl$</formula> are <formula id="34">$ -\infty$</formula>, and all entries of <formula id="15">$ \qpu$</formula> are <formula id="36">$ \infty$</formula> (this is called a <emphasis>free</emphasis> program). There is no dedicated solution method for this case (a free quadratic or linear program is treated like a general quadratic or linear program), but all predefined models make it easy to specify all sorts of default bounds, covering the free case.</para>
+<sect2 id="index_1QP_solverTheLinearProgrammingSolver">
+<title>The Linear Programming Solver</title>
+<para>Let&apos;s go back to our first quadratic program from above and change it into a linear program by simply removing the quadratic part of the objective function:</para>
+<para><formula id="148">\[
+\begin{array}{lrcl}
+\mbox{minimize} &amp; - 32y + 64 \\
+\mbox{subject to} &amp; x + y &amp;\leq&amp; 7 \\
+&amp; -x + 2y &amp;\leq&amp; 4 \\
+&amp; x &amp;\geq&amp; 0 \\
+&amp; y &amp;\geq&amp; 0 \\
+&amp; y &amp;\leq&amp; 4
+\end{array}
+\]</formula></para>
+<para><ref refid="index_1fig__figQPfirst_lp" kindref="member">fig__figQPfirst_lp</ref> shows how this looks like. We will not visualize a linear objective function with contour lines but with arrows instead. The arrow represents the (direction) of the vector <formula id="149">$ -c$</formula>, and we are looking for a feasible solution that is &quot;extreme&quot; in the direction of the arrow. In our small example, this is the unique point &quot;on&quot; the two constraints <formula id="150">$ x_1+x_2\leq 7$</formula> and <formula id="151">$ -x_1+x_2\leq 4$</formula>, the point <formula id="152">$ (10/3,11/3)$</formula> marked with a black dot. The optimal objective function value is <formula id="153">$ -32(11/3)+64=-160/3$</formula>.</para>
+<para><anchor id="index_1fig__figQPfirst_lp"/> <image type="html" name="first_lp.png"></image>
+ <image type="latex" name="first_lp.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figQPfirst_lp" kindref="member">fig__figQPfirst_lp</ref> A linear program in two variables <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Here is CGAL code for solving it, using the dedicated LP solver, and according to the three ways for constructing a program that we have already discussed in Section <ref refid="index_1secQPfirst" kindref="member">How to Enter and Solve a Program</ref>.</para>
+<para><ref refid="QP_solver_2first_lp_8cpp-example" kindref="compound">QP_solver/first_lp.cpp</ref></para>
+<para><ref refid="QP_solver_2first_lp_from_mps_8cpp-example" kindref="compound">QP_solver/first_lp_from_mps.cpp</ref></para>
+<para><ref refid="QP_solver_2first_lp_from_iterators_8cpp-example" kindref="compound">QP_solver/first_lp_from_iterators.cpp</ref></para>
+<para>In all cases, the output is <verbatim>status: OPTIMAL
+objective value: -160/3
+variable values:
+0: 10/3
+1: 11/3
+</verbatim></para>
+</sect2>
+<sect2 id="index_1QP_solverTheNonnegativeQuadraticProgramming">
+<title>The Nonnegative Quadratic Programming Solver</title>
+<para>If we go back to our first quadratic program and remove the constraint <formula id="154">$ y\leq 4$</formula>, we arrive at a nonnegative quadratic program:</para>
+<para><formula id="155">\[
+\begin{array}{lrcl}
+\mbox{minimize} &amp; x^2 + 4(y-4)^2 &amp;(=&amp; x^2 + 4y^2 - 32y + 64) \\
+\mbox{subject to} &amp; x + y &amp;\leq&amp; 7 \\
+&amp; -x + 2y &amp;\leq&amp; 4 \\
+&amp; x,y &amp;\geq&amp; 0
+\end{array}
+\]</formula></para>
+<para><ref refid="index_1fig__figQPfirst_nonnegative_qp" kindref="member">fig__figQPfirst_nonnegative_qp</ref> contains the illustration; since the constraint <formula id="154">$ y\leq 4$</formula> was redundant, the feasible region and the optimal solution do not change.</para>
+<para><anchor id="index_1fig__figQPfirst_nonnegative_qp"/> <image type="html" name="first_nonnegative_qp.png"></image>
+ <image type="latex" name="first_nonnegative_qp.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figQPfirst_nonnegative_qp" kindref="member">fig__figQPfirst_nonnegative_qp</ref> A nonnegative quadratic program in two variables <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The following programs (using the dedicated solver for nonnegative quadratic programs) will therefore again output <verbatim>status: OPTIMAL
+objective value: 8/1
+variable values:
+0: 2/1
+1: 3/1
+</verbatim></para>
+<para><ref refid="QP_solver_2first_nonnegative_qp_8cpp-example" kindref="compound">QP_solver/first_nonnegative_qp.cpp</ref></para>
+<para><ref refid="QP_solver_2first_nonnegative_qp_from_mps_8cpp-example" kindref="compound">QP_solver/first_nonnegative_qp_from_mps.cpp</ref></para>
+<para><ref refid="QP_solver_2first_nonnegative_qp_from_iterators_8cpp-example" kindref="compound">QP_solver/first_nonnegative_qp_from_iterators.cpp</ref></para>
+</sect2>
+<sect2 id="index_1QP_solverTheNonnegativeLinearProgramming">
+<title>The Nonnegative Linear Programming Solver</title>
+<para>Finally, a dedicated model and function is available for nonnnegative linear programs as well. Let&apos;s take our linear program from above and remove the constraint <formula id="154">$ y\leq 4$</formula> to obtain a nonnegative linear program. At the same time we remove the constant objective function term to get a &quot;minimal&quot; input and a &quot;shortest&quot; program; the optimal value is <formula id="156">$ -32(11/3)=-352/3$</formula>.</para>
+<para><formula id="157">\[
+\begin{array}{lrcl}
+\mbox{minimize} &amp; - 32y \\
+\mbox{subject to} &amp; x + y &amp;\leq&amp; 7 \\
+&amp; -x + 2y &amp;\leq&amp; 4 \\
+&amp; x,y &amp;\geq&amp; 0 \\
+\end{array}
+\]</formula></para>
+<para>This can be solved by any of the following three programs</para>
+<para><ref refid="QP_solver_2first_nonnegative_lp_8cpp-example" kindref="compound">QP_solver/first_nonnegative_lp.cpp</ref></para>
+<para><ref refid="QP_solver_2first_nonnegative_lp_from_mps_8cpp-example" kindref="compound">QP_solver/first_nonnegative_lp_from_mps.cpp</ref></para>
+<para><ref refid="QP_solver_2first_nonnegative_lp_from_iterators_8cpp-example" kindref="compound">QP_solver/first_nonnegative_lp_from_iterators.cpp</ref></para>
+<para>The output will always be <verbatim>status: OPTIMAL
+objective value: -352/3
+variable values:
+0: 10/3
+1: 11/3
+</verbatim></para>
+</sect2>
+</sect1>
+<sect1 id="index_1secQPiterators">
+<title>Working from Iterators</title>
+<para>Here we present a somewhat more advanced example that emphasizes the usefulness of solving linear and quadratic programs from iterators. Let&apos;s look at a situation in which a linear program is given implicitly, and access to it is gained through properly constructed iterators.</para>
+<para>The problem we are going to solve is the following: given points <formula id="158">$ p_1,\ldots p_{n}$</formula> in <formula id="159">$ d$</formula>-dimensional space and another point <formula id="160">$ p$</formula>: is <formula id="160">$ p$</formula> in the convex hull of <formula id="161">$ \{p_1,\ldots,p_{n}\}$</formula>? In formulas, this is the case if and only if there are real coefficients <formula id="162">$ \lambda_1,\ldots,\lambda_n$</formula> such that <formula id="160">$ p$</formula> is a convex combination of <formula id="163">$ p_1,\ldots,p_n$</formula>:  <formula id="164">$
+p = \ccSum{j=1}{n}{~\lambda_j~p_j}, \quad \ccSum{j=1}{n}{~\lambda_j} = 1,
+\quad \lambda_j \geq 0 \mbox{~for all $j$.}
+$</formula></para>
+<para>The problem of testing the existence of such <formula id="165">$ \lambda_j$</formula> can be expressed as a linear program. It becomes particularly easy when we use the homogeneous representations of the points: if <formula id="166">$ q_1,\ldots,q_n,q\in\mathbb{R}^{d+1}$</formula> are homogeneous coordinates for <formula id="167">$ p_1,\ldots,p_n,p$</formula> with positive homogenizing coordinates <formula id="168">$ h_1,\ldots,h_n,h$</formula>, we have  <formula id="169">\[q_j = h_j \cdot (p_j \mid 1) \mbox{~for all $j$, and~} q = h \cdot
+(p\mid 1).\]</formula> Now, nonnegative <formula id="170">$\lambda_1,\ldots,\lambda_n$</formula> are suitable coefficients for a convex combination if and only if <formula id="171">\[\ccSum{j=1}{n}{~ \lambda_j(p_j \mid 1)} = (p\mid 1), \]</formula> equivalently, if there are <formula id="172">$\mu_1,\ldots,\mu_n$</formula> (with <formula id="173">$\mu_j = \lambda_j \cdot h/{h_j}$</formula> for all <formula id="174">$j$</formula>) such that <formula id="175">\[\ccSum{j=1}{n}{~\mu_j~q_j} = q, \quad \mu_j \geq 0\mbox{~for all $j$}.\]</formula></para>
+<para>The linear program now tests for the existence of nonnegative <formula id="176">$ \mu_j$</formula> that satisfy the latter equation. Below is the code; it defines a function that solves the linear program, given <formula id="160">$ p$</formula> and <formula id="163">$ p_1,\ldots,p_n$</formula> (through an iterator range). The only (mild) trickery involved is the construction of the nested iterator through a fixed column of the constraint matrix <formula id="5">$ A$</formula>. We get this from transforming the iterator through the points using a functor that maps a point to an iterator through its homogeneous coordinates.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2solve_convex_hull_containment_lp_8h-example" kindref="compound">QP_solver/solve_convex_hull_containment_lp.h</ref> <programlisting filename="QP_solver/solve_convex_hull_containment_lp.h"><codeline><highlight class="comment">//<sp/>example:<sp/>function<sp/>to<sp/>check<sp/>whether<sp/>a<sp/>point<sp/>is<sp/>in<sp/>the<sp/>convex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>hull<sp/>of<sp/>other<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>unary<sp/>function<sp/>to<sp/>get<sp/>homogeneous<sp/>begin-iterator<sp/>of<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">_d&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Homogeneous_begin<sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_d::Homogeneous_const_iterator<sp/>result_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>result_type<sp/>operator()<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_d&amp;<sp/>p)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>p.homogeneous_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>function<sp/>to<sp/>solve<sp/>the<sp/>LP<sp/>that<sp/>tests<sp/>whether<sp/>a<sp/>point<sp/>is<sp/>in<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>convex<sp/>hull<sp/>of<sp/>other<sp/>points;<sp/>the<sp/>type<sp/>ET<sp/>is<sp/>an<sp/>exact<sp/>type<sp/>used</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>for<sp/>the<sp/>internal<sp/>computations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">_d,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>RandomAccessIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>ET&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal">solve_convex_hull_containment_lp<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_d&amp;<sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref><sp/>begin,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref><sp/>end,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>ET&amp;<sp/>dummy)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Constraint<sp/>matrix<sp/>type:<sp/>A[j][i]<sp/>is<sp/>the<sp/>i-th<sp/>homogeneous<sp/>coordinate<sp/>of<sp/>p_j</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::transform_iterator</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;Homogeneous_begin&lt;Point_d&gt;,<sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref>&gt;<sp/>A_it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Right-hand<sp/>side<sp/>type:<sp/>b[i]<sp/>is<sp/>the<sp/>i-th<sp/>homogeneous<sp/>coordinate<sp/>of<sp/>p</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_d::Homogeneous_const_iterator<sp/>B_it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Relation<sp/>type<sp/>(&quot;=&quot;)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator&lt;CGAL::Comparison_result&gt;</ref><sp/>R_it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>input<sp/>number<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Kernel__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Kernel_traits&lt;Point_d&gt;::Kernel::RT</ref><sp/>RT;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Linear<sp/>objective<sp/>function<sp/>type<sp/>(c=0:<sp/>we<sp/>only<sp/>test<sp/>feasibility)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator&lt;RT&gt;</ref><sp/>C_it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>nonnegative<sp/>linear<sp/>program<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Nonnegative__linear__program__from__iterators" kindref="compound">CGAL::Nonnegative_linear_program_from_iterators&lt;A_it, B_it, R_it, C_it&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Program;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>ok,<sp/>we<sp/>are<sp/>prepared<sp/>now:<sp/>construct<sp/>program<sp/>and<sp/>solve<sp/>it</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Program<sp/>lp<sp/>(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(end-begin),<sp/></highlight><highlight class="comment">//<sp/>number<sp/>of<sp/>variables</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>p.dimension()+1,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>number<sp/>of<sp/>constraints</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>A_it<sp/>(begin),<sp/>B_it<sp/>(p.homogeneous_begin()),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>R_it<sp/>(<ref refid="group__kernel__enums_1gga84351c7e66be00efccd4ab1a61070469a5f224784e56ca565837a5d6d268fe078" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::EQUAL</ref>),<sp/>C_it<sp/>(0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__PkgQPSolverFunctions_1gaa87b832f774794e32464c180b3b29ebb" kindref="member">CGAL::solve_nonnegative_linear_program</ref><sp/>(lp,<sp/>dummy);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>To see this in action, let us call it with <formula id="177">$ p_1=(0,0), p_2=(10,0),
+p_3=(0,10)$</formula> fixed (they define a triangle) and all integral points <formula id="160">$ p$</formula> in <formula id="178">$ [0,10]^2$</formula>. We know that <formula id="160">$ p$</formula> is in the convex hull of <formula id="179">$ \{p_1,p_2,p_3\}$</formula> if and only if its two coordinates sum up to <formula id="137">$ 10$</formula> at most. As the exact type, we use <computeroutput><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">MP_Float</ref></computeroutput> or <computeroutput><ref refid="classCGAL_1_1Gmpzf" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">Gmpzf</ref></computeroutput> (which is faster and preferable if <computeroutput>GMP</computeroutput> is installed).</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2convex_hull_containment_8cpp-example" kindref="compound">QP_solver/convex_hull_containment.cpp</ref> <programlisting filename="QP_solver/convex_hull_containment.cpp"><codeline><highlight class="comment">//<sp/>Example:<sp/>check<sp/>whether<sp/>a<sp/>point<sp/>is<sp/>in<sp/>the<sp/>convex<sp/>hull<sp/>of<sp/>other<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;solve_convex_hull_containment_lp.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>choose<sp/>exact<sp/>floating-point<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_GMP</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Gmpzf_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/Gmpzf.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gmpzf" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::Gmpzf</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Cartesian_d&lt;double&gt;<sp/>Kernel_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel_d::Point_d<sp/>Point_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_in_convex_hull<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_d&amp;<sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::vector&lt;Point_d&gt;::const_iterator<sp/>begin,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::vector&lt;Point_d&gt;::const_iterator<sp/>end)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref><sp/>s<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>solve_convex_hull_containment_lp<sp/>(p,<sp/>begin,<sp/>end,<sp/>ET(0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>!s.<ref refid="classCGAL_1_1Quadratic__program__solution_1ad0c8cf7f23b0b8b934f38c38f9e51f64" kindref="member">is_infeasible</ref>();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_d&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>convex<sp/>hull:<sp/>simplex<sp/>spanned<sp/>by<sp/>{(0,0),<sp/>(10,0),<sp/>(0,10)}</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(<sp/>0.0,<sp/><sp/>0.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(10.0,<sp/><sp/>0.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(<sp/>0.0,<sp/>10.0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i&lt;=10;<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>j=0;<sp/>j&lt;=10;<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>(i,j)<sp/>is<sp/>in<sp/>the<sp/>simplex<sp/>iff<sp/>i+j<sp/>&lt;=<sp/>10</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>contained<sp/>=<sp/>is_in_convex_hull</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(Point_d<sp/>(i,<sp/>j),<sp/>points.begin(),<sp/>points.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>assert<sp/>(contained<sp/>==<sp/>(i+j&lt;=10));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<sect2 id="index_1secQPmakers">
+<title>Using Makers</title>
+<para>You already noticed in the previous example that the actual template arguments for <computeroutput><ref refid="classCGAL_1_1Nonnegative__linear__program__from__iterators" kindref="compound">Nonnegative_linear_program_from_iterators</ref>&lt;A_it, B_it, R_it, C_it&gt;</computeroutput> can be quite elaborate, and this only gets worse if you plug more iterators into each other. In general, you want to construct a program from given expressions for the iterators, but the types of these expressions are probably very complicated and difficult to look up.</para>
+<para>You can avoid the explicit construction of the type <computeroutput><ref refid="classCGAL_1_1Nonnegative__linear__program__from__iterators" kindref="compound">Nonnegative_linear_program_from_iterators</ref>&lt;A_it, B_it, R_it, C_it&gt;</computeroutput> if you only need an expression of it, e.g. to pass it directly as an argument to the solving function. Here is an alternative version of <ref refid="QP_solver_2solve_convex_hull_containment_lp_8h-example" kindref="compound">QP_solver/solve_convex_hull_containment_lp.h</ref> that shows how this works. In effect, you get shorter and more readable code.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2solve_convex_hull_containment_lp2_8h-example" kindref="compound">QP_solver/solve_convex_hull_containment_lp2.h</ref> <programlisting filename="QP_solver/solve_convex_hull_containment_lp2.h"><codeline><highlight class="comment">//<sp/>example:<sp/>function<sp/>to<sp/>check<sp/>whether<sp/>a<sp/>point<sp/>is<sp/>in<sp/>the<sp/>convex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>hull<sp/>of<sp/>other<sp/>points;<sp/>this<sp/>version<sp/>uses<sp/>a<sp/>maker</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/iterator/transform_iterator.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Kernel_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>unary<sp/>function<sp/>to<sp/>get<sp/>homogeneous<sp/>begin-iterator<sp/>of<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">_d&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Homogeneous_begin<sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_d::Homogeneous_const_iterator<sp/>result_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>result_type<sp/>operator()<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_d&amp;<sp/>p)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>p.homogeneous_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>function<sp/>to<sp/>test<sp/>whether<sp/>point<sp/>is<sp/>in<sp/>the<sp/>convex<sp/>hull<sp/>of<sp/>other<sp/>points;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>the<sp/>type<sp/>ET<sp/>is<sp/>an<sp/>exact<sp/>type<sp/>used<sp/>for<sp/>the<sp/>computations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">_d,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>RandomAccessIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>ET&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal">solve_convex_hull_containment_lp<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_d&amp;<sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref><sp/>begin,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref><sp/>end,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>ET&amp;<sp/>dummy)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>program<sp/>and<sp/>solve<sp/>it</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__PkgQPSolverFunctions_1gaa87b832f774794e32464c180b3b29ebb" kindref="member">CGAL::solve_nonnegative_linear_program</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(<ref refid="group__PkgQPSolverFunctions_1gad39c4f94014977f8e2e00f0cf86d5188" kindref="member">CGAL::make_nonnegative_linear_program_from_iterators</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(end-begin),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>n</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>p.dimension()+1,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>m</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>boost::transform_iterator</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;Homogeneous_begin&lt;Point_d&gt;,<sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref>&gt;(begin),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>A</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_d::Homogeneous_const_iterator<sp/>(p.homogeneous_begin()),</highlight><highlight class="comment">//<sp/>b</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator&lt;CGAL::Comparison_result&gt;</ref>(<ref refid="group__kernel__enums_1gga84351c7e66be00efccd4ab1a61070469a5f224784e56ca565837a5d6d268fe078" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::EQUAL</ref>),<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>~</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Kernel__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Kernel_traits&lt;Point_d&gt;::Kernel::RT</ref>&gt;<sp/>(0)),<sp/>dummy);<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1QP_solverImportant">
+<title>Important Variables and Constraints</title>
+<para>If you have a solution <formula id="45">$ \qpx^*$</formula> of a linear or quadratic program, the &quot;important&quot; variables are typically the ones that are not on their bounds. In case of a nonnegative program, these are the nonzero variables. Going back to the example of the previous Section <ref refid="index_1secQPiterators" kindref="member">Working from Iterators</ref>, we can easily interpret their importance: the nonzero variables correspond to points <formula id="180">$ p_j$</formula> that actually contribute to the convex combination that yields <formula id="160">$ p$</formula>.</para>
+<para>The following example shows how we can access the important variables, using the iterators <computeroutput>basic_variable_indices_begin()</computeroutput> and <computeroutput>basic_variable_indices_end()</computeroutput>.</para>
+<para>We generate a set of points that form a 4-gon in <formula id="181">$ [0,4]^2$</formula>, and then find the ones that contribute to the convex combinations of all 25 lattice points in <formula id="181">$ [0,4]^2$</formula>. If the lattice point in question is not in the 4-gon, we simply output this fact.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2important_variables_8cpp-example" kindref="compound">QP_solver/important_variables.cpp</ref> <programlisting filename="QP_solver/important_variables.cpp"><codeline><highlight class="comment">//<sp/>Example:<sp/>find<sp/>the<sp/>points<sp/>that<sp/>contribute<sp/>to<sp/>a<sp/>convex<sp/>combination</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;solve_convex_hull_containment_lp2.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Cartesian_d&lt;double&gt;<sp/>Kernel_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel_d::Point_d<sp/>Point_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;CGAL::MP_Float&gt;</ref><sp/>Solution;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_d&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>convex<sp/>hull:<sp/>4-gon<sp/>spanned<sp/>by<sp/>{(1,0),<sp/>(4,1),<sp/>(4,4),<sp/>(2,3)}</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(1,<sp/>0));<sp/></highlight><highlight class="comment">//<sp/>point<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(4,<sp/>1));<sp/></highlight><highlight class="comment">//<sp/>point<sp/>1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(4,<sp/>4));<sp/></highlight><highlight class="comment">//<sp/>point<sp/>2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(2,<sp/>3));<sp/></highlight><highlight class="comment">//<sp/>point<sp/>3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>test<sp/>all<sp/>25<sp/>integer<sp/>points<sp/>in<sp/>[0,4]^2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i&lt;=4;<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>j=0;<sp/>j&lt;=4;<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Point_d<sp/>p<sp/>(i,<sp/>j);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Solution<sp/>s<sp/>=<sp/>solve_convex_hull_containment_lp</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(p,<sp/>points.begin(),<sp/>points.end(),<sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>p;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(s.is_infeasible())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>is<sp/>not<sp/>in<sp/>the<sp/>convex<sp/>hull\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>assert<sp/>(s.is_optimal());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>is<sp/>a<sp/>convex<sp/>combination<sp/>of<sp/>the<sp/>points<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Solution::Index_iterator<sp/>it<sp/>=<sp/>s.basic_variable_indices_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Solution::Index_iterator<sp/>end<sp/>=<sp/>s.basic_variable_indices_end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(;<sp/>it<sp/>!=<sp/>end;<sp/>++it)<sp/>std::cout<sp/>&lt;&lt;<sp/>*it<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>It turns out that exactly three of the four points contribute to any convex combination, even through there are lattice points that lie in the convex hull of less than three of the points. This shows that the set of basic variables that we access in the example does not necessarily coincide with the set of important variables as defined above. In fact, it is only guaranteed that a non-basic variable attains one of its bounds, but there might be basic variables that also have this property. In linear and quadratic programming terms, such a situation is called a <emphasis>degeneracy</emphasis>.</para>
+<para>There is also the concept of an important constraint: this is typically a constraint in the system <formula id="49">$ A\qpx\qprel\qpb$</formula> that is satisfied with equality at <formula id="45">$ \qpx^*$</formula>. Program <ref refid="QP_solver_2first_qp_basic_constraints_8cpp-example" kindref="compound">QP_solver/first_qp_basic_constraints.cpp</ref> shows how these can be accessed, using the iterators <computeroutput>basic_constraint_indices_begin()</computeroutput> and <computeroutput>basic_constraint_indices_end()</computeroutput>.</para>
+<para>Again, we have a disagreement between &quot;basic&quot; and &quot;important&quot;: it is guaranteed that all basic constraints are satisfied with equality at <formula id="45">$ \qpx^*$</formula>, but there might be non-basic constraints that are satisfied with equality as well.</para>
+</sect1>
+<sect1 id="index_1secQPcertificates">
+<title>Solution Certificates</title>
+<para>Suppose the solver tells you that the problem you have entered is infeasible. Why should you believe this? Similarly, you can quite easily verify that a claimed optimal solution is feasible, but why is there no better one?</para>
+<para>Certificates are proofs that the solver can give you in order to convince you that what it claims is indeed true. The archetype of such a proof is <emphasis>Farkas Lemma</emphasis> <ref refid="citelist_1CITEREF_cgal:mg-uulp-06" kindref="member">[1]</ref>.</para>
+<para><bold>Farkas Lemma:</bold> <emphasis>Either</emphasis> the inequality system  <formula id="182">\[
+\begin{array}{rcl}
+A \qpx &amp; \leq &amp; \qpb \\
+\qpx &amp; \geq &amp; 0
+\end{array}
+\]</formula> has a solution <formula id="45">$ \qpx^*$</formula>, <emphasis>or</emphasis> there exists a vector <formula id="183">$ \qpy$</formula> such that  <formula id="184">\[
+\begin{array}{rcl}
+\qpy &amp;\geq&amp; 0\\
+\qpy^TA &amp;\geq&amp; 0\\
+\qpy^T\qpb &amp; &lt; &amp; 0,
+\end{array}
+\]</formula> but not both.</para>
+<para>Thus, if someone wants to convince you that the first system in the Farkas Lemma is infeasible, that person can simply give you a vector <formula id="183">$ \qpy$</formula> that solves the second system. Since you can easily verify yourself that the <formula id="183">$ \qpy$</formula> you got satisfies this second system, you now have a certificate for the infeasibility of the first system, assuming that you believe in Farkas Lemma.</para>
+<para>Here we show how the solver can convince you. We first set up an infeasible linear program with constraints of the type <formula id="185">$ A\qpx\leq \qpb, \qpx\geq 0$</formula>; then we solve it and ask for a certificate. Finally, we verify the certificate by simply checking the inequalities of the second system in Farkas Lemma.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2infeasibility_certificate_8cpp-example" kindref="compound">QP_solver/infeasibility_certificate.cpp</ref> <programlisting filename="QP_solver/infeasibility_certificate.cpp"><codeline><highlight class="comment">//<sp/>example:<sp/>extracting<sp/>and<sp/>verifying<sp/>a<sp/>proof<sp/>of<sp/>infeasibility<sp/>from<sp/>the<sp/>solution</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>choose<sp/>exact<sp/>integral<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_GMP</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Gmpz_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/Gmpz.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gmpz" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::Gmpz</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>program<sp/>and<sp/>solution<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Nonnegative__linear__program__from__iterators" kindref="compound">CGAL::Nonnegative_linear_program_from_iterators</ref></highlight></codeline>
+<codeline><highlight class="normal">&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">**,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>A</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>b</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><ref refid="group__kernel__enums_1ga84351c7e66be00efccd4ab1a61070469" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Comparison_result</ref>*,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>r</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>for<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Program;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref><sp/>Solution;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>we<sp/>demonstrate<sp/>Farkas<sp/>Lemma:<sp/>either<sp/>the<sp/>system</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/>A<sp/>x<sp/>&lt;=<sp/>b</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/>x<sp/>&gt;=<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>has<sp/>a<sp/>solution,<sp/>or<sp/>there<sp/>exists<sp/>y<sp/>such<sp/>that</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/><sp/><sp/>y<sp/>&gt;=<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>y^TA<sp/>&gt;=<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>y^Tb<sp/>&lt;<sp/><sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>In<sp/>the<sp/>following<sp/>instance,<sp/>the<sp/>first<sp/>system<sp/>has<sp/>no<sp/>solution,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>since<sp/>adding<sp/>up<sp/>the<sp/>two<sp/>inequalities<sp/>gives<sp/>x_2<sp/>&lt;=<sp/>-1:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/>x_1<sp/>-<sp/>2x_2<sp/><sp/>&lt;=<sp/><sp/>1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/>-x_1<sp/>+<sp/>3x_2<sp/><sp/>&lt;=<sp/>-2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/><sp/><sp/><sp/><sp/>x_1,<sp/><sp/><sp/>x_2<sp/><sp/>&gt;=<sp/><sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/>Ax1[]<sp/>=<sp/>{<sp/>1,<sp/>-1};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>column<sp/>for<sp/>x1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/>Ax2[]<sp/>=<sp/>{-2,<sp/><sp/>3};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>column<sp/>for<sp/>x2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">*<sp/><sp/><sp/>A[]<sp/>=<sp/>{Ax1,<sp/>Ax2};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>A<sp/>comes<sp/>columnwise</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/><sp/><sp/>b[]<sp/>=<sp/>{1,<sp/>-2};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>right-hand<sp/>side</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__kernel__enums_1ga84351c7e66be00efccd4ab1a61070469" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Comparison_result</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>r[]<sp/>=<sp/>{<ref refid="group__kernel__enums_1gga84351c7e66be00efccd4ab1a61070469ab925c6b1ff8cd0bdea7f31fe18d3c38b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::SMALLER</ref>,<sp/><ref refid="group__kernel__enums_1gga84351c7e66be00efccd4ab1a61070469ab925c6b1ff8cd0bdea7f31fe18d3c38b" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::SMALLER</ref>};<sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constraints<sp/>are<sp/>&quot;&lt;=&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/><sp/><sp/><sp/>c[]<sp/>=<sp/>{0,<sp/>0};<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>zero<sp/>objective<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>now<sp/>construct<sp/>the<sp/>linear<sp/>program;<sp/>the<sp/>first<sp/>two<sp/>parameters<sp/>are</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>number<sp/>of<sp/>variables<sp/>and<sp/>the<sp/>number<sp/>of<sp/>constraints<sp/>(rows<sp/>of<sp/>A)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Program<sp/>lp<sp/>(2,<sp/>2,<sp/>A,<sp/>b,<sp/>r,<sp/>c);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>solve<sp/>the<sp/>program,<sp/>using<sp/>ET<sp/>as<sp/>the<sp/>exact<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Solution<sp/>s<sp/>=<sp/><ref refid="group__PkgQPSolverFunctions_1gaa87b832f774794e32464c180b3b29ebb" kindref="member">CGAL::solve_nonnegative_linear_program</ref>(lp,<sp/>ET());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>get<sp/>certificate<sp/>for<sp/>infeasibility</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(s.is_infeasible());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Solution::Infeasibility_certificate_iterator<sp/>y<sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>s.infeasibility_certificate_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>check<sp/>y<sp/>&gt;=<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(ET(y[0])<sp/>&gt;=<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(ET(y[1])<sp/>&gt;=<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>check<sp/>y^T<sp/>A<sp/>&gt;=<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(ET(y[0])<sp/>*<sp/>A[0][0]<sp/>+<sp/>ET(y[1])<sp/>*<sp/>A[0][1]<sp/>&gt;=<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(ET(y[0])<sp/>*<sp/>A[1][0]<sp/>+<sp/>ET(y[1])<sp/>*<sp/>A[1][1]<sp/>&gt;=<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>check<sp/>y^T<sp/>b<sp/>&lt;<sp/>0</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(ET(y[0])<sp/>*<sp/>b[0]<sp/>+<sp/>ET(y[1])<sp/>*<sp/>b[1]<sp/>&lt;<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>There are similar certificates for optimality and unboundedness that you can see in action in the programs <ref refid="QP_solver_2optimality_certificate_8cpp-example" kindref="compound">QP_solver/optimality_certificate.cpp</ref> and <ref refid="QP_solver_2unboundedness_certificate_8cpp-example" kindref="compound">QP_solver/unboundedness_certificate.cpp</ref>. The underlying variants of Farkas Lemma are somewhat more complicated, due to the mixed relations in <formula id="9">$ \qprel$</formula> and the general bounds. The certificate section of <computeroutput><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">Quadratic_program_solution</ref>&lt;ET&gt;</computeroutput> gives the full picture and mathematically proves the correctness of the certificates.</para>
+</sect1>
+<sect1 id="index_1secQPcustomization">
+<title>Customizing the Solver</title>
+<para>Sometimes it is necessary to alter the default behavior of the solver. This can be done by passing a suitably prepared object of the class <computeroutput><ref refid="classCGAL_1_1Quadratic__program__options" kindref="compound">Quadratic_program_options</ref></computeroutput> to the solution functions. Most options concern &quot;soft&quot; issues like verbosity, but there are two notable case where it is of critical importance to be able to change the defaults.</para>
+<sect2 id="index_1secQPcustomizationfiltering">
+<title>Exponent Overflow in Double Using Floating-Point Filters</title>
+<para>The filtered version of the solver that is used for some problems by default on input type <computeroutput>double</computeroutput> internally constructs double-approximations of exact multiprecision values. If these exact values are extremely large, this may lead to <emphasis>infinite</emphasis> <computeroutput>double</computeroutput> values and incorrect results. In debug mode, the solver will notice this through a certificate cross-check in the end (or even earlier). In this case, it is advisable to explicitly switch to a non-filtered <emphasis>pricing strategy</emphasis>, see <ref refid="group__PkgQPSolverFunctions_1ga5e4c5717fab328c4e94c3d58e1bd4517" kindref="member"><computeroutput>Quadratic_program_pricing_strategy</computeroutput></ref>.</para>
+<para><bold>Hint:</bold> If you have a program where the number of variables <formula id="3">$ n$</formula> and the number of constraints <formula id="8">$ m$</formula> have the same order of magnitude, the filtering will usually have no dramatic effect on the performance, so in that case you might as well switch to <computeroutput>QP_PARTIAL_DANTZIG</computeroutput> to be safe from the issue described here (see <ref refid="QP_solver_2cycling_8cpp-example" kindref="compound">QP_solver/cycling.cpp</ref> for an example that shows how to change the pricing strategy).</para>
+</sect2>
+<sect2 id="index_1secQPcustomizationcycling">
+<title>The Solver Internally Cycles</title>
+<para>Consider the following program. It reads a nonnegative linear program from the file <computeroutput>cycling.mps</computeroutput> (which is in the example directory as well), and then solves it in verbose mode, using <emphasis>Bland&apos;s rule</emphasis>, see <ref refid="group__PkgQPSolverFunctions_1ga5e4c5717fab328c4e94c3d58e1bd4517" kindref="member"><computeroutput>Quadratic_program_pricing_strategy</computeroutput></ref>. <linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2cycling_8cpp-example" kindref="compound">QP_solver/cycling.cpp</ref> <programlisting filename="QP_solver/cycling.cpp"><codeline><highlight class="comment">//<sp/>example:<sp/>solve<sp/>a<sp/>linear<sp/>program<sp/>that<sp/>by<sp/>default<sp/>leads<sp/>to<sp/>cycling,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>using<sp/>Bland<sp/>pricing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>choose<sp/>exact<sp/>floating-point<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_GMP</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Gmpzf_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/Gmpzf.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gmpzf" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::Gmpzf</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>program<sp/>and<sp/>solution<sp/>types</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__from__mps" kindref="compound">CGAL::Quadratic_program_from_mps&lt;double&gt;</ref><sp/>Program;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref><sp/>Solution;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in<sp/>(</highlight><highlight class="stringliteral">&quot;cycling.mps&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Program<sp/>lp(in);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>program<sp/>from<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(lp.is_valid());<sp/></highlight><highlight class="comment">//<sp/>we<sp/>should<sp/>have<sp/>a<sp/>valid<sp/>mps<sp/>file...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(lp.is_linear());<sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>and<sp/>it<sp/>should<sp/>be<sp/>linear...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(lp.is_nonnegative());<sp/></highlight><highlight class="comment">//<sp/>as<sp/>well<sp/>as<sp/>nonnegative</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>solve<sp/>the<sp/>program,<sp/>using<sp/>ET<sp/>as<sp/>the<sp/>exact<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>choose<sp/>verbose<sp/>mode<sp/>and<sp/>Bland<sp/>pricing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Quadratic__program__options" kindref="compound">CGAL::Quadratic_program_options</ref><sp/>options;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>options.<ref refid="classCGAL_1_1Quadratic__program__options_1a0a0ecc2ed94545489855edf860e2aa66" kindref="member">set_verbosity</ref>(1);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>verbose<sp/>mode</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>options.<ref refid="classCGAL_1_1Quadratic__program__options_1a61bf72e4bd2fb752b4ca7547b1b18fcf" kindref="member">set_pricing_strategy</ref>(<ref refid="group__PkgQPSolverFunctions_1gga5e4c5717fab328c4e94c3d58e1bd4517a1f12b7a8fb6bdc5391069b0aaac81d31" kindref="member">CGAL::QP_BLAND</ref>);<sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Bland&apos;s<sp/>rule</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>options.<ref refid="classCGAL_1_1Quadratic__program__options_1aa5c09dc521f691e81ce97975386f2ec2" kindref="member">set_auto_validation</ref>(</highlight><highlight class="keyword">true</highlight><highlight class="normal">);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>automatic<sp/>self-check</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Solution<sp/>s<sp/>=<sp/><ref refid="group__PkgQPSolverFunctions_1gaa87b832f774794e32464c180b3b29ebb" kindref="member">CGAL::solve_nonnegative_linear_program</ref>(lp,<sp/>ET(),<sp/>options);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert<sp/>(s.is_valid());<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>did<sp/>the<sp/>self-check<sp/>succeed?</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>output<sp/>solution</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>s;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>If you comment the line</para>
+<para><verbatim>options.set_pricing_strategy(CGAL::QP_BLAND); // Bland&apos;s rule
+</verbatim></para>
+<para>you will see that the solver cycles: the verbose mode outputs the same sequence of six iterations over and over again. By switching to <computeroutput>QP_BLAND</computeroutput>, the solution process typically slows down a bit (it may also speed up in some cases), but now it is guaranteed that no cycling occurs.</para>
+<para>In general, the verbose mode can be of use when you are not sure whether the solver &quot;has died&quot;, or whether it simply takes very long to solve your problem. We refer to the class <computeroutput><ref refid="classCGAL_1_1Quadratic__program__options" kindref="compound">Quadratic_program_options</ref></computeroutput> for further details.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1secQPbenchmark">
+<title>Some Benchmarks for Convex Hull Containment</title>
+<para>Here we want to show what you can expect from the solver&apos;s performance in a specific application; we don&apos;t know whether this application is typical in your case, and we make no claims whatsoever about the performance in other applications.</para>
+<para>Still, the example shows that the performance can be dramatically affected by switching between pricing strategies, and we give some hints on how to achieve good performance in general.</para>
+<para>The application is the one already discussed in Section <ref refid="index_1secQPiterators" kindref="member">Working from Iterators</ref> above: testing whether a point is in the convex hull of other points. To be able to switch between pricing strategies, we add another parameter of type <computeroutput><ref refid="classCGAL_1_1Quadratic__program__options" kindref="compound">Quadratic_program_options</ref></computeroutput> to the function <computeroutput>solve_convex_hull_containment_lp</computeroutput> that we pass on to the solution function:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2solve_convex_hull_containment_lp3_8h-example" kindref="compound">QP_solver/solve_convex_hull_containment_lp3.h</ref> <programlisting filename="QP_solver/solve_convex_hull_containment_lp3.h"><codeline><highlight class="comment">//<sp/>example:<sp/>function<sp/>to<sp/>check<sp/>whether<sp/>a<sp/>point<sp/>is<sp/>in<sp/>the<sp/>convex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>hull<sp/>of<sp/>other<sp/>points;<sp/>this<sp/>version<sp/>uses<sp/>a<sp/>maker</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/boost/iterator/transform_iterator.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Kernel_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_options.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_models.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/QP_functions.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>unary<sp/>function<sp/>to<sp/>get<sp/>homogeneous<sp/>begin-iterator<sp/>of<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">_d&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Homogeneous_begin<sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_d::Homogeneous_const_iterator<sp/>result_type;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>result_type<sp/>operator()<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_d&amp;<sp/>p)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>p.homogeneous_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>function<sp/>to<sp/>test<sp/>whether<sp/>point<sp/>is<sp/>in<sp/>the<sp/>convex<sp/>hull<sp/>of<sp/>other<sp/>points;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>the<sp/>type<sp/>ET<sp/>is<sp/>an<sp/>exact<sp/>type<sp/>used<sp/>for<sp/>the<sp/>computations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Po</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">_d,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>RandomAccessIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>ET&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Quadratic__program__solution" kindref="compound">CGAL::Quadratic_program_solution&lt;ET&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal">solve_convex_hull_containment_lp<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_d&amp;<sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref><sp/>begin,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref><sp/>end,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>ET&amp;<sp/>dummy,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Quadratic__program__options" kindref="compound">CGAL::Quadratic_program_options</ref>&amp;<sp/>o)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>program<sp/>and<sp/>solve<sp/>it</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__PkgQPSolverFunctions_1gaa87b832f774794e32464c180b3b29ebb" kindref="member">CGAL::solve_nonnegative_linear_program</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(<ref refid="group__PkgQPSolverFunctions_1gad39c4f94014977f8e2e00f0cf86d5188" kindref="member">CGAL::make_nonnegative_linear_program_from_iterators</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(end-begin),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>n</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>p.dimension()+1,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>m</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>boost::transform_iterator</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;Homogeneous_begin&lt;Point_d&gt;,<sp/><ref refid="classRandomAccessIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">RandomAccessIterator</ref>&gt;(begin),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>A</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Point_d::Homogeneous_const_iterator<sp/>(p.homogeneous_begin()),</highlight><highlight class="comment">//<sp/>b</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator&lt;CGAL::Comparison_result&gt;</ref>(<ref refid="group__kernel__enums_1gga84351c7e66be00efccd4ab1a61070469a5f224784e56ca565837a5d6d268fe078" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::EQUAL</ref>),<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>~</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Const__oneset__iterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Const_oneset_iterator</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Kernel__traits" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Kernel_traits&lt;Point_d&gt;::Kernel::RT</ref>&gt;<sp/>(0)),<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>dummy,<sp/>o);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Now let us test containment of the origin in the convex hull of <formula id="3">$ n$</formula> random points in <formula id="186">$ [0,1]^d$</formula> (it will most likely not be contained, and it turns out that this is the most expensive case). In the program below, we use <formula id="187">$ d=10$</formula> and <formula id="188">$ n=100,000$</formula>, and we comment on some other combinations of <formula id="3">$ n$</formula> and <formula id="159">$ d$</formula> below (feel free to experiment with still other values).</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="QP_solver_2convex_hull_containment_benchmarks_8cpp-example" kindref="compound">QP_solver/convex_hull_containment_benchmarks.cpp</ref> <programlisting filename="QP_solver/convex_hull_containment_benchmarks.cpp"><codeline><highlight class="comment">//<sp/>Example:<sp/>assess<sp/>the<sp/>solver<sp/>performance<sp/>under<sp/>any<sp/>of<sp/>the<sp/>available</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>pricing<sp/>strategies,<sp/>in<sp/>the<sp/>convex-hull-containment<sp/>problem</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>NOTE:<sp/>in<sp/>order<sp/>to<sp/>see<sp/>meaningful<sp/>results,<sp/>compile<sp/>with<sp/>-DNDEBUG</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;solve_convex_hull_containment_lp3.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>choose<sp/>exact<sp/>floating-point<sp/>type</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_GMP</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Gmpzf_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/Gmpzf.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Gmpzf" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::Gmpzf</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="MP__Float_8h.html" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL/MP_Float.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1MP__Float" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CGAL::MP_Float</ref><sp/>ET;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Cartesian_d&lt;double&gt;<sp/>Kernel_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Kernel_d::Point_d<sp/>Point_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>d<sp/>=<sp/>10;<sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>change<sp/>this<sp/>in<sp/>order<sp/>to<sp/>experiment</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>n<sp/>=<sp/>100000;<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>change<sp/>this<sp/>in<sp/>order<sp/>to<sp/>experiment</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>generate<sp/>n<sp/>random<sp/>d-dimensional<sp/>points<sp/>in<sp/>[0,1]^d</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>rd;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_d&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>j<sp/>=0;<sp/>j&lt;n;<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;double&gt;<sp/>coords;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i&lt;d;<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>coords.push_back(rd.get_double());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back<sp/>(Point_d<sp/>(d,<sp/>coords.begin(),<sp/>coords.end()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>benchmark<sp/>all<sp/>pricing<sp/>strategies<sp/>in<sp/>turn</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgQPSolverFunctions_1ga5e4c5717fab328c4e94c3d58e1bd4517" kindref="member">CGAL::Quadratic_program_pricing_strategy</ref><sp/>strategy[]<sp/>=<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgQPSolverFunctions_1gga5e4c5717fab328c4e94c3d58e1bd4517a3921451b2d9930928eaf4e64b1028161" kindref="member">CGAL::QP_CHOOSE_DEFAULT</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>QP_PARTIAL_FILTERED_DANTZIG</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgQPSolverFunctions_1gga5e4c5717fab328c4e94c3d58e1bd4517acfdcc3c905ef34e4daf8dbe6320a098e" kindref="member">CGAL::QP_DANTZIG</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Dantzig&apos;s<sp/>pivot<sp/>rule...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgQPSolverFunctions_1gga5e4c5717fab328c4e94c3d58e1bd4517a2bde547a8669c3de04f36c35737c95b0" kindref="member">CGAL::QP_PARTIAL_DANTZIG</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>with<sp/>partial<sp/>pricing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgQPSolverFunctions_1gga5e4c5717fab328c4e94c3d58e1bd4517a1f12b7a8fb6bdc5391069b0aaac81d31" kindref="member">CGAL::QP_BLAND</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Bland&apos;s<sp/>pivot<sp/>rule</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgQPSolverFunctions_1gga5e4c5717fab328c4e94c3d58e1bd4517a47f81fc4506c7af2cf76d608d154f998" kindref="member">CGAL::QP_FILTERED_DANTZIG</ref>,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Dantzig&apos;s<sp/>filtered<sp/>pivot<sp/>rule...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgQPSolverFunctions_1gga5e4c5717fab328c4e94c3d58e1bd4517a85c10fcd1aa2edd600b04fc85d37574e" kindref="member">CGAL::QP_PARTIAL_FILTERED_DANTZIG</ref><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>with<sp/>partial<sp/>pricing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Timer<sp/>t;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;<sp/>i&lt;6;<sp/>++i)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>test<sp/>strategy<sp/>i</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Quadratic__program__options" kindref="compound">CGAL::Quadratic_program_options</ref><sp/>options;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>options.<ref refid="classCGAL_1_1Quadratic__program__options_1a61bf72e4bd2fb752b4ca7547b1b18fcf" kindref="member">set_pricing_strategy</ref><sp/>(strategy[i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>t.reset();<sp/>t.start();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>is<sp/>origin<sp/>in<sp/>convex<sp/>hull<sp/>of<sp/>the<sp/>points?<sp/>(most<sp/>likely,<sp/>not)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>solve_convex_hull_containment_lp</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>(Point_d<sp/>(d,<sp/><ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>),<sp/>points.begin(),<sp/>points.end(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>ET(0),<sp/>options);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>t.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Time<sp/>(s)<sp/>=<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>t.time()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>If you compile with the macros <computeroutput>NDEBUG</computeroutput> or <computeroutput>CGAL_QP_NO_ASSERTIONS</computeroutput> set (this is essential for good performance!!), you will see runtimes that qualitatively look as follows (on your machine, the actual runtimes will roughly be some fixed multiples of the numbers in the table below, and they might vary with the random choices). The default choice of the pricing strategy in that case is <computeroutput>QP_PARTIAL_FILTERED_DANTZIG</computeroutput>.</para>
+<para><table rows="7" cols="2"><row>
+<entry thead="yes"><para>Strategy   </para>
+</entry><entry thead="yes"><para>Runtime in seconds    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_CHOOSE_DEFAULT</computeroutput>   </para>
+</entry><entry thead="no"><para>0.32    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>10.7    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>3.72    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_BLAND</computeroutput>   </para>
+</entry><entry thead="no"><para>3.65    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>0.43    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>0.32   </para>
+</entry></row>
+</table>
+</para>
+<para>We clearly see the effect of filtering: we gain a factor of ten, roughly, compared to the next best non-filtered variant.</para>
+<sect2 id="index_1QP_solverBenchd3">
+<title>d=3, n=1,000,000</title>
+<para>The filtering effect is amplified if the points/dimension ratio becomes larger. This is what you might see in dimension three, with one million points.</para>
+<para><table rows="7" cols="2"><row>
+<entry thead="yes"><para>Strategy   </para>
+</entry><entry thead="yes"><para>Runtime in seconds    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_CHOOSE_DEFAULT</computeroutput>   </para>
+</entry><entry thead="no"><para>1.34    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>47.6    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>15.6    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_BLAND</computeroutput>   </para>
+</entry><entry thead="no"><para>16.02    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>1.89    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>1.34   </para>
+</entry></row>
+</table>
+</para>
+<para>In general, if your problem has a high variable/constraint or constraint/variable ratio, then filtering will typically pay off. In such cases, it might be beneficial to encode your problem using input type <computeroutput>double</computeroutput> in order to profit from the filtering (but see the issue discussed in Section <ref refid="index_1secQPcustomizationfiltering" kindref="member">Exponent Overflow in Double Using Floating-Point Filters</ref>).</para>
+</sect2>
+<sect2 id="index_1QP_solverBenchd100">
+<title>d=100, n=100,000</title>
+<para>Conversely, the filtering effect deteriorates if the points/dimension ratio becomes smaller.</para>
+<para><table rows="7" cols="2"><row>
+<entry thead="yes"><para>Strategy   </para>
+</entry><entry thead="yes"><para>Runtime in seconds    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_CHOOSE_DEFAULT</computeroutput>   </para>
+</entry><entry thead="no"><para>3.05    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>78.4    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>45.9    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_BLAND</computeroutput>   </para>
+</entry><entry thead="no"><para>33.2    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>3.36    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>3.06   </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1QP_solverBenchd500">
+<title>d=500, n=1,000</title>
+<para>If the points/dimension ratio tends to a constant, filtering is no longer a clear winner. The reason is that in this case, the necessary exact calculations with multiprecision numbers dominate the overall runtime.</para>
+<para><table rows="7" cols="2"><row>
+<entry thead="yes"><para>Strategy   </para>
+</entry><entry thead="yes"><para>Runtime in seconds    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_CHOOSE_DEFAULT</computeroutput>   </para>
+</entry><entry thead="no"><para>2.65    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>5.55    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>5.6    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_BLAND</computeroutput>   </para>
+</entry><entry thead="no"><para>4.46    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>2.65    </para>
+</entry></row>
+<row>
+<entry thead="no"><para><computeroutput>QP_PARTIAL_FILTERED_DANTZIG</computeroutput>   </para>
+</entry><entry thead="no"><para>2.61   </para>
+</entry></row>
+</table>
+</para>
+<para>In general, if you have a program where the number of variables and the number of constraints have the same order of magnitude, then the saving gained from using the filtered approach is typically small. In such a situation, you should consider switching to a non-filtered variant in order to avoid the rare issue discussed in Section <ref refid="index_1secQPcustomizationfiltering" kindref="member">Exponent Overflow in Double Using Floating-Point Filters</ref> altogether. </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="QP_solver.txt"/>
+  </compounddef>
+</doxygen>

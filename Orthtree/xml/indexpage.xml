@@ -1,0 +1,724 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Orthtree"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Jackson Campolattaro, Simon Giraudot, Cédric Portaneri, Tong Zhao, Pierre Alliez</para>
+</simplesect>
+</para>
+<sect1 id="index_1Section_Orthtree_Introduction">
+<title>Introduction</title>
+<para>Quadtrees are tree data structures in which each node encloses a rectangular section of space, and each internal node has exactly 4 children. Octrees are a similar data structure in 3D in which each node encloses a rectangular cuboid section of space, and each internal node has exactly 8 children.</para>
+<para>We call the generalization of such data structure &quot;orthtrees&quot;, as orthants are generalizations of quadrants and octants. The term &quot;hyperoctree&quot; can also be found in literature to name such data structures in dimensions 4 and higher.</para>
+<para>This package provides a general data structure <computeroutput><ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref></computeroutput> along with aliases for <computeroutput>Quadtree</computeroutput> and <computeroutput>Octree</computeroutput>. These trees can be constructed with custom contents and split predicates, and iterated on with various traversal methods. Orthants can be orthotopes and not only hypercubes.</para>
+<para><anchor id="index_1fig__Orthtree_fig"/> <linebreak/>
+ <center> <table rows="2" cols="1"><row>
+<entry thead="no"><para><image type="html" name="orthtree.png" inline="yes"></image>
+  </para>
+</entry></row>
+<row>
+<entry thead="no"><para><image type="html" name="orthtree_mesh.png" inline="yes"></image>
+  </para>
+</entry></row>
+</table>
+</center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Orthtree_fig" kindref="member">fig__Orthtree_fig</ref> Top: an orthtree in 3D (octree) from a point cloud (top); Bottom: an orthtree in 3D (octree) from the triangle faces of a mesh. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1Section_Orthtree_Building">
+<title>Building</title>
+<para>A common purpose for an orthtree is to subdivide a collection of points, and the <ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref> package provides a traits class for this purpose. The points are not copied: the provided point range is used directly and rearranged by the orthtree. Altering the point range after creating the orthtree may leave the tree in an invalid state. The constructor returns a tree with a single (root) node that contains all the points.</para>
+<para>The method <ref refid="classCGAL_1_1Orthtree_1aacc01689e01cf63ddbf033c73fa96b55" kindref="member">refine()</ref> must be called to subdivide space further. This method uses a split predicate which takes a node as input and returns <computeroutput>true</computeroutput> if this node should be split, <computeroutput>false</computeroutput> otherwise: this enables users to choose on what criterion should the orthtree be refined. Predefined predicates are provided for the point-set orthtree, including <ref refid="classCGAL_1_1Orthtrees_1_1Maximum__depth" kindref="compound">Maximum_depth</ref> and <ref refid="classCGAL_1_1Orthtrees_1_1Maximum__contained__elements" kindref="compound">Maximum_contained_elements</ref>.</para>
+<para>The simplest way to create a point-set orthtree is from a vector of points. The constructor generally expects a separate point range and map, but the point map defaults to <computeroutput><ref refid="structCGAL_1_1Identity__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">Identity_property_map</ref></computeroutput> if none is provided.</para>
+<para>The split predicate is a user-defined functor that determines whether a node needs to be split. Custom predicates can easily be defined if the existing ones do not match users&apos; needs.</para>
+<sect2 id="index_1Section_Orthtree_Quadtree">
+<title>Building a Quadtree</title>
+<para>The <computeroutput><ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref></computeroutput> class may be templated with <computeroutput><ref refid="structCGAL_1_1Orthtree__traits__point" kindref="compound">Orthtree_traits_point</ref>&lt;&gt;</computeroutput> while specifying a 2d ambient space and thus behave as a quadtree. For convenience, the alias <computeroutput><ref refid="group__PkgOrthtreeRef_1gae24e1ab33fb7912f5554ff339ee26424" kindref="member">CGAL::Quadtree</ref></computeroutput> is provided.</para>
+<para>The following example shows the construction of quadtree from a vector of <computeroutput><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref></computeroutput> objects. <computeroutput>quadtree.refine(10, 5)</computeroutput> uses the default split predicate, which enforces a max-depth and a maximum of elements contained per node (&quot;bucket size&quot;). Nodes are split if their depth is less than 10, and they contain more than 5 points.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2quadtree_build_from_point_vector_8cpp-example" kindref="compound">Orthtree/quadtree_build_from_point_vector.cpp</ref> <programlisting filename="Orthtree/quadtree_build_from_point_vector.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Quadtree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_vector<sp/>=<sp/>std::vector&lt;Point_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Quadtree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Quadtree&lt;Kernel, Point_vector&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>r;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_vector<sp/>points_2d;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>5;<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points_2d.emplace_back(r.get_double(-1.,<sp/>1.),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>r.get_double(-1.,<sp/>1.));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">Quadtree</ref><sp/>quadtree(points_2d);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>quadtree.refine(10,<sp/>5);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Point_Vector">
+<title>Building an Octree</title>
+<para><computeroutput><ref refid="structCGAL_1_1Orthtree__traits__point" kindref="compound">Orthtree_traits_point</ref>&lt;&gt;</computeroutput> can also be templated with dimension 3 and thus behave as an octree. For convenience, the alias <computeroutput><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">CGAL::Octree</ref></computeroutput> is provided.</para>
+<para>The following example shows how to create an octree from a vector of <computeroutput><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref></computeroutput> objects. As with the quadtree example, we use the default split predicate. In this case the maximum depth is 10, and the bucket size is 1.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_build_from_point_vector_8cpp-example" kindref="compound">Orthtree/octree_build_from_point_vector.cpp</ref> <programlisting filename="Orthtree/octree_build_from_point_vector.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_vector<sp/>=<sp/>std::vector&lt;Point&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_vector&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Here,<sp/>our<sp/>point<sp/>set<sp/>is<sp/>a<sp/>vector</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_vector<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>a<sp/>few<sp/>points<sp/>to<sp/>the<sp/>vector</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(1,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(2,<sp/>1,<sp/>-11);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(2,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(1,<sp/>-2,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(1,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-1,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>octree(points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine(10,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>the<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Point_Set">
+<title>Building an Octree from a Point_set_3</title>
+<para>Some data structures such as <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">Point_set_3</ref></computeroutput> require a non-default point map type and object. This example illustrates how to create an octree from a <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">Point_set_3</ref></computeroutput> loaded from a file. It also shows a more explicit way of setting the split predicate when refining the tree.</para>
+<para>An octree is constructed from the point set and its corresponding map, and then written to the standard output.</para>
+<para>The split predicate is manually constructed and passed to the refine method. In this case, we use a maximum number of contained elements with no corresponding maximum depth. This means that nodes will continue to be split until none contain more than 10 points.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_build_from_point_set_8cpp-example" kindref="compound">Orthtree/octree_build_from_point_set.cpp</ref> <programlisting filename="Orthtree/octree_build_from_point_set.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Point&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/>Point_set::Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Point<sp/>set<sp/>will<sp/>be<sp/>used<sp/>to<sp/>hold<sp/>our<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>points<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>stream((argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>stream<sp/>&gt;&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(0<sp/>==<sp/>points.number_of_points())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;loaded<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.number_of_points()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref><sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree<sp/>with<sp/>a<sp/>small<sp/>bucket<sp/>size,<sp/>using<sp/>a<sp/>more<sp/>verbose<sp/>method</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine(<ref refid="classCGAL_1_1Orthtrees_1_1Maximum__contained__elements" kindref="compound">CGAL::Orthtrees::Maximum_contained_elements</ref>(10));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>the<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Custom_Split_Precicate">
+<title>Building an Octree with a Custom Split Predicate</title>
+<para>The following example illustrates how to refine an octree using a split predicate that isn&apos;t provided by default. This particular predicate sets a node&apos;s bucket size as a ratio of its depth. For example, for a ratio of 2, a node at depth 2 can hold 4 points, a node at depth 7 can hold 14.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_build_with_custom_split_8cpp-example" kindref="compound">Orthtree/octree_build_with_custom_split.cpp</ref> <programlisting filename="Orthtree/octree_build_with_custom_split.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/>=<sp/>Kernel::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Point&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/>Point_set::Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Split<sp/>Predicate</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>The<sp/>predicate<sp/>is<sp/>a<sp/>functor<sp/>which<sp/>returns<sp/>a<sp/>Boolean<sp/>value,<sp/>whether<sp/>a<sp/>node<sp/>needs<sp/>to<sp/>be<sp/>split<sp/>or<sp/>not</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Split_by_ratio<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>ratio;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/>Split_by_ratio(std::size_t<sp/>ratio)<sp/>:<sp/>ratio(ratio)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Node_index,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Tree&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>operator()(Node_index<sp/>i,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Tree<sp/>&amp;tree)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::size_t<sp/>num_points<sp/>=<sp/>tree.data(i).size();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::size_t<sp/>depth<sp/>=<sp/>tree.depth(i);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>num_points<sp/>&gt;<sp/>(ratio<sp/>*<sp/>depth);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Point<sp/>set<sp/>will<sp/>be<sp/>used<sp/>to<sp/>hold<sp/>our<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>points<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>stream((argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>stream<sp/>&gt;&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(0<sp/>==<sp/>points.number_of_points())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;loaded<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.number_of_points()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref><sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree<sp/>using<sp/>our<sp/>custom<sp/>split<sp/>predicate</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine(Split_by_ratio(2));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>the<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Orthtree_Point_Vector">
+<title>Building an Orthtree</title>
+<para>An orthtree can also be used with an arbitrary number of dimensions. The <computeroutput><ref refid="structCGAL_1_1Orthtree__traits__point" kindref="compound">Orthtree_traits_point</ref></computeroutput> template can infer the arbitrary dimension count from the d-dimensional kernel.</para>
+<para>The following example shows how to build a generalized orthtree in dimension 4. As <computeroutput>std::vector&lt;<ref refid="classCGAL_1_1Point__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_d.tag">Point_d</ref>&gt;</computeroutput> is manually filled with 4-dimensional points. The vector is used as the point set, and an <computeroutput><ref refid="structCGAL_1_1Identity__property__map" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Property_map.tag">Identity_property_map</ref></computeroutput> is automatically set as the orthtree&apos;s map type, so a map does not need to be provided.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2orthtree_build_8cpp-example" kindref="compound">Orthtree/orthtree_build.cpp</ref> <programlisting filename="Orthtree/orthtree_build.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Epick_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Orthtree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Orthtree_traits_point.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>dimension<sp/>=<sp/>4;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Epick__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_d.tag">CGAL::Epick_d&lt;CGAL::Dimension_tag&lt;dimension&gt;</ref><sp/>&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_d.tag">Point_d</ref><sp/>=<sp/>Kernel::Point_d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_vector<sp/>=<sp/>std::vector&lt;Point_d&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Traits<sp/>=<sp/><ref refid="structCGAL_1_1Orthtree__traits__point" kindref="compound">CGAL::Orthtree_traits_point&lt;Kernel, Point_vector&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Orthtree&lt;Traits&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>r;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_vector<sp/>points_dd;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>20;<sp/>++<sp/>i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::array&lt;double,<sp/>dimension&gt;<sp/>init{};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">double</highlight><highlight class="normal">&amp;<sp/>v<sp/>:<sp/>init)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>v<sp/>=<sp/>r.get_double(-1.,<sp/>1.);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points_dd.emplace_back<sp/>(init.begin(),<sp/>init.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Orthtree<sp/>orthtree(points_dd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>orthtree.refine(10,<sp/>5);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>orthtree<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_Orthtree_Properties">
+<title>Properties</title>
+<para>The <ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref> uses a mechanism to attach properties to nodes at run-time which follows <ref refid="index_1sectionSurfaceMesh_properties" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface mesh properties</ref>. Each property is identified by a string and its value type and stored in a consecutive block of memory.</para>
+</sect1>
+<sect1 id="index_1Section_Orthtree_Traversal">
+<title>Traversal</title>
+<para>Traversal is the act of navigating among the nodes of the tree. The <computeroutput><ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref></computeroutput> class provides a number of different solutions for traversing the tree.</para>
+<sect2 id="index_1Section_Orthtree_Manual_Traveral">
+<title>Manual Traversal</title>
+<para>Because our orthtree is a form of connected acyclic undirected graph, it is possible to navigate between any two nodes. What that means in practice is that given a node on the tree, it is possible to access any other node using the right set of operations. The <computeroutput>Node_index</computeroutput> type provides a handle on a node, and the <computeroutput>orthtree</computeroutput> class provides methods that enable the user to retrieve the indices of each of its children as well as its parent (if they exist).</para>
+<para>Given any node index <computeroutput>nid</computeroutput>, the <computeroutput>n</computeroutput>th child of that node can be found with <computeroutput>orthtree.child(nid, n)</computeroutput>. For an octree, values of <computeroutput>n</computeroutput> from 0-7 provide access to the different children. For non-root nodes, it is possible to access parent nodes using the <computeroutput>orthtree.parent()</computeroutput> accessor.</para>
+<para>To access grandchildren, it isn&apos;t necessary to use nested <computeroutput>orthtree.child()</computeroutput> calls. Instead, the <computeroutput>orthtree.descendant(node, a, b, ...)</computeroutput> convenience method is provided. This retrieves the <computeroutput>b</computeroutput>th child of the <computeroutput>a</computeroutput>th child, to any depth.</para>
+<para>In most cases, we want to find the descendants of the root node. For this case, there is another convenience method <computeroutput>orthtree.node(a, b, c, ...)</computeroutput>. This retrieves the node specified by the descent <computeroutput>a</computeroutput>, <computeroutput>b</computeroutput>, <computeroutput>c</computeroutput>. It is equivalent to <computeroutput>orthtree.descendant(orthtree.root(), a, b, c, ...)</computeroutput>.</para>
+<para>The following example demonstrates the use of several of these accessors.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_traversal_manual_8cpp-example" kindref="compound">Orthtree/octree_traversal_manual.cpp</ref> <programlisting filename="Orthtree/octree_traversal_manual.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Point&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/>Point_set::Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Point<sp/>set<sp/>will<sp/>be<sp/>used<sp/>to<sp/>hold<sp/>our<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>points<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>stream((argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>stream<sp/>&gt;&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(0<sp/>==<sp/>points.number_of_points())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;loaded<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.number_of_points()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref><sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree<sp/>using<sp/>the<sp/>default<sp/>arguments</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>a<sp/>few<sp/>nodes</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Navigation<sp/>relative<sp/>to<sp/>the<sp/>root<sp/>node&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>root<sp/>node:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.root())<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>first<sp/>child<sp/>of<sp/>the<sp/>root<sp/>node:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.child(octree.root(),<sp/>0))<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>fifth<sp/>child:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.child(octree.root(),<sp/>4))<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>fifth<sp/>child,<sp/>accessed<sp/>without<sp/>going<sp/>through<sp/>root:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.node(4))<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>second<sp/>child<sp/>of<sp/>the<sp/>fourth<sp/>child:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.child(octree.child(octree.root(),<sp/>4),<sp/>1))<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>second<sp/>child<sp/>of<sp/>the<sp/>fourth<sp/>child,<sp/>accessed<sp/>without<sp/>going<sp/>through<sp/>root:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.node(4,<sp/>1))<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Retrieve<sp/>one<sp/>of<sp/>the<sp/>deeper<sp/>children</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Orthtree_1aa68903c2bac01150edfd9f781bc35b8c" kindref="member">Octree::Node_index</ref><sp/>cur<sp/>=<sp/>octree.node(4,<sp/>3);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Navigation<sp/>relative<sp/>to<sp/>a<sp/>child<sp/>node&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>third<sp/>child<sp/>of<sp/>the<sp/>fourth<sp/>child:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(cur)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>third<sp/>child:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.parent(cur))<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>next<sp/>sibling<sp/>of<sp/>the<sp/>third<sp/>child<sp/>of<sp/>the<sp/>fourth<sp/>child:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(octree.child(octree.parent(cur),<sp/>octree.local_coordinates(cur).to_ulong()<sp/>+<sp/>1))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Preorder_Traversal">
+<title>Preorder Traversal</title>
+<para>It is often useful to be able to iterate over the nodes of the tree in a particular order. For example, the stream operator <computeroutput>&lt;&lt;</computeroutput> uses a traversal to print out each node. A few traversals are provided, among them <ref refid="structCGAL_1_1Orthtrees_1_1Preorder__traversal" kindref="compound">Preorder_traversal</ref> and <ref refid="structCGAL_1_1Orthtrees_1_1Postorder__traversal" kindref="compound">Postorder_traversal</ref>. Traversing a tree in preorder means to visit each parent immediately followed by its children, whereas in postorder traversal the children are visited first.</para>
+<para>The following example illustrates how to use the provided traversals.</para>
+<para>A tree is constructed, and a traversal is used to create a range that can be iterated over using a for-each loop. The default output operator for the orthtree uses the preorder traversal to do a pretty-print of the tree structure. In this case, we print out the nodes of the tree without indentation instead.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_traversal_preorder_8cpp-example" kindref="compound">Orthtree/octree_traversal_preorder.cpp</ref> <programlisting filename="Orthtree/octree_traversal_preorder.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Point&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/>Point_set::Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Preorder_traversal<sp/>=<sp/><ref refid="structCGAL_1_1Orthtrees_1_1Preorder__traversal" kindref="compound">CGAL::Orthtrees::Preorder_traversal&lt;Octree&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>**argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Point<sp/>set<sp/>will<sp/>be<sp/>used<sp/>to<sp/>hold<sp/>our<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>points<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>stream((argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>stream<sp/>&gt;&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(0<sp/>==<sp/>points.number_of_points())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;loaded<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.number_of_points()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref><sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>the<sp/>octree<sp/>using<sp/>preorder<sp/>traversal</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>node<sp/>:<sp/>octree.traverse&lt;Preorder_traversal&gt;())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(node)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Custom_Traversal">
+<title>Custom Traversal</title>
+<para>Users can define their own traversal methods by creating models of the <computeroutput><ref refid="classOrthtreeTraversal" kindref="compound">OrthtreeTraversal</ref></computeroutput> concept. The custom traversal must provide a method which returns the starting point of the traversal (<computeroutput>first_index()</computeroutput>) and another method which returns the next node in the sequence (<computeroutput>next_index()</computeroutput>). <computeroutput>next_index()</computeroutput> returns an empty optional when the end of the traversal is reached. The following example shows how to define a custom traversal that only traverses the first branch an octree:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_traversal_custom_8cpp-example" kindref="compound">Orthtree/octree_traversal_custom.cpp</ref> <programlisting filename="Orthtree/octree_traversal_custom.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Orthtree/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Point&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/>Point_set::Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Tree&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">First_branch_traversal<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Node_index<sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Tree::Node_index;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Tree&amp;<sp/>m_orthtree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">explicit</highlight><highlight class="normal"><sp/>First_branch_traversal(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Tree&amp;<sp/>orthtree)<sp/>:<sp/>m_orthtree(orthtree)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Node_index<sp/>first_index()</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_orthtree.root();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::optional&lt;Node_index&gt;<sp/>next_index(Node_index<sp/>n)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Stop<sp/>when<sp/>we<sp/>reach<sp/>the<sp/>base<sp/>of<sp/>the<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(m_orthtree.is_leaf(n))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>{};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Always<sp/>descend<sp/>the<sp/>first<sp/>child</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>m_orthtree.child(n,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Point<sp/>set<sp/>will<sp/>be<sp/>used<sp/>to<sp/>hold<sp/>our<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>points<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>stream((argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>stream<sp/>&gt;&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(0<sp/>==<sp/>points.number_of_points())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;loaded<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.number_of_points()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points\n&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref><sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>the<sp/>first<sp/>branch<sp/>using<sp/>custom<sp/>traversal</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>node:<sp/>octree.traverse&lt;First_branch_traversal&lt;Octree&gt;&gt;())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree.to_string(node)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Cmp_Trav">
+<title>Comparison of Traversals</title>
+<para>Figure <ref refid="index_1fig__Orthtree_traversal_fig" kindref="member">fig__Orthtree_traversal_fig</ref> shows in which order nodes are visited depending on the traversal method used.</para>
+<para><anchor id="index_1fig__Orthtree_traversal_fig"/> <image type="html" name="quadtree_traversal.png"></image>
+ <image type="latex" name="quadtree_traversal.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Orthtree_traversal_fig" kindref="member">fig__Orthtree_traversal_fig</ref> Quadtree visualized as a graph. Each node is labeled according to the order in which it is visited by the traversal. When using leaves and level traversals, the quadtree is only partially traversed. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_Orthtree_Acceleration">
+<title>Acceleration of Common Tasks</title>
+<para>Once an orthtree is built, its structure can be used to accelerate different tasks.</para>
+<sect2 id="index_1Section_Orthtree_Nearest_Neighbor">
+<title>Finding the Nearest Neighbor of a Point</title>
+<para>The naive way of finding the nearest neighbor of a point requires finding the distance to all elements. An orthtree can be used to perform the same task in significantly less time. For large numbers of elements, this can be a large enough difference to outweigh the time spent building the tree.</para>
+<para>Note that a kd-tree is expected to outperform the orthtree for this task on points, it should be preferred unless features specific to the orthtree are needed.</para>
+<para>The following example illustrates how to use an octree to accelerate the search for points close to a location.</para>
+<para>Points are loaded from a file and an octree is built. The nearest neighbor method is invoked for several input points. A <computeroutput>k</computeroutput> value of 1 is used to find the single closest point. Results are put in a vector, and then printed.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_find_nearest_neighbor_8cpp-example" kindref="compound">Orthtree/octree_find_nearest_neighbor.cpp</ref> <programlisting filename="Orthtree/octree_find_nearest_neighbor.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Point_set_3/IO.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/iterator/function_output_iterator.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Point&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_map<sp/>=<sp/>Point_set::Point_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Point<sp/>set<sp/>will<sp/>be<sp/>used<sp/>to<sp/>hold<sp/>our<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_set<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Load<sp/>points<sp/>from<sp/>a<sp/>file.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>stream((argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;points_3/cube.pwn&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>stream<sp/>&gt;&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(0<sp/>==<sp/>points.number_of_points())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>cannot<sp/>read<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;loaded<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.number_of_points()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref><sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine(10,<sp/>20);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Find<sp/>the<sp/>nearest<sp/>points<sp/>to<sp/>a<sp/>few<sp/>locations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>points_to_find<sp/>=<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>0,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>0},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{1,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>1,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>1},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{-1,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-1,<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>-1},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{-0.46026,<sp/><sp/>-0.25353,<sp/><sp/>0.32051},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{-0.460261,<sp/>-0.253533,<sp/>0.320513}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>p<sp/>:<sp/>points_to_find)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>octree.nearest_k_neighbors</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>(p,<sp/>1,<sp/></highlight><highlight class="comment">//<sp/>k=1<sp/>to<sp/>find<sp/>the<sp/>single<sp/>closest<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>boost::make_function_output_iterator</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>([&amp;](</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_set::Index&amp;<sp/>nearest)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;the<sp/>nearest<sp/>point<sp/>to<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;)<sp/>is<sp/>(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.point(nearest)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Orthtree_1af4dc25d22b8a1740ac781a81be9ba76e" kindref="member">Octree::Sphere</ref><sp/>s(points_to_find[0],<sp/>0.0375);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Closest<sp/>points<sp/>within<sp/>the<sp/>sphere<sp/>around<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>s.center()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>with<sp/>squared<sp/>radius<sp/>of<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>s.squared_radius()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.neighbors_within_radius</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>(s,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::make_function_output_iterator</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>([&amp;](</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_set::Index&amp;<sp/>nearest)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points.point(nearest)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>dist:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(Point(0,<sp/>0,<sp/>0)<sp/>-<sp/>points.point(nearest)).squared_length()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>k<sp/>=<sp/>3;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;The<sp/>up<sp/>to<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>k<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>closest<sp/>points<sp/>to(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>s.center()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)<sp/>within<sp/>a<sp/>squared<sp/>radius<sp/>of<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>s.squared_radius()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>are:&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.nearest_k_neighbors_within_radius</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>(s,<sp/>k,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::make_function_output_iterator</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>([&amp;](</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point_set::Index&amp;<sp/>nearest)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;(&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points.point(nearest)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/>dist:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>(Point(0,<sp/>0,<sp/>0)<sp/>-<sp/>points.point(nearest)).squared_length()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>Not all octrees are compatible with nearest neighbor functionality, as the idea of a nearest neighbor may not make sense for some tree contents. For the nearest neighbor methods to work, the traits class must implement the <computeroutput><ref refid="classCollectionPartitioningOrthtreeTraits" kindref="compound">CollectionPartitioningOrthtreeTraits</ref></computeroutput> concept.</para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Grade">
+<title>Grading</title>
+<para>An orthtree is considered &quot;graded&quot; if the difference of depth between two adjacent leaves is at most 1 for every pair of leaves.</para>
+<para><anchor id="index_1fig__Orthtree_quadree_graded_fig"/> <image type="html" name="quadtree_graded.png"></image>
+ <image type="latex" name="quadtree_graded.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Orthtree_quadree_graded_fig" kindref="member">fig__Orthtree_quadree_graded_fig</ref> Quadtree before and after being graded. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The following example demonstrates how to use the grade method to eliminate large jumps in depth within the orthtree.</para>
+<para>A tree is created such that one node is split many more times than those it borders. <ref refid="classCGAL_1_1Orthtree_1a163f19e9594282378fe8059d6b48fc88" kindref="member">grade()</ref> splits the octree&apos;s nodes so that adjacent nodes never have a difference in depth greater than one. The tree is printed before and after grading, so that the differences are visible.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Orthtree_2octree_grade_8cpp-example" kindref="compound">Orthtree/octree_grade.cpp</ref> <programlisting filename="Orthtree/octree_grade.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Octree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Type<sp/>Declarations</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_vector<sp/>=<sp/>std::vector&lt;Point&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>=<sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_vector&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Here,<sp/>our<sp/>point<sp/>set<sp/>is<sp/>a<sp/>vector</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_vector<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>a<sp/>few<sp/>points<sp/>to<sp/>the<sp/>vector,<sp/>most<sp/>of<sp/>which<sp/>are<sp/>in<sp/>one<sp/>region</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(1,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(2,<sp/>1,<sp/>-11);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(2,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(1,<sp/>-2,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(1,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-1,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-1.1,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-1.01,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-1.001,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-1.0001,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.emplace_back(-1.0001,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>an<sp/>octree<sp/>from<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">Octree</ref><sp/>octree(points);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Build<sp/>the<sp/>octree<sp/>with<sp/>a<sp/>small<sp/>bucket<sp/>size,<sp/>so<sp/>we<sp/>get<sp/>a<sp/>deep<sp/>node</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.refine(10,<sp/>2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>the<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\nUn-graded<sp/>tree&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Grade<sp/>the<sp/>tree<sp/>to<sp/>eliminate<sp/>large<sp/>jumps<sp/>in<sp/>depth</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>octree.grade();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Print<sp/>out<sp/>the<sp/>tree<sp/>again</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\nGraded<sp/>tree&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>octree<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_Orthtree_Performance">
+<title>Performance</title>
+<sect2 id="index_1Section_Orthtree_Performance_Construction">
+<title>Tree Construction</title>
+<para>Tree construction benchmarks were conducted by randomly generating a collection of points, and then timing the process of creating a fully refined tree which contains them.</para>
+<para>Because of its simplicity, an octree can be constructed faster than a kd-tree.</para>
+<para><anchor id="index_1fig__Orthtree_construction_benchmark_fig"/> <image type="html" name="construction_benchmark.png"></image>
+ <image type="latex" name="construction_benchmark.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Orthtree_construction_benchmark_fig" kindref="member">fig__Orthtree_construction_benchmark_fig</ref> Plot of the time to construct a tree. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Section_Orthtree_Performance_Nearest_Neighbors">
+<title>Nearest Neighbors</title>
+<para>Orthtree nodes are uniform, so orthtrees will tend to have deeper hierarchies than equivalent kd-trees. As a result, orthtrees will generally perform worse for nearest neighbor searches. Both nearest neighbor algorithms have a theoretical complexity of <formula id="0">$O(log(n))$</formula>, but the orthtree can generally be expected to have a higher coefficient.</para>
+<para><anchor id="index_1fig__Orthtree_nearest_neighbor_benchmark_fig"/> <image type="html" name="nearest_neighbor_benchmark.png"></image>
+ <image type="latex" name="nearest_neighbor_benchmark.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Orthtree_nearest_neighbor_benchmark_fig" kindref="member">fig__Orthtree_nearest_neighbor_benchmark_fig</ref> Plot of the time to find the 10 nearest neighbors of a random point using a pre-constructed tree. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The performance difference between the two trees is large, but both algorithms compare very favorably to the linear complexity of the naive approach, which involves comparing every point to the search point.</para>
+<para>Using the orthtree for nearest neighbor computations instead of the kd-tree can be justified either when few queries are needed (as the construction is faster) or when the orthtree is also needed for other purposes.</para>
+<para><anchor id="index_1fig__Orthtree_nearest_neighbor_benchmark_with_naive_fig"/> <image type="html" name="nearest_neighbor_benchmark_with_naive.png"></image>
+ <image type="latex" name="nearest_neighbor_benchmark_with_naive.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Orthtree_nearest_neighbor_benchmark_with_naive_fig" kindref="member">fig__Orthtree_nearest_neighbor_benchmark_with_naive_fig</ref> Plot of the time to find nearest neighbors using tree methods and a naive approach. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>For nontrivial point counts, the naive approach&apos;s calculation time dwarfs that of either the orthtree or kd-tree.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Section_Orthtree_Migration">
+<title>Migrating Code Written Before Release 6.0</title>
+<para>The orthtree package changed to allow for custom data stored per node in the orthtree. To migrate existing code written before CGAL 6.0 <computeroutput><ref refid="structCGAL_1_1Orthtree__traits__point" kindref="compound">Orthtree_traits_point</ref></computeroutput> can be used for a point-based orthtrees. The aliases <computeroutput><ref refid="group__PkgOrthtreeRef_1gae24e1ab33fb7912f5554ff339ee26424" kindref="member">CGAL::Quadtree</ref></computeroutput> and <computeroutput><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">CGAL::Octree</ref></computeroutput> have been extended by a boolean template parameter to allow for non-cubic cells, which is the default. The data is passed via the traits class and no longer directly to the orthtree.</para>
+<para>Former code to declare and define an Octree with cubic cells was as follows: <programlisting filename=".cpp"><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Kernel::Point_3&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map&gt;</ref><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref>;</highlight></codeline>
+<codeline><highlight class="normal">...</highlight></codeline>
+<codeline><highlight class="normal">Octree<sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+</programlisting></para>
+<para>CGAL 6.0 code with identical behavior is now: <programlisting filename=".cpp"><codeline><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Kernel::Point_3&gt;</ref><sp/>Point_set;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Orthtree" kindref="compound">CGAL::Octree&lt;Kernel, Point_set, Point_map, false&gt;</ref><sp/><ref refid="group__PkgOrthtreeRef_1ga937c2cf9aa6adc991f40c30071f0adad" kindref="member">Octree</ref>;</highlight></codeline>
+<codeline><highlight class="normal">...</highlight></codeline>
+<codeline><highlight class="normal">Octree<sp/>octree(points,<sp/>points.point_map());</highlight></codeline>
+</programlisting></para>
+<para>The node class does not exist anymore and has been replaced by the lightweight type <computeroutput>Node_index</computeroutput>. All information formerly contained in the node class is now accessible via the <computeroutput><ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref></computeroutput> interface.</para>
+<para>Former node access was as follows: <programlisting filename=".cpp"><codeline><highlight class="normal">Orthtree::Node<sp/>root<sp/>=<sp/>orthtree.root();</highlight></codeline>
+<codeline><highlight class="normal">Orthtree::Node<sp/>child<sp/>=<sp/>root[0];</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_leaf<sp/>=<sp/>child.is_leaf();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Orthtree::Node::const_iterator<sp/>it<sp/>=<sp/>child.begin();<sp/>it<sp/>!=<sp/>child.end();<sp/>it++)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Orthtree_1a4ac2d10c702ee9ddc4284fb06b214e57" kindref="member">Orthtree::Point</ref><sp/>&amp;p<sp/>=<sp/>*it;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>...</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>CGAL 6.0 node access is now: <programlisting filename=".cpp"><codeline><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point_set<sp/>=<sp/><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3&lt;Point&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal">Point_set<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal">...</highlight></codeline>
+<codeline><highlight class="normal">Orthtree::Node_index<sp/>root<sp/>=<sp/>orthtree.root();</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Orthtree_1aa68903c2bac01150edfd9f781bc35b8c" kindref="member">Orthtree::Node_index</ref><sp/>child<sp/>=<sp/>orthtree.child(root,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_leaf<sp/>=<sp/>orthtree.is_leaf(child);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Octree::Traits::Node_data_element&amp;<sp/>e<sp/>:<sp/>octree.data(child))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Using<sp/>a<sp/>pointmap<sp/>is<sp/>necessary<sp/>when<sp/>using<sp/>a<sp/>Point_set_3.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point&amp;<sp/>p<sp/>=<sp/>points.<ref refid="classCGAL_1_1Point__set__3_1a5b5ba4bb7f08a4acfa4798a01f60506d" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">point</ref>(e);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>the<sp/>orthtree<sp/>is<sp/>used<sp/>with<sp/>a<sp/>std::vector&lt;Point&gt;,<sp/>Node_data_element<sp/>is<sp/>identical<sp/>to<sp/>Point.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Point&amp;<sp/>p<sp/>=<sp/>e;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>...</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The nearest neighbor search behaves as before, however, the output iterator will be required to store <computeroutput><ref refid="classCollectionPartitioningOrthtreeTraits_1abe7edf7a47f85ab85a337235b7eb01d6" kindref="member">CollectionPartitioningOrthtreeTraits::Node_data_element</ref></computeroutput>. This may be the actual point or, e.g., in case a <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">Point_set_3</ref></computeroutput> is used, an index which requires the use of a point map to retrieve the point.</para>
+<para>The provided traversals, i.e., <computeroutput><ref refid="structCGAL_1_1Orthtrees_1_1Leaves__traversal" kindref="compound">CGAL::Orthtrees::Leaves_traversal</ref></computeroutput>, <computeroutput><ref refid="structCGAL_1_1Orthtrees_1_1Preorder__traversal" kindref="compound">CGAL::Orthtrees::Preorder_traversal</ref></computeroutput>, <computeroutput><ref refid="structCGAL_1_1Orthtrees_1_1Postorder__traversal" kindref="compound">CGAL::Orthtrees::Postorder_traversal</ref></computeroutput>, require the orthtree as template parameter now.</para>
+<para>Former traversal use was as follows: <programlisting filename=".cpp"><codeline><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(Orthtree::Node<sp/>node<sp/>:<sp/>orthtree.traverse&lt;<ref refid="structCGAL_1_1Orthtrees_1_1Leaves__traversal" kindref="compound">CGAL::Orthtrees::Leaves_traversal</ref>&gt;())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>...</highlight></codeline>
+</programlisting></para>
+<para>CGAL 6.0 traversal use is now: <programlisting filename=".cpp"><codeline><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<ref refid="classCGAL_1_1Orthtree_1aa68903c2bac01150edfd9f781bc35b8c" kindref="member">Orthtree::Node_index</ref><sp/>node<sp/>:<sp/>orthtree.traverse&lt;<ref refid="structCGAL_1_1Orthtrees_1_1Leaves__traversal" kindref="compound">CGAL::Orthtrees::Leaves_traversal&lt;Orthtree&gt;</ref>&gt;())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>...</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1Section_Orthtree_History">
+<title>History</title>
+<para>A prototype code was implemented by Pierre Alliez and improved by Tong Zhao and Cédric Portaneri. From this prototype code, the package was developed by Jackson Campolattaro as part of the Google Summer of Code 2020. Simon Giraudot, supervisor of the GSoC internship, completed and finalized the package for integration in <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">CGAL</ref> 5.3. Pierre Alliez provided kind help and advice all the way through. Starting with <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">CGAL</ref> 6.0 an API improvement of the <ref refid="classCGAL_1_1Orthtree" kindref="compound">Orthtree</ref> package was released. Most notably, the orthtree nodes do not need to store anything. Data to be stored by the node are managed through a mechanism of dynamic properties. This improvement was done by Jackson Campolattaro thanks to a funding provided by INRIA, together with GeometryFactory. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Orthtree.txt"/>
+  </compounddef>
+</doxygen>

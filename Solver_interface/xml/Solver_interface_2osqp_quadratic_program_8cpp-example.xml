@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="Solver_interface_2osqp_quadratic_program_8cpp-example" kind="example">
+    <compoundname>Solver_interface/osqp_quadratic_program.cpp</compoundname>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><programlisting filename="Solver_interface/osqp_quadratic_program.cpp"><codeline><highlight class="comment">/*</highlight></codeline>
+<codeline><highlight class="comment">*<sp/>This<sp/>example<sp/>shows<sp/>how<sp/>to<sp/>formulate<sp/>and<sp/>solve<sp/>the<sp/>following<sp/>QP<sp/>problem:</highlight></codeline>
+<codeline><highlight class="comment">*<sp/>https://osqp.org/docs/examples/setup-and-solve.html</highlight></codeline>
+<codeline><highlight class="comment">*</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/>Minimize</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/>Objective:</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>1/2(4x1^2<sp/>+<sp/>2x1x2<sp/>+<sp/>2x2^2)<sp/>+<sp/>(x1<sp/>+<sp/>x2)<sp/>+<sp/>0<sp/>or<sp/>in<sp/>the<sp/>matrix<sp/>form</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>1/2<sp/>x^T|4<sp/>1|x<sp/>+<sp/>|1|^Tx<sp/>+<sp/>0</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>|1<sp/>2|<sp/><sp/><sp/><sp/>|1|</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/>Subject<sp/>to</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>1<sp/>&lt;=<sp/>x1<sp/>+<sp/>x2<sp/>&lt;=<sp/>1</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>0<sp/>&lt;=<sp/>x1<sp/><sp/><sp/><sp/><sp/><sp/>&lt;=<sp/>0.7</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>0<sp/>&lt;=<sp/><sp/><sp/><sp/><sp/><sp/>x2<sp/>&lt;=<sp/>0.7<sp/>or<sp/>in<sp/>the<sp/>matrix<sp/>form</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>|1|<sp/><sp/><sp/><sp/>|1<sp/>1|<sp/><sp/><sp/><sp/><sp/>|1.0|</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>|0|<sp/>&lt;=<sp/>|1<sp/>0|x<sp/>&lt;=<sp/>|0.7|</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/><sp/><sp/>|0|<sp/><sp/><sp/><sp/>|0<sp/>1|<sp/><sp/><sp/><sp/><sp/>|0.7|</highlight></codeline>
+<codeline><highlight class="comment">*</highlight></codeline>
+<codeline><highlight class="comment">*<sp/><sp/><sp/>Expected<sp/>results:<sp/>x1<sp/>=<sp/>0.3;<sp/>x2<sp/>=<sp/>0.7;</highlight></codeline>
+<codeline><highlight class="comment">*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/OSQP_quadratic_program_traits.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref><sp/>=<sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/><ref refid="classKernel_1a55e83f5a9f8ca43588b02ae8256a8fbd" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::FT</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">void</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>n<sp/>=<sp/>2;<sp/></highlight><highlight class="comment">//<sp/>number<sp/>of<sp/>variables</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>m<sp/>=<sp/>3;<sp/></highlight><highlight class="comment">//<sp/>number<sp/>of<sp/>constraints</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1OSQP__quadratic__program__traits" kindref="compound">CGAL::OSQP_quadratic_program_traits&lt;FT&gt;</ref><sp/>osqp(n,<sp/>m);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_P(0,<sp/>0,<sp/>4);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_P(0,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_P(1,<sp/>1,<sp/>2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_q(0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_q(1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_r(0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_A(0,<sp/>0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_A(0,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_A(1,<sp/>0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_A(2,<sp/>1,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_l(0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_l(1,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_l(2,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_u(0,<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_u(1,<sp/>0.7);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.set_u(2,<sp/>0.7);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;FT&gt;<sp/>x;<sp/>x.reserve(2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>osqp.solve(std::back_inserter(x));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;solution<sp/>(x1<sp/>x2):<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>FT<sp/>value<sp/>:<sp/>x)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>value<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+    </detaileddescription>
+    <location file="examples.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,27 @@
+var classCGAL_1_1Segment__d =
+[
+    [ "LA", "classCGAL_1_1Segment__d.html#a3a87a622436556d8eb6850c88a2016c3", null ],
+    [ "Segment_d", "classCGAL_1_1Segment__d.html#a82462da31668b81e12e3acc57f162962", null ],
+    [ "Segment_d", "classCGAL_1_1Segment__d.html#aa548199d0c194a59af44805fd159efb7", null ],
+    [ "Segment_d", "classCGAL_1_1Segment__d.html#ad81bb8f75ee75811059f0f857ad6ab6c", null ],
+    [ "dimension", "classCGAL_1_1Segment__d.html#a9395dcf19178f328ce6bdfd8c31bdc4e", null ],
+    [ "direction", "classCGAL_1_1Segment__d.html#a592c61026beb357f54a8d372fa760717", null ],
+    [ "has_on", "classCGAL_1_1Segment__d.html#aa18af797886251e623c4671865b4df72", null ],
+    [ "is_degenerate", "classCGAL_1_1Segment__d.html#a40ec6b9372ceb0656cff1e2fa96bdaa1", null ],
+    [ "max", "classCGAL_1_1Segment__d.html#a9cb6637450f571e135115fbf2d90822c", null ],
+    [ "min", "classCGAL_1_1Segment__d.html#a21ef38b064bb2d9f5d19c29c53d1d336", null ],
+    [ "operator+", "classCGAL_1_1Segment__d.html#a32c167412710039467767622d3342d9d", null ],
+    [ "operator[]", "classCGAL_1_1Segment__d.html#a78898a209bcde4244694afc03d9cd8bc", null ],
+    [ "opposite", "classCGAL_1_1Segment__d.html#a4468ebb3a84f17636a327424375b1a40", null ],
+    [ "point", "classCGAL_1_1Segment__d.html#a7cc56863ce72e036818f0536259b594d", null ],
+    [ "source", "classCGAL_1_1Segment__d.html#a32e903b6ab29432c6949addc7f7c3db3", null ],
+    [ "squared_length", "classCGAL_1_1Segment__d.html#a71f91a59bf78d4fc2c1d24709de5adff", null ],
+    [ "supporting_line", "classCGAL_1_1Segment__d.html#a3c671122cbcfe27173347d60059d3d28", null ],
+    [ "target", "classCGAL_1_1Segment__d.html#a7ce235ec9ee255f6b8a8353f294a85e4", null ],
+    [ "transform", "classCGAL_1_1Segment__d.html#a106e3fd39345e972e81c23b76840716e", null ],
+    [ "vector", "classCGAL_1_1Segment__d.html#a8e250993721d80b1f832615e2a638970", null ],
+    [ "vertex", "classCGAL_1_1Segment__d.html#a6cc6d132dc6cc119793e8ceab124d83e", null ],
+    [ "common_endpoint", "classCGAL_1_1Segment__d.html#a0d38020369f56eb0a80c03c1b8a03439", null ],
+    [ "parallel", "classCGAL_1_1Segment__d.html#a120651370c9a329bfd48d4036723cf63", null ],
+    [ "weak_equality", "classCGAL_1_1Segment__d.html#a5d6573fa0986a07cae4b1be52af2d726", null ]
+];

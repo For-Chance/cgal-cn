@@ -1,0 +1,1033 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Surface_mesh_shortest_path"/><anchor id="index_1chaptersurfacemeshshortestpath"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Stephen Kiazyk, Sébastien Loriot, and Éric Colin de Verdière</para>
+</simplesect>
+This package provides an algorithm to compute geodesic shortest paths on a triangulated surface mesh.</para>
+<para><anchor id="index_1fig__Shortest_path_main"/> <image type="html" name="shortest_paths_overview.png"></image>
+ <image type="latex" name="shortest_paths_overview.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Shortest_path_main" kindref="member">fig__Shortest_path_main</ref> Shortest paths on a terrain using one source point represented by a green square. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<sect1 id="index_1Surface_mesh_shortest_pathIntroduction">
+<title>Introduction</title>
+<para>The motion planning of a robot across the surface of a 3-dimensional terrain is a typical application of the shortest path computation. Using a 2-dimensional approximation would fail to capture anything interesting about the terrain we are trying to cross, and would give a poor solution. The problem is often called the <emphasis>Discrete Geodesic Problem</emphasis>. Although the more general version of this problem, shortest paths in 3D in the presence of obstacles, is NP-Hard, when the motion is constrained to the 2D surface of an object it can be solved efficiently.</para>
+<para>The algorithm implemented in this package builds a data structure to efficiently answer queries of the following form: Given a triangulated surface mesh <formula id="2">$\cal{M}$</formula>, a set of source points <formula id="3">$S$</formula> on <formula id="2">$\cal{M}$</formula>, and a target point <formula id="4">$t$</formula> also on <formula id="2">$\cal{M}$</formula>, find a shortest path <formula id="5">$\lambda$</formula> between <formula id="4">$t$</formula> and any element in <formula id="6">$ S $</formula>, where <formula id="5">$\lambda$</formula> is constrained to the surface of <formula id="2">$\cal{M}$</formula>.</para>
+<para>The algorithm used is based on a paper by Xin and Wang <ref refid="citelist_1CITEREF_XinWang2009improvingchenandhan" kindref="member">[3]</ref>, a fast and practical algorithm for exact computation of geodesic shortest paths. It is an extension of earlier results by Chen and Han <ref refid="citelist_1CITEREF_ch-spp-96" kindref="member">[1]</ref> and Mitchell, Mount, and Papadimitriou <ref refid="citelist_1CITEREF_mmp-dgp-87" kindref="member">[2]</ref> .</para>
+<para>This package is related to the package <ref refid="packages_1PkgHeatMethod" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">The Heat Method</ref>. Both deal with geodesic distances. The geodesic shortest path package computes the exact shortest path between any two points on the surface. The heat method package computes for every vertex of a mesh an approximate distance to one or several source vertices.</para>
+</sect1>
+<sect1 id="index_1Surface_mesh_shortest_pathHowToUse">
+<title>User Interface Description</title>
+<sect2 id="index_1Surface_mesh_shortest_pathClass">
+<title>Surface Mesh Shortest Path Class</title>
+<para>The main class of this package is <computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">Surface_mesh_shortest_path</ref></computeroutput>. In the following we describe the typical workflow when using this class</para>
+<sect3 id="index_1Surface_mesh_shortest_pathClassInput">
+<title>Specifying the Input</title>
+<para>The shortest paths are computed on a triangulated surface mesh, represented by a model of the <computeroutput><ref refid="classFaceListGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceListGraph</ref></computeroutput> concept. There is no restriction on the genus, connectivity, or convexity of the input surface mesh.</para>
+<para>For efficiency reason, index property maps for vertices, halfedges and faces are internally used. For each simplex type the property map must provide an index between 0 and the number of simplices. We recommend to use the class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh</ref></computeroutput> as model of <computeroutput><ref refid="classFaceListGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceListGraph</ref></computeroutput>. If you use the class <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3</ref></computeroutput>, you should use it with the item class <computeroutput><ref refid="classCGAL_1_1Polyhedron__items__with__id__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::Polyhedron_items_with_id_3</ref></computeroutput>, for which default property maps are provided. This item class associates to each simplex an index that provides a <formula id="7">$O(1)$</formula> time access to the indices. Note that the initialization of the property maps requires a call to <computeroutput><ref refid="group__BGLGraphExternalIndices_1ga0660924a1aa87e8be5cccbc261e931c7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">set_halfedgeds_items_id()</ref></computeroutput>.</para>
+<para>The access to the embedding of each vertex is done using a point vertex property map associating to each vertex a 3D point. Defaults are provided for CGAL classes.</para>
+<para>If the traits class used holds some local state, it must also be passed to the class when constructing it (the default one provided does not).</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_shortest_pathClassSource">
+<title>Specifying the Source Points</title>
+<para>The set of source points for shortest path queries can be populated one by one or using a range. A source point can be specified using either a vertex of the input surface mesh or a face of the input surface mesh with some barycentric coordinates. Given a point <formula id="8">$p$</formula> that lies inside a triangle face <formula id="9">$(A,B,C)$</formula>, its barycentric coordinates are a weight triple <formula id="10">$(b_0,b_1,b_2)$</formula> such that <formula id="11">$p = b_0\cdot~A + b_1\cdot~B + b_2\cdot~C$</formula>, and <formula id="12">$b_0 + b_1 + b_2 = 1$</formula>.</para>
+<para>For convenience, a function <computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1aeef6cd8e8c10b5c8c3ebb0388664ff1a" kindref="member">Surface_mesh_shortest_path::locate()</ref></computeroutput> is provided to construct face locations from geometric inputs:<itemizedlist>
+<listitem><para>given a point <computeroutput>p</computeroutput> living in 3D space, this function computes the point closest to <computeroutput>p</computeroutput> on the surface, and returns the face containing this point, as well as its barycentric coordinates;</para>
+</listitem><listitem><para>given a ray <computeroutput>r</computeroutput> living in 3D space, this function computes the intersection of the ray with the surface, and (if an intersection exists) returns the face containing this point, as well as its barycentric coordinates;</para>
+</listitem></itemizedlist>
+</para>
+<para>Usage of this function is illustrated in the example <ref refid="Surface_mesh_shortest_path_2shortest_path_with_locate_8cpp-example" kindref="compound">Surface_mesh_shortest_path/shortest_path_with_locate.cpp</ref>.</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_shortest_pathClassBuild">
+<title>Building the Internal Sequence Tree</title>
+<para>A time consuming operation for shortest path queries consists in building an internal data structure used to make the queries. This data structure is called the <emphasis>sequence tree</emphasis>. It will be built automatically when the first shortest path query is done and will be reused for any subsequent query as long as the set of source points does not change. Each time the set of source points is changed the sequence tree needs to be rebuilt (if already built). Note that it can also be built manually by a call to <computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1a09ce4f3420206eca88e44a73677d18b6" kindref="member">Surface_mesh_shortest_path::build_sequence_tree()</ref></computeroutput>.</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_shortest_pathClassQueries">
+<title>Shortest Path Queries</title>
+<para>As for specifying the source points, the target point for a shortest path query can be specified using either a vertex of the input surface mesh or a face of the input surface mesh and some barycentric coordinates.</para>
+<para>There are three different kinds of query functions that can be called using the class <computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">Surface_mesh_shortest_path</ref></computeroutput>. Given a target point, all these functions compute the shortest path between that target point and the set of source points:</para>
+<para><itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1a4bb93883c11c9e5ecac86449d5bb4eac" kindref="member">Surface_mesh_shortest_path::shortest_distance_to_source_points()</ref></computeroutput> provides the closest source point to the target point together with the length of the shortest path.</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1a94e35adf196a1d2a9d1f5b8c679c8a8c" kindref="member">Surface_mesh_shortest_path::shortest_path_points_to_source_points()</ref></computeroutput> provides all the intersection points of the shortest path with the edges and vertices of the input surface mesh (including the source and the target point). This function is useful for visualization purposes.</para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1abae724fffbf4e53700180e73b9256e9d" kindref="member">Surface_mesh_shortest_path::shortest_path_sequence_to_source_points</ref></computeroutput> gives access to the complete sequence of simplices crossed by the shortest path using a visitor object model of the concept <computeroutput><ref refid="classSurfaceMeshShortestPathVisitor" kindref="compound">SurfaceMeshShortestPathVisitor</ref></computeroutput>.</para>
+</listitem></itemizedlist>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_shortest_pathClassMore">
+<title>Additional Convenience Functionalities</title>
+<para>Some convenience functions are provided to compute:<itemizedlist>
+<listitem><para>the point on the input surface mesh specified as a face of the input surface mesh and some barycentric coordinates.</para>
+</listitem><listitem><para>the closest point on the input surface mesh (specified as a face of the input surface mesh and some barycentric coordinates) to a given 3D point. Those function are using the class <computeroutput><ref refid="classCGAL_1_1AABB__tree" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/AABB_tree.tag">CGAL::AABB_tree</ref></computeroutput>.</para>
+</listitem></itemizedlist>
+</para>
+</sect3>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathKernelRecommendataions">
+<title>Kernel Recommendations</title>
+<para>In short, we recommend to use a CGAL kernel with exact predicates such as <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref></computeroutput>.</para>
+<para>If you need the constructions to be exact (for the shortest path point computation for example), you should use a kernel with exact constructions. Although the algorithm uses square root operations, it will also work on geometry kernels which do not support them by first converting the kernel&apos;s number type to <computeroutput>double</computeroutput>, using the <computeroutput>std::sqrt</computeroutput>, and converting it back. Note that it would be preferable to use a kernel with directly supports square roots to get the most precision of the shortest path computations.</para>
+<para>Using a kernel such as <computeroutput><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel__with__sqrt" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_exact_constructions_kernel_with_sqrt</ref></computeroutput> with this package will indeed provide the exact shortest paths, but it will be extremely slow. Indeed, in order to compute the distance along the surface, it is necessary to unfold sequences of faces, edge-to-edge, out into a common plane. The functor <computeroutput><ref refid="classSurfaceMeshShortestPathTraits_1ab8504388037d732997ac864ef270ec94" kindref="member">SurfaceMeshShortestPathTraits::Construct_triangle_3_to_triangle_2_projection</ref></computeroutput> provides an initial layout of the first face in a sequence, by rotating a given face into the <computeroutput>xy</computeroutput>-plane. <computeroutput><ref refid="classSurfaceMeshShortestPathTraits_1a5097cc568d60214389dbee34eac94f07" kindref="member">SurfaceMeshShortestPathTraits::Construct_triangle_3_along_segment_2_flattening</ref></computeroutput> unfolds a triangle into the plane, using a specified segment as a base. Since this results in a chain of constructed triangles in the plane, the exact representation types used with this kernel (either <computeroutput><ref refid="classCORE_1_1Expr" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CORE::Expr</ref></computeroutput> or <computeroutput><ref refid="classleda__real" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">leda_real</ref></computeroutput>) will process extremely slow, even on very simple inputs. This is because the exact representations will effectively add an <formula id="13">$O(n)$</formula> factor to every computation.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Surface_mesh_shortest_pathExamples">
+<title>Examples</title>
+<sect2 id="index_1Surface_mesh_shortest_pathSimpleExample">
+<title>Simple Example</title>
+<para>The following example shows how to get the shortest path to every vertex from an arbitrary source point on a surface. The shortest path class needs to have an index associated to each vertex, halfedge and face, which is naturally given for the class <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">Surface_mesh</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_shortest_path_2shortest_paths_8cpp-example" kindref="compound">Surface_mesh_shortest_path/shortest_paths.cpp</ref> <programlisting filename="Surface_mesh_shortest_path/shortest_paths.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Surface__mesh__shortest__path_8h" kindref="compound">CGAL/Surface_mesh_shortest_path.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/lexical_cast.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdlib&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path__traits" kindref="compound">CGAL::Surface_mesh_shortest_path_traits&lt;Kernel, Triangle_mesh&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">CGAL::Surface_mesh_shortest_path&lt;Traits&gt;</ref><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">Surface_mesh_shortest_path</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;<sp/>Graph_traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::vertex_iterator<sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::face_iterator<sp/>face_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>tmesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>pick<sp/>up<sp/>a<sp/>random<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>randSeed<sp/>=<sp/>argc<sp/>&gt;<sp/>2<sp/>?<sp/>boost::lexical_cast&lt;unsigned<sp/>int&gt;(argv[2])<sp/>:<sp/>7915421;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>rand(randSeed);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>target_face_index<sp/>=<sp/>rand.get_int(0,<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(num_faces(tmesh)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_iterator<sp/>face_it<sp/>=<sp/>faces(tmesh).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::advance(face_it,target_face_index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>and<sp/>define<sp/>a<sp/>barycentric<sp/>coordinates<sp/>inside<sp/>the<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits::Barycentric_coordinates<sp/>face_location<sp/>=<sp/>{{0.25,<sp/>0.5,<sp/>0.25}};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>a<sp/>shortest<sp/>path<sp/>query<sp/>object<sp/>and<sp/>add<sp/>a<sp/>source<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_shortest_path<sp/>shortest_paths(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shortest_paths.add_source_point(*face_it,<sp/>face_location);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>For<sp/>all<sp/>vertices<sp/>in<sp/>the<sp/>tmesh,<sp/>compute<sp/>the<sp/>points<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>shortest<sp/>path<sp/>to<sp/>the<sp/>source<sp/>point<sp/>and<sp/>write<sp/>them</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>into<sp/>a<sp/>file<sp/>readable<sp/>using<sp/>CGAL<sp/>Lab</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;shortest_paths_with_id.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vit,<sp/>vit_end;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<sp/>boost::tie(vit,<sp/>vit_end)<sp/>=<sp/>vertices(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>vit_end;<sp/>++vit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;Traits::Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>shortest_paths.shortest_path_points_to_source_points(*vit,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>print<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>points.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points[i];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathExampleWithId">
+<title>Example Using Polyhedron_3</title>
+<para>The following example shows how to get the shortest path to every vertex from an arbitrary source point on the surface. Note that this example uses the <computeroutput><ref refid="classCGAL_1_1Polyhedron__items__with__id__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Polyhedron_items_with_id_3</ref></computeroutput> item class. The shortest path class needs to have an index associated to each vertex, halfedge and face. Using this item class provide an efficient direct access to the required indices.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_shortest_path_2shortest_paths_with_id_8cpp-example" kindref="compound">Surface_mesh_shortest_path/shortest_paths_with_id.cpp</ref> <programlisting filename="Surface_mesh_shortest_path/shortest_paths_with_id.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_items_with_id_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Surface__mesh__shortest__path_8h" kindref="compound">CGAL/Surface_mesh_shortest_path.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/lexical_cast.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdlib&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel, CGAL::Polyhedron_items_with_id_3&gt;</ref><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path__traits" kindref="compound">CGAL::Surface_mesh_shortest_path_traits&lt;Kernel, Triangle_mesh&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">CGAL::Surface_mesh_shortest_path&lt;Traits&gt;</ref><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">Surface_mesh_shortest_path</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;<sp/>Graph_traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::vertex_iterator<sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::face_iterator<sp/>face_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>input<sp/>polyhedron</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>initialize<sp/>indices<sp/>of<sp/>vertices,<sp/>halfedges<sp/>and<sp/>faces</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__BGLGraphExternalIndices_1ga0660924a1aa87e8be5cccbc261e931c7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::set_halfedgeds_items_id</ref>(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>pick<sp/>up<sp/>a<sp/>random<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>randSeed<sp/>=<sp/>argc<sp/>&gt;<sp/>2<sp/>?<sp/>boost::lexical_cast&lt;unsigned<sp/>int&gt;(argv[2])<sp/>:<sp/>7915421;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>rand(randSeed);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>target_face_index<sp/>=<sp/>rand.get_int(0,<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(num_faces(tmesh)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_iterator<sp/>face_it<sp/>=<sp/>faces(tmesh).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::advance(face_it,target_face_index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>and<sp/>define<sp/>a<sp/>barycentric<sp/>coordinates<sp/>inside<sp/>the<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits::Barycentric_coordinates<sp/>face_location<sp/>=<sp/>{{0.25,<sp/>0.5,<sp/>0.25}};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>a<sp/>shortest<sp/>path<sp/>query<sp/>object<sp/>and<sp/>add<sp/>a<sp/>source<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_shortest_path<sp/>shortest_paths(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shortest_paths.add_source_point(*face_it,<sp/>face_location);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>For<sp/>all<sp/>vertices<sp/>in<sp/>the<sp/>tmesh,<sp/>compute<sp/>the<sp/>points<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>shortest<sp/>path<sp/>to<sp/>the<sp/>source<sp/>point<sp/>and<sp/>write<sp/>them</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>into<sp/>a<sp/>file<sp/>readable<sp/>using<sp/>CGAL<sp/>Lab</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;shortest_paths_with_id.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vit,<sp/>vit_end;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<sp/>boost::tie(vit,<sp/>vit_end)<sp/>=<sp/>vertices(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>vit_end;<sp/>++vit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;Traits::Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>shortest_paths.shortest_path_points_to_source_points(*vit,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>print<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>points.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points[i];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathExampeWithoutId">
+<title>Example Using Polyhedron Items without IDs</title>
+<para>Although it is better to have an index built into each simplex, you can also use a surface mesh without internal indices by using external indices. The following example shows how to proceed in this case.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_shortest_path_2shortest_paths_no_id_8cpp-example" kindref="compound">Surface_mesh_shortest_path/shortest_paths_no_id.cpp</ref> <programlisting filename="Surface_mesh_shortest_path/shortest_paths_no_id.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Surface__mesh__shortest__path_8h" kindref="compound">CGAL/Surface_mesh_shortest_path.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/lexical_cast.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdlib&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path__traits" kindref="compound">CGAL::Surface_mesh_shortest_path_traits&lt;Kernel, Triangle_mesh&gt;</ref><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>default<sp/>property<sp/>maps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::property_map&lt;Triangle_mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::vertex_external_index_t&gt;::const_type<sp/><sp/><sp/>Vertex_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::property_map&lt;Triangle_mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::halfedge_external_index_t&gt;::const_type<sp/><sp/>Halfedge_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::property_map&lt;Triangle_mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::face_external_index_t&gt;::const_type<sp/><sp/><sp/><sp/><sp/><sp/>Face_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">CGAL::Surface_mesh_shortest_path</ref>&lt;Traits,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_index_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Halfedge_index_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Face_index_map&gt;<sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">Surface_mesh_shortest_path</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;<sp/>Graph_traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::vertex_iterator<sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::halfedge_iterator<sp/>halfedge_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::face_iterator<sp/>face_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input((argc&gt;1)?argv[1]:<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>pick<sp/>up<sp/>a<sp/>random<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>randSeed<sp/>=<sp/>argc<sp/>&gt;<sp/>2<sp/>?<sp/>boost::lexical_cast&lt;unsigned<sp/>int&gt;(argv[2])<sp/>:<sp/>7915421;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>rand(randSeed);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>target_face_index<sp/>=<sp/>rand.get_int(0,<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(num_faces(tmesh)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_iterator<sp/>face_it<sp/>=<sp/>faces(tmesh).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::advance(face_it,target_face_index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>and<sp/>define<sp/>a<sp/>barycentric<sp/>coordinates<sp/>inside<sp/>the<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits::Barycentric_coordinates<sp/>face_location<sp/>=<sp/>{{0.25,<sp/>0.5,<sp/>0.25}};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>a<sp/>shortest<sp/>path<sp/>query<sp/>object<sp/>and<sp/>add<sp/>a<sp/>source<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Note<sp/>that<sp/>the<sp/>external<sp/>index<sp/>property<sp/>map<sp/>are<sp/>automatically<sp/>initialized</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_shortest_path<sp/>shortest_paths(tmesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get(boost::vertex_external_index,<sp/>tmesh),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get(CGAL::halfedge_external_index,<sp/>tmesh),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get(CGAL::face_external_index,<sp/>tmesh),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get(CGAL::vertex_point,<sp/>tmesh));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shortest_paths.add_source_point(*face_it,<sp/>face_location);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>For<sp/>all<sp/>vertices<sp/>in<sp/>the<sp/>tmesh,<sp/>compute<sp/>the<sp/>points<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>shortest<sp/>path<sp/>to<sp/>the<sp/>source<sp/>point<sp/>and<sp/>write<sp/>them</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>into<sp/>a<sp/>file<sp/>readable<sp/>using<sp/>CGAL<sp/>Lab</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;shortest_paths_no_id.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vit,<sp/>vit_end;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<sp/>boost::tie(vit,<sp/>vit_end)<sp/>=<sp/>vertices(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>vit_end;<sp/>++vit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;Traits::Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>shortest_paths.shortest_path_points_to_source_points(*vit,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>print<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>points.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points[i];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathMultipleSources">
+<title>Using Multiple Source Points</title>
+<para>This example shows how to compute the sequence tree from multiple source points, using an iterator range of <computeroutput><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1a3aa5578369b10a5054ebfaf3bed9e5d0" kindref="member">Surface_mesh_shortest_path::Face_location</ref></computeroutput> objects generated at random.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_shortest_path_2shortest_paths_multiple_sources_8cpp-example" kindref="compound">Surface_mesh_shortest_path/shortest_paths_multiple_sources.cpp</ref> <programlisting filename="Surface_mesh_shortest_path/shortest_paths_multiple_sources.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Surface__mesh__shortest__path_8h" kindref="compound">CGAL/Surface_mesh_shortest_path.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/lexical_cast.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdlib&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path__traits" kindref="compound">CGAL::Surface_mesh_shortest_path_traits&lt;Kernel, Triangle_mesh&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">CGAL::Surface_mesh_shortest_path&lt;Traits&gt;</ref><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">Surface_mesh_shortest_path</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1a3aa5578369b10a5054ebfaf3bed9e5d0" kindref="member">Surface_mesh_shortest_path::Face_location</ref><sp/>Face_location;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;<sp/>Graph_traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::vertex_iterator<sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::face_iterator<sp/>face_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::face_descriptor<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>tmesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>pick<sp/>up<sp/>some<sp/>source<sp/>points<sp/>inside<sp/>faces,</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>randSeed<sp/>=<sp/>argc<sp/>&gt;<sp/>2<sp/>?<sp/>boost::lexical_cast&lt;unsigned<sp/>int&gt;(argv[2])<sp/>:<sp/>7915421;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>rand(randSeed);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>by<sp/>copying<sp/>the<sp/>faces<sp/>in<sp/>a<sp/>vector<sp/>to<sp/>get<sp/>a<sp/>direct<sp/>access<sp/>to<sp/>faces</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>nb_faces=num_faces(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_iterator<sp/>fit,<sp/>fit_end;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::tie(fit,<sp/>fit_end)<sp/>=<sp/>faces(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;face_descriptor&gt;<sp/>face_vector(fit,<sp/>fit_end);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>and<sp/>creating<sp/>a<sp/>vector<sp/>of<sp/>Face_location<sp/>objects</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>nb_source_points<sp/>=<sp/>30;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Traits::Barycentric_coordinates<sp/>face_location<sp/>=<sp/>{{0.25,<sp/>0.5,<sp/>0.25}};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Face_location&gt;<sp/>faceLocations(nb_source_points,<sp/>Face_location(face_descriptor(),<sp/>face_location));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>nb_source_points;<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>faceLocations[i].first=face_vector[rand.get_int(0,<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(nb_faces))];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>a<sp/>shortest<sp/>path<sp/>query<sp/>object<sp/>and<sp/>add<sp/>a<sp/>range<sp/>of<sp/>source<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_shortest_path<sp/>shortest_paths(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shortest_paths.add_source_points(faceLocations.begin(),<sp/>faceLocations.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>For<sp/>all<sp/>vertices<sp/>in<sp/>the<sp/>tmesh,<sp/>compute<sp/>the<sp/>points<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>shortest<sp/>path<sp/>to<sp/>the<sp/>source<sp/>point<sp/>and<sp/>write<sp/>them</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>into<sp/>a<sp/>file<sp/>readable<sp/>using<sp/>the<sp/>CGAL<sp/>Tmesh<sp/>demo</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;shortest_paths_multiple_sources.polylines.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vit,<sp/>vit_end;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(<sp/>boost::tie(vit,<sp/>vit_end)<sp/>=<sp/>vertices(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vit<sp/>!=<sp/>vit_end;<sp/>++vit)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;Traits::Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>shortest_paths.shortest_path_points_to_source_points(*vit,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>print<sp/>the<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>points.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>points[i];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>output<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathSequenceVisitor">
+<title>Shortest Path Sequence Visitor</title>
+<para>This example shows how to implement a model of the <computeroutput><ref refid="classSurfaceMeshShortestPathVisitor" kindref="compound">SurfaceMeshShortestPathVisitor</ref></computeroutput> concept to get detailed information about the sequence of simplicies crossed by a shortest path.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_shortest_path_2shortest_path_sequence_8cpp-example" kindref="compound">Surface_mesh_shortest_path/shortest_path_sequence.cpp</ref> <programlisting filename="Surface_mesh_shortest_path/shortest_path_sequence.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;<ref refid="Surface__mesh__shortest__path_8h" kindref="compound">CGAL/Surface_mesh_shortest_path.h</ref>&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;variant&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/lexical_cast.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cstdlib&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Kernel::Point_3&gt;</ref><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path__traits" kindref="compound">CGAL::Surface_mesh_shortest_path_traits&lt;Kernel, Triangle_mesh&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">CGAL::Surface_mesh_shortest_path&lt;Traits&gt;</ref><sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path" kindref="compound">Surface_mesh_shortest_path</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Traits::Barycentric_coordinates<sp/>Barycentric_coordinates;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;<sp/>Graph_traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::vertex_iterator<sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::face_iterator<sp/>face_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::face_descriptor<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Graph_traits::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>A<sp/>model<sp/>of<sp/>SurfacemeshShortestPathVisitor<sp/>storing<sp/>simplicies</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>using<sp/>std::variant</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Sequence_collector</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::variant&lt;<sp/>vertex_descriptor,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::pair&lt;halfedge_descriptor,double&gt;,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::pair&lt;face_descriptor,<sp/>Barycentric_coordinates&gt;<sp/>&gt;<sp/>Simplex;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;<sp/>Simplex<sp/>&gt;<sp/>sequence;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(halfedge_descriptor<sp/>he,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>alpha)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sequence.push_back(std::make_pair(he,<sp/>alpha));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(vertex_descriptor<sp/>v)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sequence.push_back(v);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(face_descriptor<sp/>f,<sp/>Barycentric_coordinates<sp/>alpha)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sequence.push_back(std::make_pair(f,<sp/>alpha));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>A<sp/>visitor<sp/>to<sp/>print<sp/>what<sp/>a<sp/>variant<sp/>contains<sp/>using<sp/>std::visit</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Print_visitor</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh&amp;<sp/>g;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Print_visitor(Triangle_mesh&amp;<sp/>g)<sp/>:i(-1),<sp/>g(g)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(vertex_descriptor<sp/>v)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>++i<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Vertex:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(boost::vertex_index,<sp/>g)[v];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Position:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>Surface_mesh_shortest_path::point(v,<sp/>g)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::pair&lt;halfedge_descriptor,double&gt;&amp;<sp/>h_a)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>++i<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Edge:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(CGAL::halfedge_index,<sp/>g)[h_a.first]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>,<sp/>(&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>1.0<sp/>-<sp/>h_a.second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>,<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>h_a.second<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Position:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>Surface_mesh_shortest_path::point(h_a.first,<sp/>h_a.second,<sp/>g)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::pair&lt;face_descriptor,<sp/>Barycentric_coordinates&gt;&amp;<sp/>f_bc)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;#&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>++i<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Face:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(CGAL::face_index,<sp/>g)[f_bc.first]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>,<sp/>(&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>f_bc.second[0]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>,<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>f_bc.second[1]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>,<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>f_bc.second[2]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>Position:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>Surface_mesh_shortest_path::point(f_bc.first,<sp/>f_bc.second,<sp/>g)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc&gt;1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tmesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>tmesh)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tmesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>pick<sp/>up<sp/>a<sp/>random<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">unsigned</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>randSeed<sp/>=<sp/>argc<sp/>&gt;<sp/>2<sp/>?<sp/>boost::lexical_cast&lt;unsigned<sp/>int&gt;(argv[2])<sp/>:<sp/>7915421;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>rand(randSeed);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>target_face_index<sp/>=<sp/>rand.get_int(0,<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(num_faces(tmesh)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_iterator<sp/>face_it<sp/>=<sp/>faces(tmesh).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::advance(face_it,target_face_index);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>and<sp/>define<sp/>a<sp/>barycentric<sp/>coordinates<sp/>inside<sp/>the<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Barycentric_coordinates<sp/>face_location<sp/>=<sp/>{{0.25,<sp/>0.5,<sp/>0.25}};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>construct<sp/>a<sp/>shortest<sp/>path<sp/>query<sp/>object<sp/>and<sp/>add<sp/>a<sp/>source<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_shortest_path<sp/>shortest_paths(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Add<sp/>source:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1a5414e54d0df418a0d7f00c4650995031" kindref="member">Surface_mesh_shortest_path::point</ref>(*face_it,<sp/>face_location,<sp/>tmesh)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shortest_paths.add_source_point(*face_it,<sp/>face_location);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>pick<sp/>a<sp/>random<sp/>target<sp/>point<sp/>inside<sp/>a<sp/>face</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_it<sp/>=<sp/>faces(tmesh).first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::advance(face_it,<sp/>rand.get_int(0,<sp/></highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(num_faces(tmesh))));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Target<sp/>is:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/><ref refid="classCGAL_1_1Surface__mesh__shortest__path_1a5414e54d0df418a0d7f00c4650995031" kindref="member">Surface_mesh_shortest_path::point</ref>(*face_it,<sp/>face_location,<sp/>tmesh)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>collect<sp/>the<sp/>sequence<sp/>of<sp/>simplicies<sp/>crossed<sp/>by<sp/>the<sp/>shortest<sp/>path</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Sequence_collector<sp/>sequence_collector;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>shortest_paths.shortest_path_sequence_to_source_points(*face_it,<sp/>face_location,<sp/>sequence_collector);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>print<sp/>the<sp/>sequence<sp/>using<sp/>the<sp/>visitor<sp/>pattern</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Print_visitor<sp/>print_visitor(tmesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">size_t</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>sequence_collector.sequence.size();<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::visit(print_visitor,<sp/>sequence_collector.sequence[i]);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><xrefsect id="todo_1_todo000002"><xreftitle>Todo</xreftitle><xrefdescription><para>add an example using the AABB-tree</para>
+</xrefdescription></xrefsect></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Surface_mesh_shortest_pathBenchmarks">
+<title>Benchmarks</title>
+<para>These benchmarks were run using randomly generated source and destination points over multiple trials. The measurements were executed using CGAL 4.5, under Cygwin 1.7.32, using the Gnu C++ compiler version 4.8.3 with options <computeroutput>-O3 -DNDEBUG</computeroutput>. The system used was a 64bit Intel Core i3 2.20GHz processor with 6GB of RAM</para>
+<sect2 id="index_1Surface_mesh_shortest_pathBenchmark1SourcePoint">
+<title>Single Source Point</title>
+<para><center> <table rows="20" cols="5"><row>
+<entry thead="yes"><para>Model   </para>
+</entry><entry thead="yes"><para>Number of Vertices   </para>
+</entry><entry thead="yes"><para>Average Construction Time (s)   </para>
+</entry><entry thead="yes"><para>Average Queries Per Second   </para>
+</entry><entry thead="yes"><para>Peak Memory Usage (MB)    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>ellipsoid.off   </para>
+</entry><entry thead="no"><para>162   </para>
+</entry><entry thead="no"><para>0.00258805   </para>
+</entry><entry thead="no"><para>1.21972e+06   </para>
+</entry><entry thead="no"><para>0.39548    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>anchor.off   </para>
+</entry><entry thead="no"><para>519   </para>
+</entry><entry thead="no"><para>0.0580262   </para>
+</entry><entry thead="no"><para>230461   </para>
+</entry><entry thead="no"><para>3.88799    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>rotor.off   </para>
+</entry><entry thead="no"><para>600   </para>
+</entry><entry thead="no"><para>0.0386633   </para>
+</entry><entry thead="no"><para>326175   </para>
+</entry><entry thead="no"><para>3.10571    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>spool.off   </para>
+</entry><entry thead="no"><para>649   </para>
+</entry><entry thead="no"><para>0.0418305   </para>
+</entry><entry thead="no"><para>299766   </para>
+</entry><entry thead="no"><para>3.75773    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>handle.off   </para>
+</entry><entry thead="no"><para>1165   </para>
+</entry><entry thead="no"><para>0.0976167   </para>
+</entry><entry thead="no"><para>227343   </para>
+</entry><entry thead="no"><para>7.66706    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>couplingdown.off   </para>
+</entry><entry thead="no"><para>1841   </para>
+</entry><entry thead="no"><para>0.138467   </para>
+</entry><entry thead="no"><para>246833   </para>
+</entry><entry thead="no"><para>10.1731    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>bones.off   </para>
+</entry><entry thead="no"><para>2154   </para>
+</entry><entry thead="no"><para>0.0101125   </para>
+</entry><entry thead="no"><para>1.31834e+06   </para>
+</entry><entry thead="no"><para>0.865896    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>mushroom.off   </para>
+</entry><entry thead="no"><para>2337   </para>
+</entry><entry thead="no"><para>0.206034   </para>
+</entry><entry thead="no"><para>202582   </para>
+</entry><entry thead="no"><para>22.5804    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>elephant.off   </para>
+</entry><entry thead="no"><para>2775   </para>
+</entry><entry thead="no"><para>0.136177   </para>
+</entry><entry thead="no"><para>313785   </para>
+</entry><entry thead="no"><para>14.0987    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>cow.off   </para>
+</entry><entry thead="no"><para>2904   </para>
+</entry><entry thead="no"><para>0.259104   </para>
+</entry><entry thead="no"><para>206515   </para>
+</entry><entry thead="no"><para>17.4796    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>knot1.off   </para>
+</entry><entry thead="no"><para>3200   </para>
+</entry><entry thead="no"><para>0.279455   </para>
+</entry><entry thead="no"><para>207084   </para>
+</entry><entry thead="no"><para>25.314    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>retinal.off   </para>
+</entry><entry thead="no"><para>3643   </para>
+</entry><entry thead="no"><para>0.255788   </para>
+</entry><entry thead="no"><para>247617   </para>
+</entry><entry thead="no"><para>29.8031    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>femur.off   </para>
+</entry><entry thead="no"><para>3897   </para>
+</entry><entry thead="no"><para>0.25332   </para>
+</entry><entry thead="no"><para>264825   </para>
+</entry><entry thead="no"><para>21.4806    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>knot2.off   </para>
+</entry><entry thead="no"><para>5760   </para>
+</entry><entry thead="no"><para>0.295655   </para>
+</entry><entry thead="no"><para>309593   </para>
+</entry><entry thead="no"><para>22.5549    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>bull.off   </para>
+</entry><entry thead="no"><para>6200   </para>
+</entry><entry thead="no"><para>0.513506   </para>
+</entry><entry thead="no"><para>209994   </para>
+</entry><entry thead="no"><para>34.983    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>fandisk.off   </para>
+</entry><entry thead="no"><para>6475   </para>
+</entry><entry thead="no"><para>0.609507   </para>
+</entry><entry thead="no"><para>198768   </para>
+</entry><entry thead="no"><para>71.3617    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>lion-head.off   </para>
+</entry><entry thead="no"><para>8356   </para>
+</entry><entry thead="no"><para>1.23863   </para>
+</entry><entry thead="no"><para>145810   </para>
+</entry><entry thead="no"><para>86.6908    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>turbine.off   </para>
+</entry><entry thead="no"><para>9210   </para>
+</entry><entry thead="no"><para>2.23755   </para>
+</entry><entry thead="no"><para>93079.5   </para>
+</entry><entry thead="no"><para>172.072    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>man.off   </para>
+</entry><entry thead="no"><para>17495   </para>
+</entry><entry thead="no"><para>1.59015   </para>
+</entry><entry thead="no"><para>187519   </para>
+</entry><entry thead="no"><para>148.358   </para>
+</entry></row>
+</table>
+</center></para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathBenchmark10SourcePoints">
+<title>Ten Source Points</title>
+<para><center> <table rows="20" cols="5"><row>
+<entry thead="yes"><para>Model   </para>
+</entry><entry thead="yes"><para>Number of Vertices   </para>
+</entry><entry thead="yes"><para>Average Construction Time (s)   </para>
+</entry><entry thead="yes"><para>Average Queries Per Second   </para>
+</entry><entry thead="yes"><para>Peak Memory Usage (MB)    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>ellipsoid.off   </para>
+</entry><entry thead="no"><para>162   </para>
+</entry><entry thead="no"><para>0.00321017   </para>
+</entry><entry thead="no"><para>911025   </para>
+</entry><entry thead="no"><para>0.245674    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>anchor.off   </para>
+</entry><entry thead="no"><para>519   </para>
+</entry><entry thead="no"><para>0.03601   </para>
+</entry><entry thead="no"><para>353062   </para>
+</entry><entry thead="no"><para>3.19274    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>rotor.off   </para>
+</entry><entry thead="no"><para>600   </para>
+</entry><entry thead="no"><para>0.015864   </para>
+</entry><entry thead="no"><para>805416   </para>
+</entry><entry thead="no"><para>1.97554    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>spool.off   </para>
+</entry><entry thead="no"><para>649   </para>
+</entry><entry thead="no"><para>0.0165743   </para>
+</entry><entry thead="no"><para>802701   </para>
+</entry><entry thead="no"><para>2.09675    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>handle.off   </para>
+</entry><entry thead="no"><para>1165   </para>
+</entry><entry thead="no"><para>0.0294564   </para>
+</entry><entry thead="no"><para>646057   </para>
+</entry><entry thead="no"><para>4.62122    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>couplingdown.off   </para>
+</entry><entry thead="no"><para>1841   </para>
+</entry><entry thead="no"><para>0.126045   </para>
+</entry><entry thead="no"><para>272465   </para>
+</entry><entry thead="no"><para>7.80517    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>bones.off   </para>
+</entry><entry thead="no"><para>2154   </para>
+</entry><entry thead="no"><para>0.055434   </para>
+</entry><entry thead="no"><para>536646   </para>
+</entry><entry thead="no"><para>4.0203    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>mushroom.off   </para>
+</entry><entry thead="no"><para>2337   </para>
+</entry><entry thead="no"><para>0.139285   </para>
+</entry><entry thead="no"><para>290425   </para>
+</entry><entry thead="no"><para>11.462    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>elephant.off   </para>
+</entry><entry thead="no"><para>2775   </para>
+</entry><entry thead="no"><para>0.167269   </para>
+</entry><entry thead="no"><para>285076   </para>
+</entry><entry thead="no"><para>11.2743    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>cow.off   </para>
+</entry><entry thead="no"><para>2904   </para>
+</entry><entry thead="no"><para>0.15432   </para>
+</entry><entry thead="no"><para>328549   </para>
+</entry><entry thead="no"><para>13.0676    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>knot1.off   </para>
+</entry><entry thead="no"><para>3200   </para>
+</entry><entry thead="no"><para>0.114051   </para>
+</entry><entry thead="no"><para>454640   </para>
+</entry><entry thead="no"><para>16.1735    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>retinal.off   </para>
+</entry><entry thead="no"><para>3643   </para>
+</entry><entry thead="no"><para>0.233208   </para>
+</entry><entry thead="no"><para>287869   </para>
+</entry><entry thead="no"><para>18.6274    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>femur.off   </para>
+</entry><entry thead="no"><para>3897   </para>
+</entry><entry thead="no"><para>0.128097   </para>
+</entry><entry thead="no"><para>457112   </para>
+</entry><entry thead="no"><para>16.8295    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>knot2.off   </para>
+</entry><entry thead="no"><para>5760   </para>
+</entry><entry thead="no"><para>0.413548   </para>
+</entry><entry thead="no"><para>260195   </para>
+</entry><entry thead="no"><para>33.484    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>bull.off   </para>
+</entry><entry thead="no"><para>6200   </para>
+</entry><entry thead="no"><para>0.371713   </para>
+</entry><entry thead="no"><para>297560   </para>
+</entry><entry thead="no"><para>30.522    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>fandisk.off   </para>
+</entry><entry thead="no"><para>6475   </para>
+</entry><entry thead="no"><para>0.545929   </para>
+</entry><entry thead="no"><para>223865   </para>
+</entry><entry thead="no"><para>39.5607    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>lion-head.off   </para>
+</entry><entry thead="no"><para>8356   </para>
+</entry><entry thead="no"><para>0.70097   </para>
+</entry><entry thead="no"><para>229449   </para>
+</entry><entry thead="no"><para>59.6597    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>turbine.off   </para>
+</entry><entry thead="no"><para>9210   </para>
+</entry><entry thead="no"><para>1.35703   </para>
+</entry><entry thead="no"><para>157301   </para>
+</entry><entry thead="no"><para>90.7139    </para>
+</entry></row>
+<row>
+<entry thead="no"><para>man.off   </para>
+</entry><entry thead="no"><para>17495   </para>
+</entry><entry thead="no"><para>1.75936   </para>
+</entry><entry thead="no"><para>185194   </para>
+</entry><entry thead="no"><para>122.541   </para>
+</entry></row>
+</table>
+</center></para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathQueryComparison">
+<title>Comparison of Construction and Query Times with Multiple Source Points</title>
+<para>The following figures track the construction time, query time, and peak memory usage for the various test models as the number of source points increases. Notice that none of the values increases significantly as the number of source points increases. In fact, in most cases, the running time and memory go down. This is because a larger number of source points tends to result in a more flat sequence tree, which translates to reduced runtime and memory costs.</para>
+<para><anchor id="index_1fig__Benchmark_construction"/> <image type="html" name="benchmark_plot_construction.png"></image>
+ <image type="latex" name="benchmark_plot_construction.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Benchmark_construction" kindref="member">fig__Benchmark_construction</ref> Plot of construction times against different numbers of source points. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__Benchmark_query"/> <image type="html" name="benchmark_plot_query.png"></image>
+ <image type="latex" name="benchmark_plot_query.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Benchmark_query" kindref="member">fig__Benchmark_query</ref> Plot of query times against different numbers of source points. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__Benchmark_memory"/> <image type="html" name="benchmark_plot_memory.png"></image>
+ <image type="latex" name="benchmark_plot_memory.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Benchmark_memory" kindref="member">fig__Benchmark_memory</ref> Plot of peak memory usage against different numbers of source points. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Surface_mesh_shortest_pathTheory">
+<title>Implementation Details</title>
+<sect2 id="index_1Surface_mesh_shortest_pathDefinitions">
+<title>Definitions</title>
+<sect3 id="index_1Surface_mesh_shortest_pathGeodesics">
+<title>Geodesic Paths</title>
+<para>A <emphasis>geodesic</emphasis> curve is a <emphasis>locally shortest</emphasis> path on the surface of some manifold, that is, it cannot be made shorter by some local perturbations. On a surface mesh, this translates to a curve where, when the faces crossed by the curve are unfolded into the plane, the curve forms a straight line. Another way of describing it is that there is exactly <formula id="14">$\pi$</formula> surface angle to both sides at every point along the curve (except possibly at the curve&apos;s endpoints).</para>
+<para>A geodesic curve between two points is not necessarily a shortest path, but all shortest paths on surface meshes are formed by sequences of one or more geodesic paths, whose junction points are either vertices on the boundary of the mesh, or <ref refid="index_1Surface_mesh_shortest_pathSaddleVertex" kindref="member"><emphasis>saddle vertices</emphasis></ref>. We call such a curve on the surface of the mesh a <emphasis>potential shortest path</emphasis> between its two endpoints.</para>
+<para><anchor id="index_1fig__Geodesic_perspective"/> <image type="html" name="perspectiveGeodesic.png"></image>
+ <image type="latex" name="perspectiveGeodesic.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Geodesic_perspective" kindref="member">fig__Geodesic_perspective</ref> A geodesic on the surface of a simple surface mesh. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__Geodesic_unrolled"/> <image type="html" name="unrolledGeodesic.png"></image>
+ <image type="latex" name="unrolledGeodesic.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Geodesic_unrolled" kindref="member">fig__Geodesic_unrolled</ref> The same geodesic, with its faces unfolded into the plane. Note in the unfolding, the geodesic forms a straight line. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_shortest_pathVisibilityWindow">
+<title>Visibility Window</title>
+<para>A <emphasis>visibility window</emphasis> (or <emphasis>visibility cone</emphasis>) is a pair of geodesic curves which share a common <emphasis>source point</emphasis> and enclose a <emphasis>locally flat</emphasis> region of the surface mesh. Locally flat means that between every pair of points inside the window, there is exactly one geodesic path between them which also stays inside the bounds of the window. Thus, operations, such as distance calculations, can be done with normal 2D Euclidean operations while inside the window. When a visibility window encounters a vertex (a non-flat part of the surface), a <emphasis>branch</emphasis> occurs, forming a sub-window to either side.</para>
+<para><anchor id="index_1fig__Visibility_window_1"/> <image type="html" name="visibilityCone-1.png"></image>
+ <image type="latex" name="visibilityCone-1.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Visibility_window_1" kindref="member">fig__Visibility_window_1</ref> A single visibility window, before it encounters a vertex. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__Visibility_window_2"/> <image type="html" name="visibilityCone-2.png"></image>
+ <image type="latex" name="visibilityCone-2.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Visibility_window_2" kindref="member">fig__Visibility_window_2</ref> After encountering a convex vertex, the visibility window branches to either side (blue on the left, red on the right). Note that the two new windows immediately overlap on the other side of the vertex, since the surrounding surface area is less than <formula id="15">$2 \pi$</formula>. Points inside this region of overlap might have two possible shortest paths from the origin point. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_shortest_pathSaddleVertex">
+<title>Saddle Vertices</title>
+<para>A <emphasis>saddle vertex</emphasis> on a surface mesh is a vertex <formula id="16">$v$</formula> where the sum of surface angles of all faces incident at <formula id="16">$v$</formula> is greater than <formula id="15">$2 \pi$</formula>, or, in simpler terms, one cannot flatten all the faces incident to <formula id="16">$v$</formula> into the plane without overlap. Identifying and dealing with saddle vertices are important in shortest path algorithms because they form <emphasis>blind spots</emphasis> which cannot be reached by a single geodesic curve.</para>
+<para><anchor id="index_1fig__Saddle_vertex"/> <image type="html" name="saddleVertex.png"></image>
+ <image type="latex" name="saddleVertex.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Saddle_vertex" kindref="member">fig__Saddle_vertex</ref> A visibility window (shaded blue) encounters a saddle vertex; the shaded red region behind the vertex is not reachable by a geodesic curve from the source point (assuming the geodesic must stay inside the initial window). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>In order to deal with this, we must create a new set of child visibility windows which branch out around the saddle vertex. The paths through these child windows would first arrive at the saddle vertex, and then follow a new visibility window (forming a kind of poly-line on the surface). Note that similar behavior is required when we reach a boundary vertex of a non-closed surface mesh.</para>
+<para><anchor id="index_1fig__Saddle_vertex_expand"/> <image type="html" name="saddleVertexExpand.png"></image>
+ <image type="latex" name="saddleVertexExpand.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Saddle_vertex_expand" kindref="member">fig__Saddle_vertex_expand</ref> In order to see past the <emphasis>blind spot</emphasis> created by the saddle vertex, we create a branching set of visibility windows emanating from the saddle vertex. Note that only the branches which cover the <emphasis>blind spot</emphasis> for the parent visibility window are needed for our algorithm. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1Surface_mesh_shortest_pathSequenceTree">
+<title>The Sequence Tree</title>
+<para>In order to compute shortest paths, we build a <emphasis>sequence tree</emphasis> (or <emphasis>cone tree</emphasis>) from each source point. The sequence tree describes the combinatoric structure of all <emphasis>potential shortest paths</emphasis> which originate from a single source point, by organizing them into a hierarchy of visibility windows.</para>
+<para>Whenever a vertex of the surface mesh is encountered, a branch occurs in the sequence tree. If the vertex is a non-saddle vertex, then only two children are created, one for each edge incident to that vertex on the current face. If the vertex is a saddle vertex, in addition to the two children mentioned above, a special type of node, called a <emphasis>pseudo-source</emphasis>, is created which branches out from that vertex.</para>
+<para>Once a sequence tree is built, the <emphasis>potential shortest paths</emphasis> from the source to every point inside a given visibility window can be computed. The sequence of faces along each branch of the tree are laid out edge to edge, into a common plane, such that the geodesic distance from any point on the surface to its nearest source point can be obtained using a single 2D Euclidean distance computation. Note that if the window belongs to a pseudo-source, the distance is measured from the target to the pseudo-source, and then the distance from the pseudo-source back to its parent is measured, and so on back to the original source.</para>
+</sect3>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathAlgorithmOverview">
+<title>Algorithm Overview</title>
+<para>The size of the sequence tree from any source point is theoretically infinite, however we only ever care about trees which are of depth at most N, where N is the number of faces in the surface mesh (since no shortest path can cross the same face twice). Even then, the size of this truncated sequence tree is potentially exponential in the size of the surface mesh, thus a simple breadth-first search is not feasible. Rather, we apply techniques to eliminate entire branches which are provably unable to contain shortest paths from the source point(s). The techniques used are given in greater detail in a paper by Xin and Wang <ref refid="citelist_1CITEREF_XinWang2009improvingchenandhan" kindref="member">[3]</ref>, which itself expands an earlier work by Chen and Han <ref refid="citelist_1CITEREF_ch-spp-96" kindref="member">[1]</ref> and Mitchell, Mount, and Papadimitriou <ref refid="citelist_1CITEREF_mmp-dgp-87" kindref="member">[2]</ref> .</para>
+<para>Handling multiple source points is simply a matter of constructing multiple sequence trees concurrently, using a method similar to the multi-source Dijsktra&apos;s algorithm.</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathContinuousDijkstra">
+<title>Continuous Dijkstra</title>
+<para>Continuous Dijkstra is simply the application of the graph-search algorithm to a non-discrete setting. As we build the search tree, newly created nodes are tagged with a distance metric, and inserted into a priority queue, such that the shortest distance nodes are always first.</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathOneAngleOneSplit">
+<title>One Angle, One Split</title>
+<para>This observation by Chen and Han states that out of all the branches that occur at any given vertex of the surface mesh, only a limited number have more than one child which can define shortest paths. This is accomplished by maintaining, for each vertex, all nodes of the sequence tree which can contain that vertex inside their visibility window.</para>
+<para><itemizedlist>
+<listitem><para>For each vertex, only <emphasis>one</emphasis> two-way branch may occur per face incident to that vertex, specifically, that of the nearest node to that vertex which crosses that face. We call that closest node the <emphasis>occupier</emphasis> of that vertex.</para>
+</listitem><listitem><para>If the vertex is a saddle vertex, only one pseudo-source may be established at that vertex, this time by the absolute nearest node to that vertex.</para>
+</listitem></itemizedlist>
+</para>
+<para>This method alone can decrease the running time for construction of the sequence tree construction to polynomial time.</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathDistanceFiltering">
+<title>Distance Filtering</title>
+<para>An additional distance filter proposed by Xin and Wang helps prune the search tree even further by comparing the current node&apos;s distance to the closest distance so far of the three vertices on the current face. Details on this method can be found in their paper <ref refid="citelist_1CITEREF_XinWang2009improvingchenandhan" kindref="member">[3]</ref>.</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_shortest_pathLocatingShortestPaths">
+<title>Locating Shortest Paths</title>
+<para>In order to locate the shortest path from a target point to a source point, we must select the correct visibility window. A simple method is to keep track for each face <formula id="17">$f$</formula> of all windows which cross <formula id="17">$f$</formula>. In practice, at most a constant number of windows will cross any given face, so for simplicity this is the method we employ. An alternative is to construct a Voronoi-like structure on each face, where each cell represents a visibility window. We did not attempt this method, however it would seem likely that it would be of no computational benefit.</para>
+</sect2>
+<sect2 id="index_1Pseudo-Code">
+<title>Pseudo-Code</title>
+<para>In this section we give a brief outline of the pseudo-code for this algorithm. More details can be found in <ref refid="citelist_1CITEREF_ch-spp-96" kindref="member">[1]</ref> and <ref refid="citelist_1CITEREF_XinWang2009improvingchenandhan" kindref="member">[3]</ref>.</para>
+<para><verbatim>--
+-- Global Values
+--
+G : FaceGraph(V,E,F)
+  -- V - the set of vertices
+  -- E - the set of edges
+  -- F - the set of planar faces
+
+Q : PriorityQueue
+  -- A priority queue ordered using the metric given by Xin and Wang
+
+--
+-- Types
+--
+type VisbilityWindow:
+  f : a face of F, the current face of this window, we say this window &apos;crosses&apos; face f
+  s : a point on the surface of F, the source point of this window
+  d :  the &apos;base distance&apos; to s, only non-zero if s is a pseudo-source
+  l : the left-side bounding ray of this window, with its origin at s
+  r : the right-side bounding ray of this window, with its origin at s
+  p : its parent VisibilityWindow
+
+--
+-- Methods
+--
+method XinWangDistanceFilter:
+  Input:
+    w : a VisibilityWindow
+  Output:
+    filter : true if w passes the distance filtering metric given by Xin and Wang, false otherwise
+
+method PropagateWindow:
+  Input:
+    w : a visibility window
+    e : an edge on face w.f
+  Output:
+    w&apos; : A new visibility window on the face opposite w.f across edge e
+  Begin:
+    Let f&apos; be the face on the opposite side of e as w.f
+    Lay out face f&apos; along e, such that it shares a common plane with w.f
+    Create a new VisibilityWindow w&apos;, with
+    - w its parent
+    - the same source point and base distance as w
+    - its boundary rays clipped to the sub-segment of e covered by w
+    return w&apos;
+
+method CreateFaceWindow:
+  Input:
+    f : a face of F
+    v : a vertex of f
+    w : a VisibilityWindow which intersects f and contains v
+  Output:
+    w&apos; : a new VisibilityWindow, with
+    -- w its parent
+    -- its source point s = v
+    -- its two bounding rays along the edges incident to v
+    -- face f as its crossed face
+    -- its base distance being the distance of window w to v
+
+method CreatePseudoSource:
+  Input:
+    w : the parent window
+    v : a saddle vertex of V
+  Begin:
+    For each face f incident to v:
+      w&apos; = CreateFaceWindow(f, v, w)
+      Q.insert(w&apos;)
+
+method TreeDepth:
+  Input:
+    w : a VisibilityWindow in some sequence tree T
+  Output:
+    The depth of node w in its current sequence tree (this would typically be cached in w itself)
+
+method ShortestPathTree:
+  Input:
+    s[1..n] : a set of source points on the surface of G.
+              For simplicity (and without loss of generality),
+              we will assume they are all vertices of G.
+  Output:
+    T[1..n] : a set of sequence trees for the source points
+  Declare:
+    O : a map of (f,v) =&gt; VisibilityWindow, which gives the &apos;vertex occupier&apos; for (f,v),
+        that is the window which crosses face f and whose source is nearest to vertex v
+    S : a map of v =&gt; VisibilityWindow, which gives the window whose source is nearest
+        to v. Note that this is a strict subset of O
+  Begin:
+    for i in 1..n:
+      Let r[i] be the root of T[i], with distance 0 to s[i]
+      CreatePseudoSource( r[i], s[i] )
+    While Q is not empty:
+      w = Q.take()
+      if XinWangDistanceFilter(w) and TreeDepth(w) &lt;= |F|:
+        if w contains a vertex v of w.f:
+          if w is closer to v than O[w.f,v]:
+            O[w.f,v] = w
+            if v is a boundary vertex or a saddle vertex, and w is closer to v than S[v]:
+              S[v] = w
+              CreatePseudoSource(w, v, w.dist(v))
+            let {e_0, e_1} be the edges of f incident to v
+            for i in [0,1]:
+              w&apos; = PropagateWindow(w, e_i)
+              Q.insert(w&apos;)
+          else:
+            let e_n be the edge &apos;closer&apos; to window w
+            w&apos; = PropagateWindow(w, e_n)
+            Q.insert(w&apos;)
+        else:
+          let e_o be the only edge crossed by window w
+          w&apos; = PropagateWindow(w, e_o)
+          Q.insert(w&apos;)
+    return T[1..n]
+</verbatim></para>
+<para>To perform shortest path distance queries to each vertex, we can simply use the results stored in <computeroutput>S</computeroutput> after the completion of ShortestPathTree, as it contains a map from each vertex to the <computeroutput>VisibilityWindow</computeroutput> which has the shortest path to that vertex. Performing shortest path computations to any arbitrary face location is slightly more complex. As eluded to above, after completion of the algorithm, we traverse each of the sequence trees, and for each face <computeroutput>f</computeroutput> we store all the VisibilityWindows which cross <computeroutput>f</computeroutput> in a look-up structure. Then, to find the shortest path to a point on the surface of face <computeroutput>f</computeroutput>, we look up that pre-stored set of VisibilityWindows associated with it, and among those windows we select the one which contains the query point and has the shortest path back to the origin. Though it may seem slow since it involves a linear search but it is efficient in practice since the number of faces crossing any single face is typically limited (this is due to the additional filtering method given by Xin and Wang <ref refid="citelist_1CITEREF_XinWang2009improvingchenandhan" kindref="member">[3]</ref>.</para>
+<para>The actual surface paths can be reconstructed by backtracking from the VisibilityWindow, through its parents in the tree up to the root, and keeping track of each face that was crossed.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Surface_mesh_shortest_pathImplementationhistory">
+<title>Design and Implementation History</title>
+<para>This package is the result of the work of Stephen Kiazyk during the 2014 season of the Google Summer of Code. He has been mentored by Sébastien Loriot and Éric Colin de Verdière who also contributed to the documentation and the API definition. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Surface_mesh_shortest_path.txt"/>
+  </compounddef>
+</doxygen>

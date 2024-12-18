@@ -1,0 +1,290 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_portability" kind="page">
+    <compoundname>devman_portability</compoundname>
+    <title>Portability Issues</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>Michael Hoffmann (<computeroutput><ulink url="mailto:hoffmann@inf.ethz.ch">hoffmann@inf.ethz.ch</ulink></computeroutput>) </para>
+</simplesect>
+<simplesect kind="author"><para>Stefan Schirra </para>
+</simplesect>
+<simplesect kind="author"><para>Sylvain Pion</para>
+</simplesect>
+This chapter gives an overview of issues related to the configuration of CGAL that allow you to answer such questions as: <itemizedlist>
+<listitem>
+<para>Is <emphasis>LEDA</emphasis> / GMP there? (Section <ref refid="devman_portability_1secleda_gmp_support" kindref="member">Checking for LEDA or GMP support</ref>) </para>
+</listitem>
+<listitem>
+<para>Which compiler is this? (Section <ref refid="devman_portability_1secwhich_compiler" kindref="member">Identifying compilers and architectures</ref> ) </para>
+</listitem>
+<listitem>
+<para>Does the compiler support feature X? (Section <ref refid="devman_portability_1secworkaround_flags" kindref="member">Workaround flags</ref> ) </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>Also addressed here are issues related to writing code for non-standard-compliant compilers. Compilers have made a lot of progress toward the C++-standard recently. But still they do not fully implement it. There are a few features you may assume; others you may not assume. Especially you may assume that the compiler <itemizedlist>
+<listitem>
+<para>supports namespaces </para>
+</listitem>
+<listitem>
+<para>supports member templates </para>
+</listitem>
+<listitem>
+<para>support for <computeroutput>std::iterator_traits</computeroutput>. </para>
+</listitem>
+</itemizedlist>
+Still, there are many bugs (sometimes known as &quot;features&quot;) left in the compilers. Have a look at the list of (non-obsolete) workarounds in Section <ref refid="devman_portability_1secworkaround_flags" kindref="member">Workaround flags</ref> to get an idea of which &quot;features&quot; are still present.</para>
+<sect1 id="devman_portability_1secleda_gmp_support">
+<title>Checking for LEDA or GMP support</title>
+<para>In the makefiles included for the compilation of every CGAL program (<emphasis>i.e.</emphasis>, those to which the environment variable <computeroutput>CGAL_MAKEFILE</computeroutput> refers),</para>
+<para>we define command line switches that set the flags <programlisting filename=".cpp"><codeline><highlight class="normal">CGAL_USE_LEDA,<sp/>CGAL_USE_GMP</highlight></codeline>
+</programlisting></para>
+<para>iff CGAL is configured with LEDA or GMP support, respectively.</para>
+</sect1>
+<sect1 id="devman_portability_1secboost_support">
+<title>Using Boost</title>
+<para>CGAL code can rely on Boost libraries to some extent.</para>
+<para>Boost was shipped with CGAL Release 3.1, and is no longer shipped within CGAL, as it is mainstream, and already distributed with Linux and Cygwin.</para>
+<para>Since portability and backward compatibility are a concern in CGAL, we have decided that the list of Boost libraries usable in CGAL will be decided by the CGAL editorial board. The requirements are higher when it appears in the user visible interface than when Boost code is used only internally. Requirements are lower for code that is not released such as the test-suite. Boost libraries already accepted in the C++ Standard Library Technical Report will be the first easy candidates (these are marked <computeroutput>[TR1]</computeroutput> in the list below). However, wrapping the use within CGAL is generally advised (like what is done in the <computeroutput>cpp11</computeroutput> namespace). Finally, the policy is that if a better alternative exists in Boost and is allowed, then CGAL code must use it instead of a CGAL version (which probably must be deprecated and phased out), trying not to break backward compatibility too much.</para>
+<para>A list of reasonable Boost libraries to use in the CGAL API is Graph, Optional, Parameter (for packages already using it), Property Map, Smart Pointers (for packages already using it), Variant.</para>
+<para>Before using a Boost libraries internally, first check whether it is already used, and if not indicate it while submitting your changes (feature, small-feature or pull request), or even by sending an email to cgal-develop during the development.</para>
+</sect1>
+<sect1 id="devman_portability_1secusing_version_macros">
+<title>Using the version-number and configuration macros and flags</title>
+<para>Here is a short example on how these macros can be used. Assume you have some piece of code that depends on whether you have LEDA-4.0 or later. <programlisting filename=".cpp"><codeline><highlight class="preprocessor">#ifdef<sp/>CGAL_USE_LEDA</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;LEDA/basic.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>defined(CGAL_USE_LEDA)<sp/>&amp;&amp;<sp/>__LEDA__<sp/>&gt;=<sp/>400</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">...<sp/>put<sp/>your<sp/>code<sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>LEDA<sp/>4.0<sp/>or<sp/>later<sp/>...</highlight></codeline>
+<codeline><highlight class="normal">#</highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">...<sp/>put<sp/>your<sp/>code<sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>the<sp/>other<sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>...</highlight></codeline>
+<codeline><highlight class="normal">#endif</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="devman_portability_1secwhich_compiler">
+<title>Identifying compilers and architectures</title>
+<para>Every compiler defines some macros that allow you to identify it; see the following table.</para>
+<para><table rows="1" cols="1"><row>
+<entry thead="no"><para><table rows="10" cols="3"><row>
+<entry thead="no" align="left"><para>GNU 3.2.1 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__GNUC__</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>3 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>GNU 3.2.1 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__GNUC_MINOR__</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>2 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>GNU 3.2.1 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__GNUC_PATCHLEVEL__</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>1 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Microsoft VC7.1 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>_MSC_VER</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>1310 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Microsoft VC8.0 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>_MSC_VER</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>1400 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Intel 11.1 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__INTEL_COMPILER</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>1110 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Clang 2.9 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__clang_major__</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>2 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Clang 2.9 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__clang_minor__</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>9 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>SUN 5.3 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__SUNPRO_CC</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>0x530 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>SUN 5.10 </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__SUNPRO_CC</computeroutput> </para>
+</entry><entry thead="no" align="left"><para>0x5100 </para>
+</entry></row>
+</table>
+</para>
+</entry></row>
+</table>
+</para>
+<para>There are also flags to identify the architecture.</para>
+<para><table rows="1" cols="1"><row>
+<entry thead="no"><para><table rows="3" cols="2"><row>
+<entry thead="no" align="left"><para>SGI </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__sgi</computeroutput> </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>SUN </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__sun</computeroutput> </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Linux </para>
+</entry><entry thead="no" align="left"><para><computeroutput>__linux</computeroutput> </para>
+</entry></row>
+</table>
+</para>
+</entry></row>
+</table>
+</para>
+</sect1>
+<sect1 id="devman_portability_1secproblems_and_workarounds">
+<title>Known problems and workarounds</title>
+<para>For (good) reasons that will not be discussed here, it was decided to use C++ for the development of CGAL. An international standard for C++ has been sanctioned in 1998 <ref refid="citelist_1CITEREF_cgal:ansi-is14882-98" kindref="member">[3]</ref> and the level of compliance varies widely between different compilers, let alone bugs.</para>
+<sect2 id="devman_portability_1secworkaround_flags">
+<title>Workaround flags</title>
+<para>In order to provide a uniform development environment for CGAL that looks more standard compliant than what the compilers provide, a number of workaround flags and macros have been created. Some of the workaround macros are set in <computeroutput>&lt;CGAL/config.h&gt;</computeroutput>.</para>
+<para>using the macros listed in Section <ref refid="devman_portability_1secwhich_compiler" kindref="member">Identifying compilers and architectures</ref> to identify the compiler. But most of them are set in the platform-specific configuration files</para>
+<para><center> <computeroutput>&lt;CGAL/config/</computeroutput><emphasis>os-compiler</emphasis><computeroutput>/CGAL/compiler_config.h&gt;</computeroutput></center></para>
+<para><center></center> where <emphasis>os-compiler</emphasis> refers to a string describing your operating system and compiler that is defined as follows.</para>
+<para><center> <emphasis><computeroutput>&lt;arch&gt;_&lt;os&gt;-&lt;os-version&gt;_&lt;comp&gt;-&lt;comp-version&gt;</computeroutput></emphasis></center></para>
+<para><center></center></para>
+<para><variablelist>
+<varlistentry><term><bold><computeroutput>&lt;arch&gt;</computeroutput></bold></term></varlistentry>
+<listitem><para>is the system architecture as defined by <computeroutput>uname -p</computeroutput> or <computeroutput>uname -m</computeroutput>, </para>
+</listitem>
+<varlistentry><term><bold><computeroutput>&lt;os&gt;</computeroutput></bold></term></varlistentry>
+<listitem><para>is the operating system as defined by <computeroutput>uname -s</computeroutput>, </para>
+</listitem>
+<varlistentry><term><bold><computeroutput>&lt;os-version&gt;</computeroutput></bold></term></varlistentry>
+<listitem><para>is the operating system version as defined by <computeroutput>uname -r</computeroutput>, </para>
+</listitem>
+<varlistentry><term><bold><computeroutput>&lt;comp&gt;</computeroutput></bold></term></varlistentry>
+<listitem><para>is the basename of the compiler executable (if it contains spaces, these are replaced by &quot;-&quot;), and </para>
+</listitem>
+<varlistentry><term><bold><computeroutput>&lt;comp-version&gt;</computeroutput></bold></term></varlistentry>
+<listitem><para>is the compiler&apos;s version number (which unfortunately can not be derived in a uniform manner, since it is quite compiler specific). </para>
+</listitem>
+</variablelist>
+</para>
+<para>Examples are <computeroutput>mips_IRIX64-6.5_CC-n32-7.30</computeroutput> or <computeroutput>sparc_SunOS-5.6_g++-2.95</computeroutput>. For more information, see the CGAL <ref refid="usage" kindref="compound">usage guide </ref>.</para>
+<para>This platform-specific configuration file is created during</para>
+<para>installation by the script <computeroutput>install_cgal</computeroutput>. The flags listed below are set according to the results of test programs that are compiled and run. These test programs reside in the directory <center> <computeroutput>/config/testfiles</computeroutput></center></para>
+<para><center></center> where <computeroutput></computeroutput> represents the installation directory for the library. The names of all testfiles, which correspond to the names of the flags,</para>
+<para>start with <computeroutput>CGAL_CFG_</computeroutput> followed by <itemizedlist>
+<listitem>
+<para><emphasis>either</emphasis> a description of a bug ending with <computeroutput>_BUG</computeroutput> </para>
+</listitem>
+<listitem>
+<para><emphasis>or</emphasis> a description of a feature starting with <computeroutput>NO_</computeroutput>. </para>
+</listitem>
+</itemizedlist>
+For any of these files a corresponding flag is set in the platform-specific configuration file, iff either compilation or execution fails. The reasoning behind this sort of negative scheme is that on standard-compliant platforms there should be no flags at all.</para>
+<para>Currently (CGAL-3.4-I-181), we have the following configuration test files (and flags). The short descriptions that are given in the files are included here. In some cases, it is probably necessary to have a look at the actual files to understand what the flag is for. This list is just to give an overview. Be sure to have a look at <computeroutput>Installation/config/testfiles/</computeroutput> to have an up-to-date version of this list.</para>
+<para><variablelist>
+<varlistentry><term><bold><computeroutput>CGAL_CFG_LONGNAME_BUG</computeroutput></bold></term></varlistentry>
+<listitem><para></para>
+<para>This flag is set if a compiler (or assembler or linker) has problems with long symbol names.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><computeroutput>CGAL_CFG_NET2003_MATCHING_BUG</computeroutput></bold></term></varlistentry>
+<listitem><para></para>
+<para>This flag is set, if the compiler does not match a member definition to an existing declaration. This bug shows up on VC 7.1 Beta (<computeroutput>cl1310</computeroutput>).</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><computeroutput>CGAL_CFG_NO_LIMITS</computeroutput></bold></term></varlistentry>
+<listitem><para></para>
+<para>This flag is set if a compiler does not know the limits.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><computeroutput>CGAL_CFG_NO_LONG_LONG</computeroutput></bold></term></varlistentry>
+<listitem><para></para>
+<para>The <computeroutput>long long</computeroutput> built-in integral type is not part of the ISO C++ standard, but many compilers support it nevertheless, since it is part of the ISO C standard. This flag is set if it is supported.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><computeroutput>CGAL_CFG_NO_TMPL_IN_TMPL_PARAM</computeroutput></bold></term></varlistentry>
+<listitem><para></para>
+<para>Nested templates in template parameter, such as <computeroutput>template &lt; template &lt;class T&gt; class A&gt;</computeroutput> are not supported by any compiler. This flag is set if they are not supported. </para>
+</listitem>
+</variablelist>
+</para>
+</sect2>
+<sect2 id="devman_portability_1secworkaround_macros">
+<title>Macros connected to workarounds/compilers</title>
+<para>Some macros are defined according to certain workaround flags. This is done to avoid some <computeroutput>ifdef</computeroutput>s in our actual code.</para>
+<para><variablelist>
+<varlistentry><term><bold><computeroutput>CGAL_LITTLE_ENDIAN</computeroutput></bold></term></varlistentry>
+<listitem><para>set, iff</para>
+<para><computeroutput>CGAL_CFG_NO_BIG_ENDIAN</computeroutput> is set. </para>
+</listitem>
+<varlistentry><term><bold><computeroutput>CGAL_BIG_ENDIAN</computeroutput></bold></term></varlistentry>
+<listitem><para>set, iff</para>
+<para><computeroutput>CGAL_CFG_NO_BIG_ENDIAN</computeroutput> is not set.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><computeroutput>CGAL_DEPRECATED</computeroutput></bold></term></varlistentry>
+<listitem><para></para>
+<para>used to declare a function as deprecated - just add it before the function declaration. You may also surround deprecated code with <computeroutput>CGAL_NO_DEPRECATED_CODE</computeroutput>, such that it is easy to test if a piece of code uses deprecated code or not: <programlisting filename=".cpp"><codeline><highlight class="preprocessor">#ifndef<sp/>CGAL_NO_DEPRECATED_CODE</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">CGAL_DEPRECATED<sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>foo(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/>...</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/></highlight><highlight class="comment">//<sp/>CGAL_NO_DEPRECATED_CODE</highlight></codeline>
+</programlisting> </para>
+</listitem>
+</variablelist>
+</para>
+</sect2>
+<sect2 id="devman_portability_1secvarious_problems">
+<title>Various other problems and solutions</title>
+<para><variablelist>
+<varlistentry><term><bold><bold>min and max</bold></bold></term></varlistentry>
+<listitem><para>Visual C++ headers (and others) sometimes define <computeroutput>min</computeroutput> and <computeroutput>max</computeroutput> as macros. If you write <computeroutput>max</computeroutput> followed by an opening parenthesis, this can lead to unwanted substitutions. In order to work around it, you should use one of the following tricks: <programlisting filename=".cpp"><codeline><highlight class="normal"><ref refid="group__nt__util_1gad7dbfa919e255b52f36ea1512a92cb78" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">max</ref><sp/>BOOST_PREVENT_MACRO_SUBSTITUTION<sp/>(a,<sp/>b);</highlight></codeline>
+<codeline><highlight class="normal">(<ref refid="group__nt__util_1gad7dbfa919e255b52f36ea1512a92cb78" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">max</ref>)<sp/>(a,<sp/>b);</highlight></codeline>
+</programlisting></para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><bold>Templated member functions</bold></bold></term></varlistentry>
+<listitem><para></para>
+<para>For SunPRO C++ member function templates with dependent return type must be defined in the body of the class.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><bold>Function parameter matching</bold></bold></term></varlistentry>
+<listitem><para></para>
+<para>The function parameter matching capacities of Visual C++ are rather limited. Failures occur when your function <computeroutput>bar</computeroutput> is like <programlisting filename=".cpp"><codeline><highlight class="normal">bar(std::some_iterator&lt;std::some_container&lt;T&gt;&gt;....)<sp/>...</highlight></codeline>
+<codeline><highlight class="normal">...</highlight></codeline>
+<codeline><highlight class="normal">bar(std::some_iterator&lt;std::some_other_container&lt;T&gt;&gt;....)<sp/>...</highlight></codeline>
+</programlisting> VC++ fails to distinguish that these parameters have different types. A workaround is to add some dummy parameters that are defaulted to certain values, and this affects only the places where the functions are defined, not the places where they are called. This may not be true anymore for recent VC++ versions.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold><bold>typedefs of derived classes</bold></bold></term></varlistentry>
+<listitem><para>Microsoft VC++ does not like the following sorts of typedefs that are standard <programlisting filename=".cpp"><codeline><highlight class="keyword">class<sp/></highlight><highlight class="normal">A<sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>B::C<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>B::C<sp/>C;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting> It says that the typedef is &quot;redefinition&quot;. So such typedefs should be enclosed by <programlisting filename=".cpp"><codeline><highlight class="preprocessor">#ifndef<sp/>_MSC_VER</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight></codeline>
+</programlisting> This may not be true anymore for recent VC++ versions. </para>
+</listitem>
+</variablelist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="devman_portability_1secportability_req_and_rec">
+<title>Requirements and recommendations</title>
+<para>Recommendations: <itemizedlist>
+<listitem>
+<para>Workarounds for a compiler bug or a missing feature should not be treated on a per-compiler basis. When you detect a deficiency, you should rather write a short test program that triggers the setting of a flag for this deficiency during configuration. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_portability.txt"/>
+  </compounddef>
+</doxygen>

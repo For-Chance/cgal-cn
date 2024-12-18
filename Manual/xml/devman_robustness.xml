@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_robustness" kind="page">
+    <compoundname>devman_robustness</compoundname>
+    <title>Robustness Issues</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>Olivier Devillers (<computeroutput><ulink url="mailto:olivier.devillers@inria.fr">olivier.devillers@inria.fr</ulink></computeroutput>) </para>
+</simplesect>
+<simplesect kind="author"><para>Stefan Schirra</para>
+</simplesect>
+Design and correctness proofs of geometric algorithms usually assume exact arithmetic. Since imprecise calculations can cause wrong or, much worse, mutually contradictory decisions in the control flow of an algorithm, many implementations crash, or at best, compute garbage for some inputs. For some applications the fraction of bad inputs compared to all possible inputs is small, but for other applications this fraction is large.</para>
+<para>CGAL has a layered design. The correctness of some components depends on the correctness of the components that are used. Correctness of a component means behaving according to its (mathematical) specification. Simply speaking, the source of the robustness problem is that the default hardware-supported arithmetic does not really fulfill the requirements of the algorithm, since it does not implement arithmetic on the real numbers.</para>
+<para>Nevertheless, the generic implementation of the kernel primitives that are parameterized by the arithmetic (more precisely, by a number type) assumes that the arithmetic plugged in does behave as real arithmetic. The generic code does not and should not (otherwise it would slow down &quot;exact&quot; number types) deal with any potential imprecision. There are a number of (third-party provided) &quot;exact&quot; number types available for use with CGAL, where &quot;exact&quot; means that all decisions (comparison operations) are correct and that the representation of the numbers allows for refinement to an arbitrary precision, if needed. Depending of the needed computations, a suitable exact number type can be <computeroutput>Quotient&lt;MP_float&gt;</computeroutput> or <computeroutput>gmpq</computeroutput> if rational computations are involved. If roots of polynomials are needed, then the solution is to use <computeroutput><ref refid="classleda__real" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">leda_real</ref></computeroutput> provided by LEDA or <computeroutput><ref refid="classCORE_1_1Expr" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CORE::Expr</ref></computeroutput> provided by <ref refid="namespaceCORE" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Number_types.tag">CORE</ref>.</para>
+<sect1 id="devman_robustness_1Developer_manualTheroleofpredicatesandconstructions">
+<title>The role of predicates and constructions</title>
+<para>CGAL favors encapsulation of the basic arithmetic operations, the lowest level in geometric computing, into units on a higher level, namely, the level of geometric primitives, i.e., predicates and constructions. Here predicates are used in a generalized sense, i.e., not only primitives returning a Boolean value, but also primitives returning a value of some enumeration type, e.g. <computeroutput><ref refid="group__kernel__enums_1ga59bee58a806ccde81562ea315ff75525" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Sign</ref></computeroutput>. So the value computed by a predicate does not involve any numerical data. Basic constructions construct new primitive geometric objects that may involve newly computed numerical data, i.e. that is not part of the input to the constructions. An example of such a basic constructions is computing the midpoint of the straight line segment between two given points. A special kind of constructions is selections. For selections, all the data in the constructed objects was already part of the input. An example is computing the lexicographically smaller point for two given points.</para>
+<para>CGAL provides generic implementations of geometric primitives. These assume &quot;exact computation&quot;. This may or may not work, depending on the actual numerical input data. CGAL also providesat present, for the dimension 2/3 Cartesian kernel(s) only. specialization of the primitives that (are still fairly generic and) guarantee exact predicate results and much higher efficiency than exact number types like arbitrary precision integers or rationals. The efficiency relies on the use of speedy floating-point arithmetic in order to filter out reliable floating-point computations. <ref refid="classInterval" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Interval_skip_list.tag">Interval</ref> arithmetic is largely used in such filter steps.</para>
+</sect1>
+<sect1 id="devman_robustness_1Developer_manualRequirementsandrecommendations">
+<title>Requirements and recommendations</title>
+<para>Recommendations: <itemizedlist>
+<listitem>
+<para>Encapsulate basic arithmetic in predicates and constructions. </para>
+</listitem>
+<listitem>
+<para>Use kernel primitives whenever possible. This allows you to use the kernel as a traits class for your algorithm or data structure. </para>
+</listitem>
+<listitem>
+<para>If no appropriate kernel primitives are available, have a look at Chapter <ref refid="devman_kernels" kindref="compound">Geometry Kernels</ref> on how to proceed. </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_robustness.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,38 @@
+var annotated =
+[
+    [ "CGAL", null, [
+      [ "Constrained_Delaunay_triangulation_2", "classCGAL_1_1Constrained__Delaunay__triangulation__2.html", "classCGAL_1_1Constrained__Delaunay__triangulation__2" ],
+      [ "Constrained_triangulation_2", "classCGAL_1_1Constrained__triangulation__2.html", "classCGAL_1_1Constrained__triangulation__2" ],
+      [ "Constrained_triangulation_face_base_2", "classCGAL_1_1Constrained__triangulation__face__base__2.html", null ],
+      [ "Constrained_triangulation_plus_2", "classCGAL_1_1Constrained__triangulation__plus__2.html", "classCGAL_1_1Constrained__triangulation__plus__2" ],
+      [ "Delaunay_triangulation_2", "classCGAL_1_1Delaunay__triangulation__2.html", "classCGAL_1_1Delaunay__triangulation__2" ],
+      [ "Exact_intersections_tag", "structCGAL_1_1Exact__intersections__tag.html", null ],
+      [ "Exact_predicates_tag", "structCGAL_1_1Exact__predicates__tag.html", null ],
+      [ "No_constraint_intersection_requiring_constructions_tag", "structCGAL_1_1No__constraint__intersection__requiring__constructions__tag.html", null ],
+      [ "No_constraint_intersection_tag", "structCGAL_1_1No__constraint__intersection__tag.html", null ],
+      [ "No_intersection_tag", "structCGAL_1_1No__intersection__tag.html", null ],
+      [ "Regular_triangulation_2", "classCGAL_1_1Regular__triangulation__2.html", "classCGAL_1_1Regular__triangulation__2" ],
+      [ "Regular_triangulation_face_base_2", "classCGAL_1_1Regular__triangulation__face__base__2.html", null ],
+      [ "Regular_triangulation_vertex_base_2", "classCGAL_1_1Regular__triangulation__vertex__base__2.html", "classCGAL_1_1Regular__triangulation__vertex__base__2" ],
+      [ "Triangulation_2", "classCGAL_1_1Triangulation__2.html", "classCGAL_1_1Triangulation__2" ],
+      [ "Triangulation_cw_ccw_2", "classCGAL_1_1Triangulation__cw__ccw__2.html", "classCGAL_1_1Triangulation__cw__ccw__2" ],
+      [ "Triangulation_face_base_2", "classCGAL_1_1Triangulation__face__base__2.html", null ],
+      [ "Triangulation_face_base_with_info_2", "classCGAL_1_1Triangulation__face__base__with__info__2.html", "classCGAL_1_1Triangulation__face__base__with__info__2" ],
+      [ "Triangulation_hierarchy_2", "classCGAL_1_1Triangulation__hierarchy__2.html", null ],
+      [ "Triangulation_hierarchy_vertex_base_2", "classCGAL_1_1Triangulation__hierarchy__vertex__base__2.html", null ],
+      [ "Triangulation_vertex_base_2", "classCGAL_1_1Triangulation__vertex__base__2.html", "classCGAL_1_1Triangulation__vertex__base__2" ],
+      [ "Triangulation_vertex_base_with_info_2", "classCGAL_1_1Triangulation__vertex__base__with__info__2.html", "classCGAL_1_1Triangulation__vertex__base__with__info__2" ]
+    ] ],
+    [ "ConstrainedDelaunayTriangulationTraits_2", "classConstrainedDelaunayTriangulationTraits__2.html", null ],
+    [ "ConstrainedTriangulationFaceBase_2", "classConstrainedTriangulationFaceBase__2.html", "classConstrainedTriangulationFaceBase__2" ],
+    [ "ConstrainedTriangulationTraits_2", "classConstrainedTriangulationTraits__2.html", "classConstrainedTriangulationTraits__2" ],
+    [ "DelaunayTriangulationTraits_2", "classDelaunayTriangulationTraits__2.html", "classDelaunayTriangulationTraits__2" ],
+    [ "RegularTriangulationFaceBase_2", "classRegularTriangulationFaceBase__2.html", "classRegularTriangulationFaceBase__2" ],
+    [ "RegularTriangulationTraits_2", "classRegularTriangulationTraits__2.html", "classRegularTriangulationTraits__2" ],
+    [ "RegularTriangulationVertexBase_2", "classRegularTriangulationVertexBase__2.html", "classRegularTriangulationVertexBase__2" ],
+    [ "TriangulationFaceBase_2", "classTriangulationFaceBase__2.html", null ],
+    [ "TriangulationHierarchyVertexBase_2", "classTriangulationHierarchyVertexBase__2.html", "classTriangulationHierarchyVertexBase__2" ],
+    [ "TriangulationTraits_2", "classTriangulationTraits__2.html", "classTriangulationTraits__2" ],
+    [ "TriangulationVertexBase_2", "classTriangulationVertexBase__2.html", "classTriangulationVertexBase__2" ],
+    [ "TriangulationVertexBaseWithInfo_2", "classTriangulationVertexBaseWithInfo__2.html", "classTriangulationVertexBaseWithInfo__2" ]
+];

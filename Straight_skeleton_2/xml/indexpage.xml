@@ -1,0 +1,907 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_2D_Straight_Skeleton_and_Polygon_Offsetting"/><anchor id="index_1chapterstraightskeleton2"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><anchor id="index_1fig__ComplexSLS"/><center> <image type="html" name="complex_skeleton.png" inline="yes"></image>
+ </center></para>
+<para><simplesect kind="authors"><para>Fernando Cacciola, Sébastien Loriot, and Mael Rouxel-Labbé</para>
+</simplesect>
+</para>
+<sect1 id="index_1Straight_skeleton_2Introduction">
+<title>Introduction</title>
+<sect2 id="index_1Straight_skeleton_2Straight">
+<title>Straight Skeletons</title>
+<para>This package implements weighted straight skeletons for two-dimensional polygons with holes. An intuitive way to think of the construction of straight skeletons is to imagine that wavefronts (or grassfires) are spawned at each edge of the polygon, and are moving inward. As the fronts progress, they either contract or expand depending on the angles formed between polygon edges, and sometimes disappear. Under this transformation, polygon vertices move along the angular bisector of the lines subtending the edges, tracing a tree-like structure, the straight skeleton.</para>
+<para><anchor id="index_1fig__SLSProgress"/><center> <image type="html" name="sls_progress.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__SLSProgress" kindref="member">fig__SLSProgress</ref> Construction of a straight skeleton: the wavefront interfaces define the straight skeleton. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2Comparison">
+<title>Straight Skeletons, Medial Axis and Voronoi Diagrams</title>
+<para>The straight skeleton of a polygon is similar to the medial axis and the Voronoi diagram of a polygon in the way it partitions it; however, unlike the medial axis and the Voronoi diagram, the bisectors are not equidistant to its defining edges but to the supporting lines of such edges. As a result, the bisectors of a straight skeleton might not be located in the center of the polygon and thus cannot be regarded as a proper medial axis in its geometrical meaning.</para>
+<para>On the other hand, only reflex vertices (i.e., vertices whose internal angle <formula id="4">$ &gt; \pi$</formula>) are responsible for deviations of the bisectors from its center location. Therefore, for convex polygons, the straight skeleton, the medial axis and the Voronoi diagram are exactly equivalent. Furthermore, if a non-convex polygon contains only vertices of low reflexivity, the straight skeleton bisectors will be placed nearly equidistant to their defining edges, producing a straight skeleton much alike a &quot;proper&quot; medial axis.</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2IntroUsages">
+<title>Uses of Straight Skeletons</title>
+<para>This package implements construction of straight skeletons as well as two typical use cases of the straight skeleton: polygon offsetting and straight skeleton extrusion.</para>
+<para><itemizedlist>
+<listitem>
+<para><ref refid="index_1Straight_skeleton_2Offset" kindref="member">Polygon Offsetting</ref>: Growing and shrinking 2D polygons. </para>
+</listitem>
+<listitem>
+<para><ref refid="index_1Straight_skeleton_2Extrusion" kindref="member">Straight Skeleton Extrusion</ref>: Creating a volume by adding height to the straight skeleton.  </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Straight_skeleton_2Definitions">
+<title>Definitions</title>
+<para>We now define in detail what is the straight skeleton, starting from the input polygon.</para>
+<sect2 id="index_1Straight_skeleton_22DContour">
+<title>2D Contours</title>
+<para>A <emphasis>2D contour</emphasis> is a closed sequence (a cycle) of three or more <emphasis>connected 2D oriented straight line segments</emphasis> called <emphasis>contour edges</emphasis>. The endpoints of contour edges are called <emphasis>vertices</emphasis>, and are shared by exactly two incident edges.</para>
+<para>A contour partitions the plane in open regions that are bounded and unbounded. If the contour forms the boundary of a single open region that is a simply connected set, then this contour is said to be <emphasis>weakly simple</emphasis>. If the edges of the contour intersect only at their common vertices, the contour is said to be <emphasis>simple</emphasis>.</para>
+<para>The orientation of a contour is given by the order of the vertices around the region they bound. It can be <computeroutput>clockwise</computeroutput> (CW) or <computeroutput>counterclockwise</computeroutput> (CCW). The <emphasis>bounded side</emphasis> of a contour edge is the side facing the bounded region of the contour. If the contour is oriented CCW, the bounded side of an edge is its left side.</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_22DPolygonwithHoles">
+<title>2D Polygon with Holes</title>
+<para>A <emphasis>2D polygon</emphasis> is a contour.</para>
+<para>A <emphasis>2D polygon with holes</emphasis> is a contour having zero or more contours in its bounded regions. The former contour is called <emphasis>outer contour</emphasis> or <emphasis>outer boundary</emphasis>, and the latter contours are called <emphasis>inner contours</emphasis>, or <emphasis>holes</emphasis>. In this chapter, we require that there cannot be any intersection among any two contours. Furthermore, we require that the outer contour is CCW oriented, that holes are CW oriented, and that a hole cannot be in the bounded region of another hole.</para>
+<para>The intersection of the bounded regions of the outer contour and the unbounded regions of each inner contour is the <emphasis>interior</emphasis> of the polygon with holes. A polygon with holes is said to be <emphasis>weakly simple</emphasis> if its interior is a simply connected set.</para>
+<para>Throughout the rest of this chapter the term <emphasis>polygon</emphasis> will be used as a shortcut for <emphasis>polygon with holes</emphasis>.</para>
+<para><anchor id="index_1fig__Validpolygons"/> <image type="html" name="valid_polygons.png"></image>
+ <image type="latex" name="valid_polygons.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Validpolygons" kindref="member">fig__Validpolygons</ref> Examples of weakly simple polygons: one with no holes and two edges coincident (left) and one with 2 holes (right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__Invalidpolygons"/> <image type="html" name="invalid_polygons.png"></image>
+ <image type="latex" name="invalid_polygons.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Invalidpolygons" kindref="member">fig__Invalidpolygons</ref> Examples of non-simple polygons: one folding into itself, that is, non-planar (left), one with a vertex touching an edge (middle), and one with a hole crossing into the outside (right) <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2StraightSkeletonofa2D">
+<title>Straight Skeleton of a 2D Weakly Simple Polygon</title>
+<para>Given a contour edge called the <emphasis>source edge</emphasis>, its <emphasis>offset edge</emphasis> at time <computeroutput>t</computeroutput> is an edge parallel with the same orientation such that the Euclidean distance between the lines supporting both edges is exactly <computeroutput>t</computeroutput>. An offset edge is always located to the bounded side of its source edge (which is an oriented straight line segment).</para>
+<para>The straight skeleton is spawned by applying a continuous, <emphasis>inward offsetting</emphasis> to the contour edges. Under this transformation, polygon vertices move along the angular bisector of the lines subtending the edges, at a speed that depends on the angle between the two incident contour edges. So-called <emphasis>events</emphasis> happen when two moving vertices impact each other, or when a moving vertex collides with an offset edge. The different event types are detailed in the documentation of the class <computeroutput><ref refid="classCGAL_1_1Straight__skeleton__builder__2" kindref="compound">CGAL::Straight_skeleton_builder_2</ref></computeroutput>.</para>
+<para>The straight skeleton is the set of segments traced out by the moving vertices during this process. It forms a unique partitioning of the polygon interior into <emphasis>straight skeleton regions</emphasis> corresponding to the monotone areas traced by the continuous inward offsetting of the contour edges. Each region corresponds to exactly 1 contour edge. These regions are bounded by the angular bisectors of the supporting lines of the contour edges, and each such region is itself a non-convex, weakly simple polygon.</para>
+<para><anchor id="index_1fig__MoreSLS"/> <image type="html" name="simple_skeleton_0.png"></image>
+ <image type="latex" name="simple_skeleton_0.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__MoreSLS" kindref="member">fig__MoreSLS</ref> Straight skeletons of various weakly simple polygons. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The main entry points for straight skeletons are the following functions:</para>
+<para><itemizedlist>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1gae1eec4fe2422502d32906f11306a4979" kindref="member">CGAL::create_interior_straight_skeleton_2()</ref> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1ga02808f3323f2e728f04e982020d1e9fd" kindref="member">CGAL::create_exterior_straight_skeleton_2()</ref> </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2Weights">
+<title>Weighted Straight Skeletons</title>
+<para>Weighted straight skeletons are a generalization of straight skeletons: contour edges are assigned a positive weight, which can be understood as assigning a speed to the wavefront spawned from the contour edge. Vertices no longer move along the angular bisector between two contour edges, but along a weighted bisector.</para>
+<para>This CGAL package supports positive multiplicative weights: if the supporting line of a contour edge is described through the equation <computeroutput>ax+by+c=0</computeroutput> then the supporting line of the offset edge at distance <computeroutput>t</computeroutput> is <computeroutput>ax+by+c-t=0</computeroutput>. With a multiplicative weight <computeroutput>w</computeroutput>, the equation becomes <computeroutput>w(ax+by+c)-t=0</computeroutput>. Therefore, a larger weight implies a faster moving front.</para>
+<para><anchor id="index_1fig__SLSWeight"/><center> <image type="html" name="sls_weights.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__SLSWeight" kindref="member">fig__SLSWeight</ref> An unweighted straight skeleton (leftmost) and three randomly weighted straight skeletons. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>A significant change from unweighted straight skeleton of polygon with holes is that the faces of a straight skeleton of a polygon with holes are no longer necessarily weakly simple polygons: a face can for example completely encompass a set of faces incident to a hole, giving it the topology of a ring. This property is essential, both to have a valid halfedge data structure (e.g., one cannot have a face with multiple boundaries), and to correctly extract the offset contours of the straight skeleton. Thus, a post processing step is applied to ensure the weakly simple property in all faces. This post processing adds so-called <emphasis>artificial bisector/vertices</emphasis> where required to cut the face into a weakly simple polygon. This is achieved by shooting a ray from the farthest (w.r.t. time) vertex for each boundary that does not contain the defining contour edge of its incident face.</para>
+<para><anchor id="index_1fig__SLSArtificial"/><center> <image type="html" name="artificial_bisectors.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__SLSArtificial" kindref="member">fig__SLSArtificial</ref> A polygon with four holes (black) and its straight skeleton (red). Three artificial bisectors (green) are added in a post-processing step to recover the simply-connected property for the straight skeleton face (gray) of the rightmost vertical contour edge. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The main entry points for weighted straight skeletons are the following functions:</para>
+<para><itemizedlist>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2WeightedSkeletonFunctions_1ga325dbd960b6d715f39325fa2db01d92a" kindref="member">CGAL::create_interior_weighted_straight_skeleton_2()</ref> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2WeightedSkeletonFunctions_1ga68bd822b108199be009e58c9b30a3c6c" kindref="member">CGAL::create_exterior_weighted_straight_skeleton_2()</ref> </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2StraightSkeletonGeneral">
+<title>Straight Skeleton of a General Polygon</title>
+<para>A straight skeleton can also be defined for a general multiply-connected, planar, directed straight-line graph by considering all the edges as embedded in an unbounded region <ref refid="citelist_1CITEREF_aa-skfgpf-95" kindref="member">[1]</ref>. The only difference is that in this case some faces will be only partially bounded.</para>
+<para>The current version of this CGAL package can only construct the straight skeleton in the interior of a simple polygon with holes, that is it does not handle general polygonal figures in the plane.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Straight_skeleton_2Usages">
+<title>Uses of Straight Skeletons</title>
+<sect2 id="index_1Straight_skeleton_2Offset">
+<title>Polygon Offsetting</title>
+<para><anchor id="index_1Offsets"/> The straight skeleton is defined by the trace of the moving vertices, but one can also consider the state of the polygon at a fixed time <computeroutput>t</computeroutput> made up of the translated vertices. This is the <emphasis>offset polygon</emphasis>.</para>
+<para>An offset polygon can have fewer, equal, or more sides as its source polygon. It can even be composed of multiple polygons. If the source polygon has no holes, then no offset polygon has any holes. If the source polygon has holes, any of the offset polygons can have holes itself, but it might as well have no holes at all (if the distance is sufficiently large). Each offset polygon has the same orientation as the source polygon.</para>
+<para>The main entry points for polygon offsetting are the following functions:</para>
+<para><itemizedlist>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga36fe6fd001343f6cd0a3e8b06d1c325c" kindref="member">CGAL::create_offset_polygons_2()</ref> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga4baa6cdc2cc19c341be875742387254b" kindref="member">CGAL::create_interior_skeleton_and_offset_polygons_2()</ref> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gabe025331b6e803f2f942305123a02306" kindref="member">CGAL::create_interior_skeleton_and_offset_polygons_with_holes_2()</ref> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2WeightedOffsetFunctions_1ga773095b0af928be7e38960c7ae46d00d" kindref="member">CGAL::create_interior_weighted_skeleton_and_offset_polygons_2()</ref> </para>
+</listitem>
+<listitem>
+<para><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gaee073b6bd62fb5722bad41528647ec30" kindref="member">CGAL::create_interior_weighted_skeleton_and_offset_polygons_with_holes_2()</ref> </para>
+</listitem>
+</itemizedlist>
+</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2ExteriorSkeletonsandExterior">
+<title>Exterior Straight Skeletons and Exterior Offset Contours</title>
+<para>This CGAL package can only construct the straight skeleton and offset contours in the <emphasis>interior</emphasis> of a polygon with holes. However, constructing exterior skeletons and exterior offsets is possible.</para>
+<para>Say you have some polygon with one hole, and you wish to obtain some exterior offset contours. The interior region of a polygon with holes is connected while the exterior region is not: there is an unbounded region outside the outer contour, and one bounded region inside each hole. To construct an offset contour you need to construct a straight skeleton. Thus, to construct exterior offset contours for a polygon with holes, you need to construct, <emphasis>separately</emphasis>, the exterior skeleton of the outer contour and the interior skeleton of each hole.</para>
+<para>Constructing the interior skeleton of a hole is directly supported by this CGAL package; you simply need to input the hole&apos;s vertices in reversed order as if it were an outer contour as to treat them as simple polygons without holes. The offset contour(s) should also be reversed.</para>
+<para>Constructing the exterior skeleton of the outer contour is achieved by means of the following trick: consider the outer contour as a hole of a larger rectangle (call it <emphasis>frame</emphasis>). If the frame is sufficiently separated from the contour, the resulting skeleton will be equivalent to a <emphasis>real</emphasis> exterior skeleton once the offset contour corresponding to the outer frame is removed, which is performed automatically by some of the functions of this package.</para>
+<para><anchor id="index_1fig__SLSExterior"/><center> <image type="html" name="exterior_skeleton.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__SLSExterior" kindref="member">fig__SLSExterior</ref> Exterior skeleton obtained using a frame (left) and 2 sample exterior offset contours (right) <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><htmlonly block="yes"> &lt;div class=&quot;CGALAdvanced&quot;&gt; &lt;div&gt;Advanced&lt;/div&gt; </htmlonly></para>
+<para>It is necessary to place the frame sufficiently far away from the contour. If it is not, it could occur that the outward offset contour collides and merges with the inward offset frame, resulting in 1 instead of 2 offset contours. However, the proper separation between the contour and the frame is not directly given by the offset distance at which you want the offset contour. That distance must be at least the desired offset plus the largest euclidean distance between an offset vertex and its original. This CGAL packages provides a helper function to compute the required separation: <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga80c0848e0145bbd531b1fc178fd07d33" kindref="member">compute_outer_frame_margin()</ref></computeroutput>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly></para>
+<para>For convenience, the following functions are provided:</para>
+<para><itemizedlist>
+<listitem>
+<para><computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gaee243d012e7f942b4d1365dc307546b8" kindref="member">CGAL::create_exterior_skeleton_and_offset_polygons_2()</ref></computeroutput>, which adds the outer frame to the input polygon (with or without holes) and provides output offset polygons (<computeroutput><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2</ref></computeroutput>), <bold>including</bold> the offset of the outer frame. </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga7627d015c03abaea59b144576afebf70" kindref="member">CGAL::create_exterior_skeleton_and_offset_polygons_with_holes_2()</ref></computeroutput>, which adds the outer frame to the input polygon (with or without holes) and provides as output offset polygons with holes (<computeroutput><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2</ref></computeroutput>), <bold>excluding</bold> the offset of the outer frame. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>These also exists in weighted versions.</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2Extrusion">
+<title>Straight Skeleton Extrusion</title>
+<para>Perhaps the first (historically) use-case of straight skeletons: given a polygonal roof, the straight skeleton directly gives the layout of each tent. If each skeleton edge is lifted from the plane a height equal to its offset distance, the resulting roof is &quot;correct&quot; in that water will always fall down to the contour edges (the roof&apos;s border), regardless of where it falls on the roof. Laycock and Day <ref refid="citelist_1CITEREF_cgal:ld-agrm-03" kindref="member">[4]</ref> give an algorithm for roof design based on the straight skeleton.</para>
+<para>This CGAL package implements skeleton extrusion for polygons with holes, with support for positive multiplicative weights. The output is a closed, combinatorially 2-manifold surface triangle mesh.</para>
+<para><anchor id="index_1fig__SLSExtrusion"/><center> <image type="html" name="sls_extrusion.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__SLSExtrusion" kindref="member">fig__SLSExtrusion</ref> Input polygon (left), weighted skeleton with colored faces (middle), and extruded skeleton (right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The main entry point for straight skeleton extrusion is the function <computeroutput><ref refid="group__PkgStraightSkeleton2Extrusion_1ga0d1ccb10934bb54fb88a6174f30dfe49" kindref="member">CGAL::extrude_skeleton()</ref></computeroutput>, whose API also enables passing angles for each tent, which are then converted internally to edge weights.</para>
+<para>The extrusion can be performed to a maximum height, as shown in the figure below.</para>
+<para><anchor id="index_1fig__SLSCroppedExtrusion"/><center> <image type="html" name="sls_cropped_extrusion.png" inline="yes"></image>
+ </center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__SLSCroppedExtrusion" kindref="member">fig__SLSCroppedExtrusion</ref> Input polygon with three holes and its weighted straight skeleton (left), and two extrusions of the skeleton with different maximum heights (middle and right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2OtherUsages">
+<title>Other Uses of Straight Skeletons</title>
+<para>Just like medial axes, straight skeletons can also be used for 2D shape description and matching. Essentially, all the applications of image-based skeletonization (for which there is a vast literature) are also direct applications of the straight skeleton, especially since skeleton edges are simply straight line segments.</para>
+<para>Consider the subgraph formed only by <emphasis>inner bisectors</emphasis> (that is, only the skeleton edges which are not incident upon a contour vertex). Call this subgraph a <emphasis>skeleton axis</emphasis>. Each node in the skeleton axis whose degree is <formula id="0">$ &gt;=3$</formula> roots more than one skeleton tree. Each skeleton tree roughly corresponds to a region in the input topologically equivalent to a rectangle; that is, without branches. For example, a simple character &quot;H&quot; would contain 2 higher degree nodes separating the skeleton axis in 5 trees; while the character &quot;@&quot; would contain just 1 higher degree node separating the skeleton axis in 2 curly trees.</para>
+<para>Since a skeleton edge is a straight line, each branch in a skeleton tree is a polyline. Thus, the path-length of the tree can be directly computed. Furthermore, the polyline for a particular tree can be interpolated to obtain curve-related information.</para>
+<para>Pruning each skeleton tree cutting off branches whose length is below some threshold; or smoothing a given branch, can be used to reconstruct the polygon without undesired details, or fit into a particular canonical shape.</para>
+<para>Each skeleton edge in a skeleton branch is associated with 2 contour edges which are facing each other. If the polygon has a bottleneck (it almost touches itself), a search in the skeleton graph measuring the distance between each pair of contour edges will reveal the location of the bottleneck, allowing you to cut the shape in two. Likewise, if two shapes are too close to each other along some part of their boundaries (a near contact zone), a similar search in an exterior skeleton of the two shapes at once would reveal the parts of near contact, allowing you to stitch the shapes. These <emphasis>cut and stitch</emphasis> operations can be directly executed in the straight skeleton itself instead of the input polygon (because the straight skeleton contains a graph of the connected contour edges).</para>
+</sect2>
+</sect1>
+<sect1 id="index_1Straight_skeleton_2Implementation">
+<title>Implementation Details</title>
+<para>The reference manual of this CGAL package contains many details about the straight skeleton construction algorithm that has been implemented. In particular, the classes and <computeroutput><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Straight__skeleton__builder__2" kindref="compound">CGAL::Straight_skeleton_builder_2</ref></computeroutput> describe the algorithm in depth.</para>
+</sect1>
+<sect1 id="index_1Straight_skeleton_2Examples">
+<title>Examples</title>
+<sect2 id="index_1Straight_skeleton_2CreateaStraightSkeleton">
+<title>Create a Straight Skeleton</title>
+<para>The straight skeleton data structure is implemented in the class <computeroutput><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2</ref></computeroutput>.</para>
+<para>The simplest way to construct a straight skeleton is via the free functions <computeroutput><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1gae1eec4fe2422502d32906f11306a4979" kindref="member">CGAL::create_interior_straight_skeleton_2()</ref></computeroutput> and <computeroutput><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1ga02808f3323f2e728f04e982020d1e9fd" kindref="member">CGAL::create_exterior_straight_skeleton_2()</ref></computeroutput>, as shown in the following example:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2Create_straight_skeleton_2_8cpp-example" kindref="compound">Straight_skeleton_2/Create_straight_skeleton_2.cpp</ref> <programlisting filename="Straight_skeleton_2/Create_straight_skeleton_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/create_straight_skeleton_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_2/IO/print.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_straight_skeleton_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2&lt;K&gt;</ref><sp/>Ss<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Ss&gt;<sp/>SsPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>poly<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,-12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(poly.<ref refid="classCGAL_1_1Polygon__2_1a50f72a61b1a3eac123e10a8b6d928635" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_counterclockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>You<sp/>can<sp/>pass<sp/>the<sp/>polygon<sp/>via<sp/>an<sp/>iterator<sp/>pair</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SsPtr<sp/>iss<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1gae1eec4fe2422502d32906f11306a4979" kindref="member">CGAL::create_interior_straight_skeleton_2</ref>(poly.<ref refid="classCGAL_1_1Polygon__2_1a2727b04f3e3748027a1a37fdf8b997ac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">vertices_begin</ref>(),<sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1ac1871b3edc12a06f77c46e9169f3c19c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">vertices_end</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_straight_skeleton(*iss);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawPolygonSet2_1gac5ad1c3be15e88df46b096885a023ff4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Boolean_set_operations_2.tag">CGAL::draw</ref>(*iss);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Or<sp/>you<sp/>can<sp/>pass<sp/>the<sp/>polygon<sp/>directly,<sp/>as<sp/>below.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>To<sp/>create<sp/>an<sp/>exterior<sp/>straight<sp/>skeleton<sp/>you<sp/>need<sp/>to<sp/>specify<sp/>a<sp/>maximum<sp/>offset.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>lMaxOffset<sp/>=<sp/>5<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SsPtr<sp/>oss<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1ga02808f3323f2e728f04e982020d1e9fd" kindref="member">CGAL::create_exterior_straight_skeleton_2</ref>(lMaxOffset,<sp/>poly);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_straight_skeleton(*oss);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawPolygonSet2_1gac5ad1c3be15e88df46b096885a023ff4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Boolean_set_operations_2.tag">CGAL::draw</ref>(*oss);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>The input to these functions is the polygon, which can be given as an iterator pair or directly as a <computeroutput><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2</ref></computeroutput> object. In the case of the exterior skeleton, a maximum offset must be specified as well (see Section <ref refid="index_1Straight_skeleton_2ExteriorSkeletonsandExterior" kindref="member">Straight_skeleton_2ExteriorSkeletonsandExterior</ref> for details on this max offset parameter).</para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2CreateaStraightSkeleton_1">
+<title>Create a Straight Skeleton from a Polygon With Holes</title>
+<para>If <computeroutput><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2</ref></computeroutput> is used, you can pass an instance of it directly to the function creating the interior skeleton, as shown below. Notice that a different header must be included in this case.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2Create_straight_skeleton_from_polygon_with_holes_2_8cpp-example" kindref="compound">Straight_skeleton_2/Create_straight_skeleton_from_polygon_with_holes_2.cpp</ref> <programlisting filename="Straight_skeleton_2/Create_straight_skeleton_from_polygon_with_holes_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/create_straight_skeleton_from_polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_2/IO/print.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;K&gt;</ref><sp/>Polygon_with_holes<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2&lt;K&gt;</ref><sp/><sp/>Ss<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Ss&gt;<sp/>SsPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>outer<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,-12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>hole<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,1<sp/>)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,0<sp/>)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(outer.<ref refid="classCGAL_1_1Polygon__2_1a50f72a61b1a3eac123e10a8b6d928635" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_counterclockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(hole.<ref refid="classCGAL_1_1Polygon__2_1a97bf2a2897ddb855b1029e47c12f8c30" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_clockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polygon_with_holes<sp/>poly(<sp/>outer<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.add_hole(<sp/>hole<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SsPtr<sp/>iss<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1gae1eec4fe2422502d32906f11306a4979" kindref="member">CGAL::create_interior_straight_skeleton_2</ref>(poly);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_straight_skeleton(*iss);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2CreateOffsetPolygonsfrom">
+<title>Create Offset Polygons from a Straight Skeleton</title>
+<para>If you already have a straight skeleton object, the simpler way to generate offset polygons is to call <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga36fe6fd001343f6cd0a3e8b06d1c325c" kindref="member">CGAL::create_offset_polygons_2()</ref></computeroutput> as shown in the next example, passing the desired offset and the straight skeleton. You can reuse the same skeleton to generate offsets at a different distance, which is recommended because producing the straight skeleton is much slower than generating offset polygons.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2Create_offset_polygons_2_8cpp-example" kindref="compound">Straight_skeleton_2/Create_offset_polygons_2.cpp</ref> <programlisting filename="Straight_skeleton_2/Create_offset_polygons_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/create_offset_polygons_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_2/IO/print.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2&lt;K&gt;</ref><sp/>Ss<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Polygon_2&gt;<sp/>PolygonPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Ss&gt;<sp/>SsPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;PolygonPtr&gt;<sp/>PolygonPtrVector<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>poly<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,-12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(poly.<ref refid="classCGAL_1_1Polygon__2_1a50f72a61b1a3eac123e10a8b6d928635" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_counterclockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>SsPtr<sp/>ss<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2SkeletonFunctions_1gae1eec4fe2422502d32906f11306a4979" kindref="member">CGAL::create_interior_straight_skeleton_2</ref>(poly);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>lOffset<sp/>=<sp/>1<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolygonPtrVector<sp/>offset_polygons<sp/>=<sp/>CGAL::create_offset_polygons_2&lt;Polygon_2&gt;(lOffset,*ss);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_polygons(offset_polygons);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2CreateOffsetPolygonsfrom_1">
+<title>Create Offset Polygons from a Polygon (With or Without Holes)</title>
+<para>If you need offset polygons at a single distance, you can hide away the construction of the straight skeleton by calling directly the functions <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga4baa6cdc2cc19c341be875742387254b" kindref="member">CGAL::create_interior_skeleton_and_offset_polygons_2()</ref></computeroutput> and <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gaee243d012e7f942b4d1365dc307546b8" kindref="member">CGAL::create_exterior_skeleton_and_offset_polygons_2()</ref></computeroutput> as shown in the following examples:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2Create_skeleton_and_offset_polygons_2_8cpp-example" kindref="compound">Straight_skeleton_2/Create_skeleton_and_offset_polygons_2.cpp</ref> <programlisting filename="Straight_skeleton_2/Create_skeleton_and_offset_polygons_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/create_offset_polygons_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_2/IO/print.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2&lt;K&gt;</ref><sp/>Ss<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Polygon_2&gt;<sp/>PolygonPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Ss&gt;<sp/>SsPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;PolygonPtr&gt;<sp/>PolygonPtrVector<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>poly<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,-12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(poly.<ref refid="classCGAL_1_1Polygon__2_1a50f72a61b1a3eac123e10a8b6d928635" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_counterclockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>lOffset<sp/>=<sp/>1<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolygonPtrVector<sp/>inner_offset_polygons<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga4baa6cdc2cc19c341be875742387254b" kindref="member">CGAL::create_interior_skeleton_and_offset_polygons_2</ref>(lOffset,poly);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolygonPtrVector<sp/>outer_offset_polygons<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gaee243d012e7f942b4d1365dc307546b8" kindref="member">CGAL::create_exterior_skeleton_and_offset_polygons_2</ref>(lOffset,poly);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_polygons(inner_offset_polygons);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_polygons(outer_offset_polygons);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>... and using a <computeroutput><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref></computeroutput> directly when available:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2Create_saop_from_polygon_with_holes_2_8cpp-example" kindref="compound">Straight_skeleton_2/Create_saop_from_polygon_with_holes_2.cpp</ref> <programlisting filename="Straight_skeleton_2/Create_saop_from_polygon_with_holes_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/create_offset_polygons_from_polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_2/IO/print.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;K&gt;</ref><sp/>Polygon_with_holes<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2&lt;K&gt;</ref><sp/><sp/>Ss<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Polygon_2&gt;<sp/>PolygonPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Ss&gt;<sp/>SsPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;PolygonPtr&gt;<sp/>PolygonPtrVector<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>outer<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,-12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,12)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-12,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>hole<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(-1,0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,1<sp/>)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(1,0<sp/>)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(0,-1)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(outer.<ref refid="classCGAL_1_1Polygon__2_1a50f72a61b1a3eac123e10a8b6d928635" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_counterclockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(hole.<ref refid="classCGAL_1_1Polygon__2_1a97bf2a2897ddb855b1029e47c12f8c30" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_clockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polygon_with_holes<sp/>poly(<sp/>outer<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.add_hole(<sp/>hole<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>lOffset<sp/>=<sp/>0.2<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolygonPtrVector<sp/>offset_polygons<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga4baa6cdc2cc19c341be875742387254b" kindref="member">CGAL::create_interior_skeleton_and_offset_polygons_2</ref>(lOffset,poly);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_polygons(offset_polygons);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>If the input polygon has holes, there can be holes in the offset polygons. However, the polygons generated by all the offsetting functions shown before do not have any parent-hole relationship computed; that is, they just instances of <computeroutput><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref></computeroutput> instead of <computeroutput><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref></computeroutput>. If <computeroutput><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref></computeroutput> are available and you need the offsetting to produce them, you can call the function <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gafd9733f1c41a778c6e274017ddae9ade" kindref="member">CGAL::arrange_offset_polygons_2()</ref></computeroutput> passing the result of any of the offsetting functions described so far. That function arranges the offset polygons detecting and distributing holes within parents. As a shortcut, you can use the function <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gabe025331b6e803f2f942305123a02306" kindref="member">CGAL::create_interior_skeleton_and_offset_polygons_with_holes_2()</ref></computeroutput> as shown below:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2Create_skeleton_and_offset_polygons_with_holes_2_8cpp-example" kindref="compound">Straight_skeleton_2/Create_skeleton_and_offset_polygons_with_holes_2.cpp</ref> <programlisting filename="Straight_skeleton_2/Create_skeleton_and_offset_polygons_with_holes_2.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/create_offset_polygons_from_polygon_with_holes_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_2/IO/print.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Point<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;K&gt;</ref><sp/>PolygonWithHoles<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;PolygonWithHoles&gt;<sp/>PolygonWithHolesPtr<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;PolygonWithHolesPtr&gt;<sp/>PolygonWithHolesPtrVector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>outer<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(<sp/>0.0,<sp/>0.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(10.0,<sp/>0.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(10.0,<sp/>4.5)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12.0,<sp/>4.5)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12.0,<sp/>2.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(16.0,<sp/>2.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(16.0,<sp/>8.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12.0,<sp/>8.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(12.0,<sp/>5.5)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(10.0,<sp/>5.5)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(10.0,10.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>outer.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(<sp/>0.0,10.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>hole<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(3.0,3.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(3.0,7.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(7.0,7.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole.<ref refid="classCGAL_1_1Polygon__2_1a66ff561172016056897409f26f23add1" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">push_back</ref>(<sp/>Point(7.0,3.0)<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(outer.<ref refid="classCGAL_1_1Polygon__2_1a50f72a61b1a3eac123e10a8b6d928635" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_counterclockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(hole.<ref refid="classCGAL_1_1Polygon__2_1a97bf2a2897ddb855b1029e47c12f8c30" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">is_clockwise_oriented</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolygonWithHoles<sp/>poly(<sp/>outer<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>poly.add_hole(<sp/>hole<sp/>)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>lOffset<sp/>=<sp/>1<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PolygonWithHolesPtrVector<sp/>offset_poly_with_holes<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gabe025331b6e803f2f942305123a02306" kindref="member">CGAL::create_interior_skeleton_and_offset_polygons_with_holes_2</ref>(lOffset,poly);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_polygons_with_holes(offset_poly_with_holes);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><htmlonly block="yes"> &lt;div class=&quot;CGALAdvanced&quot;&gt; &lt;div&gt;Advanced&lt;/div&gt; </htmlonly></para>
+<para>Consider an input polygon with parallel edges separated a distance <formula id="5">$ 2*t$</formula>. If you produce an offset polygon at distance <formula id="6">$ t$</formula>, these parallel edges will just collapse each other and vanish from the result, keeping the output as a <emphasis>simple polygon</emphasis>, just like the input. However, if you request an offset polygon at a distance <formula id="7">$ t-epsilon$</formula>, the result will still be a simple polygon but with edges that are so close to each other that will almost intersect. If a kernel with exact constructions is used, the offsetting algorithm can guarantee that the output contains only simple polygons. However, if inexact constructions are used the roundoff in the coordinates of the output points will cause parallel edges that <emphasis>almost</emphasis> collapse-but not so-to become really collinear or even cross each other.</para>
+<para>Thus, it is necessary to use a kernel with exact constructions if offset polygons must be simple, yet computing a straight skeleton using that kernel is very slow, much more than computing the offset polygons. To help with this, it is possible to construct the straight skeleton using the recommended kernel <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_inexact_constructions_kernel</ref></computeroutput>, then convert the skeleton to a different kernel via the function <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga84423baa5902a7d6c2f8278f93d82f32" kindref="member">CGAL::convert_straight_skeleton_2()</ref></computeroutput> and input the converted skeleton to the offsetting functions.</para>
+<para>All the offsetting functions that take polygons as input (and create the straight skeleton under the hood) apply that optimization automatically: that is, the output polygons are defined over the same kernel of the input polygons, whatever that is, yet the straight skeleton is constructed with the faster recommended kernel and converted if necessary.</para>
+<para>Notice how some of the examples above use <computeroutput><ref refid="classCGAL_1_1Exact__predicates__exact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_exact_constructions_kernel</ref></computeroutput>. In all cases, the straight skeleton is constructed using <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_inexact_constructions_kernel</ref></computeroutput>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly></para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2ExtrusionExample">
+<title>Extrude the Skeleton of a Polygon with Holes</title>
+<para>The following example shows how to extrude the weighted skeleton of a polygon with holes:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2extrude_skeleton_8cpp-example" kindref="compound">Straight_skeleton_2/extrude_skeleton.cpp</ref> <programlisting filename="Straight_skeleton_2/extrude_skeleton.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//#include<sp/>&lt;CGAL/Exact_predicates_exact_constructions_kernel_with_sqrt.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_straight_skeleton_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/draw_surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;CGAL/input_helpers.h&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="comment">//<sp/>polygon<sp/>reading,<sp/>random<sp/>polygon<sp/>with<sp/>weights<sp/>generation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/extrude_skeleton.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/polygon_mesh_io.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Real_timer.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Random.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;unordered_map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">SS<sp/>=<sp/>CGAL::CGAL_SS_i;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">PMP<sp/>=<sp/>CGAL::Polygon_mesh_processing;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Kernel<sp/>choice:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>EPICK:<sp/>Robust<sp/>and<sp/>fast</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>EPECK_with_sqrt:<sp/>Exact<sp/>and<sp/>slow</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>EPECK:<sp/>More<sp/>robust,<sp/>and<sp/>less<sp/>slow<sp/>than<sp/>EPECK_with_sqrt</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">K<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>using<sp/>K<sp/>=<sp/>CGAL::Exact_predicates_exact_constructions_kernel;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>using<sp/>K<sp/>=<sp/>CGAL::Exact_predicates_exact_constructions_kernel_with_sqrt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/>=<sp/>K::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>=<sp/>K::Point_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref><sp/>=<sp/>K::Segment_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Line__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Line_2</ref><sp/>=<sp/>K::Line_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>=<sp/>K::Point_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Vector__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Vector_3</ref><sp/>=<sp/>K::Vector_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">Polygon_with_holes_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">Straight_skeleton_2</ref><sp/>=<sp/><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Straight_skeleton_2_ptr<sp/>=<sp/>std::shared_ptr&lt;Straight_skeleton_2&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh<sp/>=<sp/>CGAL::Surface_mesh&lt;Point_3&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.precision(17);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr.precision(17);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc_check<sp/>=<sp/>argc<sp/>-<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>poly_filename<sp/>=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>speeds_filename<sp/>=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>height<sp/>=<sp/>FT{(std::numeric_limits&lt;double&gt;::max)()};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>use_angles<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;<sp/></highlight><highlight class="comment">//<sp/>whether<sp/>the<sp/>input<sp/>is<sp/>SLS<sp/>edge<sp/>weights,<sp/>or<sp/>taper<sp/>angles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>flip_weights<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;<sp/></highlight><highlight class="comment">//<sp/>takes<sp/>the<sp/>opposite<sp/>for<sp/>weights,<sp/>and<sp/>the<sp/>complement<sp/>for<sp/>angles</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>below<sp/>is<sp/>only<sp/>used<sp/>for<sp/>random<sp/>weight<sp/>generation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>min_weight<sp/>=<sp/>1.,<sp/>max_weight<sp/>=<sp/>10.;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>seed<sp/>=<sp/>CGAL::get_default_random().get_seed();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>1;<sp/>i<sp/>&lt;<sp/>argc;<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-h&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>||<sp/>!strcmp(</highlight><highlight class="stringliteral">&quot;--help&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>||<sp/>!strcmp(</highlight><highlight class="stringliteral">&quot;-?&quot;</highlight><highlight class="normal">,<sp/>argv[i]))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Usage:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>argv[0]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;[options].\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;Options:\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/>-i<sp/>&lt;input_filename&gt;:<sp/>input<sp/>polygon<sp/>filename.\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/>-t<sp/>&lt;value&gt;:<sp/>height.<sp/>Must<sp/>be<sp/>non-zero.\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/>-a<sp/>&lt;angles_filename&gt;:<sp/>angles.<sp/>Format:<sp/>one<sp/>angle<sp/>per<sp/>line,<sp/>a<sp/>space<sp/>to<sp/>separate<sp/>borders.\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/>-w<sp/>&lt;weights_filename&gt;:<sp/>weights.<sp/>Format:<sp/>one<sp/>weight<sp/>per<sp/>line,<sp/>a<sp/>space<sp/>to<sp/>separate<sp/>borders.\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/>Note:<sp/>-w<sp/>and<sp/>-a<sp/>are<sp/>exclusive.\n&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-i&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>&amp;&amp;<sp/>i<sp/>&lt;<sp/>argc_check)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>poly_filename<sp/>=<sp/>argv[++i];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-w&quot;</highlight><highlight class="normal">,<sp/>argv[i]))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(speeds_filename<sp/>!=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>-w<sp/>and<sp/>-a<sp/>are<sp/>exclusive.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>speeds_filename<sp/>=<sp/>argv[++i];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>use_angles<sp/>=<sp/></highlight><highlight class="keyword">false</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-a&quot;</highlight><highlight class="normal">,<sp/>argv[i]))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(speeds_filename<sp/>!=<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>-w<sp/>and<sp/>-a<sp/>are<sp/>exclusive.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>speeds_filename<sp/>=<sp/>argv[++i];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>use_angles<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-t&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>&amp;&amp;<sp/>i<sp/>&lt;<sp/>argc_check)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>height<sp/>=<sp/>std::stod(argv[++i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-mw&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>&amp;&amp;<sp/>i<sp/>&lt;<sp/>argc_check)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>min_weight<sp/>=<sp/>std::stod(argv[++i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-Mw&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>&amp;&amp;<sp/>i<sp/>&lt;<sp/>argc_check)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>max_weight<sp/>=<sp/>std::stod(argv[++i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-f&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>&amp;&amp;<sp/>i<sp/>&lt;<sp/>argc)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>flip_weights<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}<sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!strcmp(</highlight><highlight class="stringliteral">&quot;-s&quot;</highlight><highlight class="normal">,<sp/>argv[i])<sp/>&amp;&amp;<sp/>i<sp/>&lt;<sp/>argc_check)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>seed<sp/>=<sp/>std::stoi(argv[++i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="group__PkgAlgebraicFoundationsRef_1ga997aad1528e7e744e54a807caa2be56e" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL::is_zero</ref>(height))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>height<sp/>must<sp/>be<sp/>non-zero&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Real_timer<sp/>timer;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.start();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polygon_with_holes_2<sp/>pwh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(poly_filename<sp/>==<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>pwh<sp/>=<sp/>generate_random_polygon&lt;Polygon_with_holes_2&gt;(seed);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!read_input_polygon(poly_filename,<sp/>pwh)<sp/>||<sp/>pwh.outer_boundary().is_empty())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>failure<sp/>during<sp/>polygon<sp/>read&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_SLS_OUTPUT_FILES</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out_poly(</highlight><highlight class="stringliteral">&quot;input.dat&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out_poly.precision(17);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out_poly<sp/>&lt;&lt;<sp/>pwh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out_poly.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>read<sp/>segment<sp/>speeds<sp/>(angles<sp/>or<sp/>weights)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;std::vector&lt;FT&gt;<sp/>&gt;<sp/>speeds;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(speeds_filename<sp/>==<sp/></highlight><highlight class="keyword">nullptr</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>generate_random_weights(pwh,<sp/>min_weight,<sp/>max_weight,<sp/>seed,<sp/>speeds);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>read_segment_speeds(speeds_filename,<sp/>speeds);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(flip_weights)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(use_angles)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>contour_speeds<sp/>:<sp/>speeds)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(FT&amp;<sp/>a<sp/>:<sp/>contour_speeds)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>a<sp/>=<sp/>180<sp/>-<sp/>a;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(</highlight><highlight class="keyword">auto</highlight><highlight class="normal">&amp;<sp/>contour_speeds<sp/>:<sp/>speeds)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(FT&amp;<sp/>w<sp/>:<sp/>contour_speeds)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>w<sp/>=<sp/>-w;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Reading<sp/>input(s)<sp/>took<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>timer.time()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>s.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>End<sp/>of<sp/>I/O,<sp/>do<sp/>some<sp/>slope<sp/>preprocessing<sp/>and<sp/>check<sp/>the<sp/>validity<sp/>of<sp/>the<sp/>input(s)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>-----------------------------------------------------------------------------------------------</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.reset();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.start();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>sm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(use_angles)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgStraightSkeleton2Extrusion_1ga0d1ccb10934bb54fb88a6174f30dfe49" kindref="member">CGAL::extrude_skeleton</ref>(pwh,<sp/>sm,<sp/>CGAL::parameters::angles(speeds).maximum_height(height));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="group__PkgStraightSkeleton2Extrusion_1ga0d1ccb10934bb54fb88a6174f30dfe49" kindref="member">CGAL::extrude_skeleton</ref>(pwh,<sp/>sm,<sp/>CGAL::parameters::weights(speeds).maximum_height(height));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>timer.stop();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Extrusion<sp/>computation<sp/>took<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>timer.time()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>s.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgDrawPolygonSet2_1gac5ad1c3be15e88df46b096885a023ff4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Boolean_set_operations_2.tag">CGAL::draw</ref>(sm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgBGLIOFct_1gafa143949a33371dc6df8307be1ab8a66" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_polygon_mesh</ref>(</highlight><highlight class="stringliteral">&quot;extruded_skeleton.off&quot;</highlight><highlight class="normal">,<sp/>sm,<sp/>CGAL::parameters::stream_precision(17));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Straight_skeleton_2LowlevelAPI">
+<title>Low Level API</title>
+<para>All the high level functions described above are just wrappers around the low-level API described here. This low level API is richer and provides options and configurations not covered by any of those functions.</para>
+<para>The straight skeleton construction algorithm is encapsulated in the class <computeroutput><ref refid="classCGAL_1_1Straight__skeleton__builder__2" kindref="compound">CGAL::Straight_skeleton_builder_2</ref></computeroutput>, which is parameterized by a geometric traits (<computeroutput><ref refid="classCGAL_1_1Straight__skeleton__builder__traits__2" kindref="compound">CGAL::Straight_skeleton_builder_traits_2</ref></computeroutput>) and the Straight Skeleton class.</para>
+<para>The offset contours construction algorithm is encapsulated in the class <computeroutput><ref refid="classCGAL_1_1Polygon__offset__builder__2" kindref="compound">CGAL::Polygon_offset_builder_2</ref></computeroutput>, which is parameterized by the Straight Skeleton class, a geometric traits (<computeroutput><ref refid="classCGAL_1_1Polygon__offset__builder__traits__2" kindref="compound">Polygon_offset_builder_traits_2</ref>&lt;<ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>&gt;</computeroutput>) and a container type where the resulting offset polygons are generated.</para>
+<para>To construct the straight skeleton of a polygon the user must:</para>
+<para><orderedlist>
+<listitem>
+<para>Instantiate the straight skeleton builder. </para>
+</listitem>
+<listitem>
+<para>Enter one contour at a time, starting from the outer contour, via the method <computeroutput><ref refid="classCGAL_1_1Straight__skeleton__builder__2_1a5ac872b690910d5c9a6f3310bd3eb2a6" kindref="member">Straight_skeleton_builder_2::enter_contour()</ref></computeroutput>. The input polygon must be weakly simple and counter-clockwise oriented (see the definitions at the beginning of this chapter). Collinear edges are allowed. The insertion order of each hole is unimportant but the outer contour must be entered first. </para>
+</listitem>
+<listitem>
+<para>Call <computeroutput><ref refid="classCGAL_1_1Straight__skeleton__builder__2_1a1ba257b3fd2257b981d2c65d9faa8b17" kindref="member">Straight_skeleton_builder_2::construct_skeleton()</ref></computeroutput> once <emphasis>all</emphasis> the contours have been entered. You cannot enter another contour once the skeleton has been constructed. </para>
+</listitem>
+</orderedlist>
+</para>
+<para>To construct a set of inward offset contours the user must:</para>
+<para><orderedlist>
+<listitem>
+<para>Construct the straight skeleton of the source polygon. </para>
+</listitem>
+<listitem>
+<para>Instantiate the polygon offset builder passing in the straight skeleton as a parameter. </para>
+</listitem>
+<listitem>
+<para>Call <computeroutput><ref refid="classCGAL_1_1Polygon__offset__builder__2_1ad7470fe29066e3cb06635fa43f96fcab" kindref="member">Polygon_offset_builder_2::construct_offset_contours()</ref></computeroutput> passing the desired offset distance and an output iterator that can store a <computeroutput>std::shared_ptr</computeroutput> of <computeroutput><ref refid="classContainer" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Container</ref></computeroutput> instances into a resulting sequence (typically, a back insertion iterator) </para>
+</listitem>
+</orderedlist>
+</para>
+<para>Each element in the resulting sequence is an <emphasis>offset contour</emphasis>, given by a <computeroutput>std::shared_ptr</computeroutput> holding a dynamically allocated instance of the <ref refid="classContainer" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Container</ref> type. Such a container can be any model of the <computeroutput><ref refid="classSequenceContainer" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">SequenceContainer</ref></computeroutput> concept, for example, a <computeroutput><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2</ref></computeroutput>, or just a <computeroutput>std::vector</computeroutput> of 2D points.</para>
+<para>The resulting sequence of offset contours can contain both outer and inner contours. Each offset hole (inner offset contour) would logically belong in the interior of some of the outer offset contours. However, this algorithm returns a sequence of contours in arbitrary order and there is no indication whatsoever of the parental relationship between inner and outer contours.</para>
+<para>On the other hand, each outer contour is counter-clockwise oriented while each hole is clockwise-oriented. And since offset contours do form simple polygons, it is guaranteed that no hole will be inside another hole, no outer contour will be inside any other contour, and each hole will be inside exactly 1 outer contour.</para>
+<para>Parental relationships are <emphasis>not</emphasis> automatically reconstructed by this algorithm because this relation is not directly given by the input polygon and must be done as a post-processing step. The function <computeroutput><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1gafd9733f1c41a778c6e274017ddae9ade" kindref="member">CGAL::arrange_offset_polygons_2()</ref></computeroutput> can be used to do that efficiently.</para>
+<para>A user can reconstruct the parental relationships as a post processing operation by testing each inner contour (which is identified by being clockwise) against each outer contour (identified as being counter-clockwise) for insideness.</para>
+<para>This algorithm requires exact predicates but not exact constructions. Therefore, the <computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_inexact_constructions_kernel</ref></computeroutput> should be used.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Straight_skeleton_2_2Low_level_API_8cpp-example" kindref="compound">Straight_skeleton_2/Low_level_API.cpp</ref> <programlisting filename="Straight_skeleton_2/Low_level_API.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2_algorithms.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_builder_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_offset_builder_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/compute_outer_frame_margin.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Straight_skeleton_2/IO/print.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;memory&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>This<sp/>example<sp/>illustrates<sp/>how<sp/>to<sp/>use<sp/>the<sp/>CGAL<sp/>Straight<sp/>Skeleton<sp/>package</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>to<sp/>construct<sp/>an<sp/>offset<sp/>contour<sp/>on<sp/>the<sp/>outside<sp/>of<sp/>a<sp/>polygon</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>This<sp/>is<sp/>the<sp/>recommended<sp/>kernel</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_2</ref><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_2&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/>Contour;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::shared_ptr&lt;Contour&gt;<sp/>ContourPtr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;ContourPtr&gt;<sp/><sp/><sp/><sp/>ContourSequence<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__2" kindref="compound">CGAL::Straight_skeleton_2&lt;Kernel&gt;</ref><sp/>Ss;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Ss::Halfedge_iterator<sp/>Halfedge_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Ss::Halfedge_handle<sp/><sp/><sp/>Halfedge_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Ss::Vertex_handle<sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__builder__traits__2" kindref="compound">CGAL::Straight_skeleton_builder_traits_2&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/>SsBuilderTraits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Straight__skeleton__builder__2" kindref="compound">CGAL::Straight_skeleton_builder_2&lt;SsBuilderTraits,Ss&gt;</ref><sp/>SsBuilder;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__offset__builder__traits__2" kindref="compound">CGAL::Polygon_offset_builder_traits_2&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>OffsetBuilderTraits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polygon__offset__builder__2" kindref="compound">CGAL::Polygon_offset_builder_2&lt;Ss,OffsetBuilderTraits,Contour&gt;</ref><sp/>OffsetBuilder;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>A<sp/>start-shaped<sp/>polygon,<sp/>oriented<sp/>counter-clockwise<sp/>as<sp/>required<sp/>for<sp/>outer<sp/>contours.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref><sp/>pts[]<sp/>=<sp/>{<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(-1,-1)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,-12)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,-1)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(12,0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(1,1)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(0,12)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(-1,1)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref>(-12,0)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_2&gt;<sp/>star(pts,pts+8);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<ref refid="group__PkgPolygon2Functions_1gad1cb4044f1c59db27c1a06cb47957acb" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::orientation_2</ref>(pts,pts+8,<ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>())<sp/>==<sp/><ref refid="group__kernel__enums_1ga39fcfbab0b0f0ce9139ad1613e21d60d" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::COUNTERCLOCKWISE</ref>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>We<sp/>want<sp/>an<sp/>offset<sp/>contour<sp/>in<sp/>the<sp/>outside.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Since<sp/>the<sp/>package<sp/>doesn&apos;t<sp/>support<sp/>that<sp/>operation<sp/>directly,<sp/>we<sp/>use<sp/>the<sp/>following<sp/>trick:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>(1)<sp/>Place<sp/>the<sp/>polygon<sp/>as<sp/>a<sp/>hole<sp/>of<sp/>a<sp/>big<sp/>outer<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>(2)<sp/>Construct<sp/>the<sp/>skeleton<sp/>on<sp/>the<sp/>interior<sp/>of<sp/>that<sp/>frame<sp/>(with<sp/>the<sp/>polygon<sp/>as<sp/>a<sp/>hole)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>(3)<sp/>Construct<sp/>the<sp/>offset<sp/>contours</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>(4)<sp/>Identify<sp/>the<sp/>offset<sp/>contour<sp/>that<sp/>corresponds<sp/>to<sp/>the<sp/>frame<sp/>and<sp/>remove<sp/>it<sp/>from<sp/>the<sp/>result</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>offset<sp/>=<sp/>3<sp/>;<sp/></highlight><highlight class="comment">//<sp/>The<sp/>offset<sp/>distance</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>First<sp/>we<sp/>need<sp/>to<sp/>determine<sp/>the<sp/>proper<sp/>separation<sp/>between<sp/>the<sp/>polygon<sp/>and<sp/>the<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>We<sp/>use<sp/>this<sp/>helper<sp/>function<sp/>provided<sp/>in<sp/>the<sp/>package.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::optional&lt;double&gt;<sp/>margin<sp/>=<sp/><ref refid="group__PkgStraightSkeleton2OffsetFunctions_1ga80c0848e0145bbd531b1fc178fd07d33" kindref="member">CGAL::compute_outer_frame_margin</ref>(star.begin(),star.end(),offset);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Proceed<sp/>only<sp/>if<sp/>the<sp/>margin<sp/>was<sp/>computed<sp/>(an<sp/>extremely<sp/>sharp<sp/>corner<sp/>might<sp/>cause<sp/>overflow)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>margin<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>the<sp/>bbox<sp/>of<sp/>the<sp/>polygon</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Bbox__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Bbox_2</ref><sp/>bbox<sp/>=<sp/>CGAL::bbox_2(star.begin(),star.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Compute<sp/>the<sp/>boundaries<sp/>of<sp/>the<sp/>frame</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>fxmin<sp/>=<sp/>bbox.<ref refid="classCGAL_1_1Bbox__2_1a63af1afb0d6da705540fa204039053e6" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">xmin</ref>()<sp/>-<sp/>*margin<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>fxmax<sp/>=<sp/>bbox.<ref refid="classCGAL_1_1Bbox__2_1a9e48dd530dea0cc1a28b5e9bc14a64ff" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">xmax</ref>()<sp/>+<sp/>*margin<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>fymin<sp/>=<sp/>bbox.<ref refid="classCGAL_1_1Bbox__2_1a849e45ce29fc5bdd02a6a2fc898a9880" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">ymin</ref>()<sp/>-<sp/>*margin<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>fymax<sp/>=<sp/>bbox.<ref refid="classCGAL_1_1Bbox__2_1a0baeec271d6b81c384254b13e102e584" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">ymax</ref>()<sp/>+<sp/>*margin<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>the<sp/>rectangular<sp/>frame</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point_2<sp/>frame[4]=<sp/>{<sp/>Point_2(fxmin,fymin)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/>Point_2(fxmax,fymin)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/>Point_2(fxmax,fymax)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>,<sp/>Point_2(fxmin,fymax)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Instantiate<sp/>the<sp/>skeleton<sp/>builder</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>SsBuilder<sp/>ssb<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Enter<sp/>the<sp/>frame</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ssb.enter_contour(frame,frame+4);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Enter<sp/>the<sp/>polygon<sp/>as<sp/>a<sp/>hole<sp/>of<sp/>the<sp/>frame<sp/>(NOTE:<sp/>as<sp/>it<sp/>is<sp/>a<sp/>hole<sp/>we<sp/>insert<sp/>it<sp/>in<sp/>the<sp/>opposite<sp/>orientation)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>ssb.enter_contour(star.rbegin(),star.rend());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Construct<sp/>the<sp/>skeleton</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::shared_ptr&lt;Ss&gt;<sp/>ss<sp/>=<sp/>ssb.construct_skeleton();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Proceed<sp/>only<sp/>if<sp/>the<sp/>skeleton<sp/>was<sp/>correctly<sp/>constructed.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>ss<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_straight_skeleton(*ss);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Instantiate<sp/>the<sp/>container<sp/>of<sp/>offset<sp/>contours</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ContourSequence<sp/>offset_contours<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Instantiate<sp/>the<sp/>offset<sp/>builder<sp/>with<sp/>the<sp/>skeleton</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>OffsetBuilder<sp/>ob(*ss);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Obtain<sp/>the<sp/>offset<sp/>contours</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ob.construct_offset_contours(offset,<sp/>std::back_inserter(offset_contours));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Locate<sp/>the<sp/>offset<sp/>contour<sp/>that<sp/>corresponds<sp/>to<sp/>the<sp/>frame</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>That<sp/>must<sp/>be<sp/>the<sp/>outmost<sp/>offset<sp/>contour,<sp/>which<sp/>in<sp/>turn<sp/>must<sp/>be<sp/>the<sp/>one</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>with<sp/>the<sp/>largetst<sp/>unsigned<sp/>area.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>ContourSequence::iterator<sp/>f<sp/>=<sp/>offset_contours.end();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>lLargestArea<sp/>=<sp/>0.0<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(ContourSequence::iterator<sp/>i<sp/>=<sp/>offset_contours.begin();<sp/>i<sp/>!=<sp/>offset_contours.end();<sp/>++<sp/>i<sp/><sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>lArea<sp/>=<sp/>CGAL_NTS<sp/><ref refid="group__PkgAlgebraicFoundationsRef_1ga1d5106cf8be16adb4c4dc8b1ec3a5a92" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">abs</ref>(<sp/>(*i)-&gt;area()<sp/>)<sp/>;<sp/></highlight><highlight class="comment">//Take<sp/>abs()<sp/>as<sp/><sp/>Polygon_2::area()<sp/>is<sp/>signed.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>lArea<sp/>&gt;<sp/>lLargestArea<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>f<sp/>=<sp/>i<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>lLargestArea<sp/>=<sp/>lArea<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Remove<sp/>the<sp/>offset<sp/>contour<sp/>that<sp/>corresponds<sp/>to<sp/>the<sp/>frame.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>offset_contours.erase(f);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::Straight_skeletons_2::IO::print_polygons(offset_contours);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1Straight_skeleton_2History">
+<title>Implementation History</title>
+<para>Fernando Cacciola created the first version of this package, providing unweighted straight skeletons and polygon offsetting.</para>
+<para>Sébastien Loriot and Mael Rouxel-Labbé implemented further robustification techniques, as well as weighted straight skeletons, and skeleton extrusion. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Straight_skeleton_2.txt"/>
+  </compounddef>
+</doxygen>

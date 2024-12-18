@@ -1,0 +1,822 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Fast_Intersection_and_Distance_Computation"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Pierre Alliez, Stephane Tayeb, and Camille Wormser</para>
+</simplesect>
+</para>
+<sect1 id="index_1aabb_tree_introduction">
+<title>Introduction</title>
+<para>The AABB tree component offers a static data structure and algorithms to perform efficient intersection and distance queries against sets of finite 2D or 3D geometric objects. The set of geometric objects stored in the data structure can be queried for intersection detection, intersection computation and distance. The intersection queries can be of any type, provided that the corresponding intersection predicates and constructors are implemented in the traits class. The distance queries are limited to point queries. Examples of intersection queries include line objects (rays, lines, segments) against sets of triangles, or plane objects (planes, triangles) against sets of segments. An example of a distance query consists of finding the closest point from a point query to a set of triangles.</para>
+<para>Note that this component is not suited to the problem of finding all intersecting pairs of objects. We refer to the component <ref refid="index_1chapterBoxIntersection" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Box_intersection_d.tag">Intersecting Sequences of dD Iso-oriented Boxes</ref> which can find all intersecting pairs of iso-oriented boxes.</para>
+<para>The AABB tree data structure takes as input an iterator range of geometric data, which is then converted into primitives. From these primitives a hierarchy of axis-aligned bounding boxes (AABBs) is constructed and used to speed up intersection and distance queries. Each primitive gives access to both one input geometric object (so-called datum) and one reference id to this object. A typical example primitive wraps a 3D triangle as datum and a face handle of a polyhedral surface as id. Each intersection query can return the intersection objects (e.g., 3D points or segments for ray queries) as well as the id (here the face handle) of the intersected primitives. Similarly, each distance query can return the closest point from the point query as well as the id of the closest primitive.</para>
+<para><anchor id="index_1fig__aabbtree_meca"/> <image type="html" name="anchor.png"></image>
+ <image type="latex" name="anchor.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__aabbtree_meca" kindref="member">fig__aabbtree_meca</ref> Left: surface triangle mesh of a mechanical part. Right: AABB tree constructed. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1aabb_tree_interface">
+<title>Interface</title>
+<para>The main entry point to the component is the class <computeroutput><ref refid="classCGAL_1_1AABB__tree" kindref="compound">AABB_tree</ref></computeroutput> which represents a static AABB tree constructed from an iterator range of geometric data. Once instantiated an AABB tree can be queried for intersection and distance queries.</para>
+<para><bold>Intersections</bold>. Assume for example that the tree contains triangle primitives. The tree can be queried for intersection against line objects (rays, segments or line) in various ways. We distinguish intersection <emphasis>tests</emphasis> which do not construct any intersection objects, from <emphasis>intersections</emphasis> which construct the intersection objects.</para>
+<para>Tests:</para>
+<para><itemizedlist>
+<listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a36b4cfa21c223461bde0da2b020a67d1" kindref="member">AABB_tree::do_intersect()</ref></computeroutput> tests if the input primitives are intersected by the query. This function is fast as it involves only predicates and stops after the first encountered intersection.</para>
+</listitem><listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a872a72b57bbbb1d322fc8ef696e19057" kindref="member">AABB_tree::number_of_intersected_primitives()</ref></computeroutput> counts all intersected primitives.</para>
+</listitem><listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a9f40594599eded5f9a79f74186710697" kindref="member">AABB_tree::all_intersected_primitives()</ref></computeroutput> enumerates all intersected primitives ids without constructing the corresponding intersection objects.</para>
+</listitem><listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1af4d94dc88ad5bd31d6368d96d3d07780" kindref="member">AABB_tree::any_intersected_primitive()</ref></computeroutput> returns the first encountered intersecting primitive id (if any) without constructing the corresponding intersection object, and stops after the first encountered intersection. Note that the traversal order of the tree is such that first herein does not refer to any particular ordering of the intersections with respect to the query.</para>
+</listitem><listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1adfc6a7887966a2d8c726143f5a52a77d" kindref="member">AABB_tree::first_intersected_primitive()</ref></computeroutput> returns the intersecting primitive id (if any) of the corresponding intersection object that is closest to the source of the ray.</para>
+</listitem></itemizedlist>
+</para>
+<para>Constructions:</para>
+<para><itemizedlist>
+<listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1adf42c2edae69f92db5646d2c81d3bbff" kindref="member">AABB_tree::all_intersections()</ref></computeroutput> detects and constructs all intersection objects with the input primitives.</para>
+</listitem><listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a8ccaea5223809316c67d03713109e7a1" kindref="member">AABB_tree::any_intersection()</ref></computeroutput> detects and constructs the first encountered intersection and constructs the corresponding object. This function is fast as it stops after the first encountered intersection.</para>
+</listitem><listitem><para>Function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a3d24bfdc557114acc305658f9730eb60" kindref="member">AABB_tree::first_intersection()</ref></computeroutput> detects and constructs the intersection object that is closest to the source of the ray.</para>
+</listitem></itemizedlist>
+</para>
+<para><bold>Distance</bold>. An AABB tree computes the closest point from a given point query to the input primitives through the function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1abe3e1ab4a89de2623b6930324343b2fa" kindref="member">AABB_tree::closest_point()</ref></computeroutput>. In addition, it can compute the id of the closest primitive from a given point query through the function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a1b3ac9521fd7257f760deafff3743437" kindref="member">AABB_tree::closest_point_and_primitive()</ref></computeroutput>, i.e., the id of the primitive which realizes the minimum distance from the point query. The AABB tree uses a secondary search structure to speed up the distance queries. The construction of this secondary structure should be requested by the user by a call to <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a5d3877d3f2afbd09341eb4b8c230080b" kindref="member">AABB_tree::accelerate_distance_queries()</ref></computeroutput> before the first the distance computation. This data structure is not generated by default because it is used only for distance computations.</para>
+<para><simplesect kind="warning"><para>Having degenerate primitives in the AABB-tree is not recommended as the underlying predicates and constructions of the traits class might not be able to handle them. For example if one is using <computeroutput><ref refid="group__PkgAABBTreeRef_1ga764f0fc59c96355877536810aa1aca5b" kindref="member">CGAL::AABB_traits</ref></computeroutput> with a <ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref> from CGAL, having degenerate triangles or segments in the AABB-tree will results in an undefined behavior or a crash.</para>
+</simplesect>
+</para>
+</sect1>
+<sect1 id="index_1aabb_tree_examples">
+<title>Examples</title>
+<sect2 id="index_1aabb_tree_examples_1">
+<title>Tree of Triangles, for Intersection and Distance Queries</title>
+<para>In the following example a set of 3D triangles is stored in a list. The AABB primitive wraps a triangle as <computeroutput>datum</computeroutput> and an iterator in the list as <computeroutput>id</computeroutput>. We compute the number of input triangles intersected by a ray query, as well as the closest point and the squared distance from a point query.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_triangle_3_example_8cpp-example" kindref="compound">AABB_tree/AABB_triangle_3_example.cpp</ref> <programlisting filename="AABB_tree/AABB_triangle_3_example.cpp"><codeline><highlight class="comment">//<sp/>Author(s)<sp/>:<sp/>Camille<sp/>Wormser,<sp/>Pierre<sp/>Alliez</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_triangle_primitive_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Ray_3<sp/>Ray;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Triangle_3<sp/>Triangle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::list&lt;Triangle&gt;::const_iterator<sp/><ref refid="classIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Iterator</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__triangle__primitive__3" kindref="compound">CGAL::AABB_triangle_primitive_3&lt;K, Iterator&gt;</ref><sp/>Primitive;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound">CGAL::AABB_traits_3&lt;K, Primitive&gt;</ref><sp/>AABB_triangle_traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;AABB_triangle_traits&gt;</ref><sp/>Tree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>a(1.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>b(0.0,<sp/>1.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>c(0.0,<sp/>0.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>d(0.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::list&lt;Triangle&gt;<sp/>triangles;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>triangles.push_back(Triangle(a,b,c));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>triangles.push_back(Triangle(a,b,d));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>triangles.push_back(Triangle(a,d,c));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>AABB<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Tree<sp/>tree(triangles.begin(),triangles.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>counts<sp/>#intersections</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Ray<sp/>ray_query(a,b);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>tree.number_of_intersected_primitives(ray_query)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>intersections(s)<sp/>with<sp/>ray<sp/>query&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>compute<sp/>closest<sp/>point<sp/>and<sp/>squared<sp/>distance</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>point_query(2.0,<sp/>2.0,<sp/>2.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>closest_point<sp/>=<sp/>tree.closest_point(point_query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;closest<sp/>point<sp/>is:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>closest_point<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FT<sp/>sqd<sp/>=<sp/>tree.squared_distance(point_query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;squared<sp/>distance:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sqd<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_tree_examples_2">
+<title>Tree of Polyhedron Triangle Facets for Intersection Queries</title>
+<para>In the following example the AABB primitive wraps a facet handle of a triangle polyhedral surface as <computeroutput>id</computeroutput> and the corresponding 3D triangle as geometric object. From a segment query we test the intersections, then compute the number of intersections, compute the first encountered intersection (generally a point), compute all intersections (where each intersection is a pair of one CGAL object and one primitive id - here a face handle) and compute all intersected primitives. The latter involves only tests and no predicates and is hence faster than computing all intersections. We also compute the first encountered intersection with a plane query, which is generally a segment. We finally compute the first intersection along a ray.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_polyhedron_facet_intersection_example_8cpp-example" kindref="compound">AABB_tree/AABB_polyhedron_facet_intersection_example.cpp</ref> <programlisting filename="AABB_tree/AABB_polyhedron_facet_intersection_example.cpp"><codeline><highlight class="comment">//<sp/>Author(s)<sp/>:<sp/>Camille<sp/>Wormser,<sp/>Pierre<sp/>Alliez</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_face_graph_triangle_primitive.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Plane_3<sp/>Plane;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_3<sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Ray_3<sp/>Ray;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;K&gt;</ref><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__face__graph__triangle__primitive" kindref="compound">CGAL::AABB_face_graph_triangle_primitive&lt;Polyhedron&gt;</ref><sp/>Primitive;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound">CGAL::AABB_traits_3&lt;K, Primitive&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits&gt;</ref><sp/>Tree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::optional&lt;<sp/>Tree::Intersection_and_primitive_id&lt;Segment&gt;::Type<sp/>&gt;<sp/>Segment_intersection;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::optional&lt;<sp/>Tree::Intersection_and_primitive_id&lt;Plane&gt;::Type<sp/>&gt;<sp/>Plane_intersection;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Tree::Primitive_id<sp/>Primitive_id;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>p(1.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>q(0.0,<sp/>1.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>r(0.0,<sp/>0.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>s(0.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Polyhedron<sp/>polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polyhedron.make_tetrahedron(p,<sp/>q,<sp/>r,<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>AABB<sp/>tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Tree<sp/>tree(faces(polyhedron).first,<sp/>faces(polyhedron).second,<sp/>polyhedron);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>segment<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>a(-0.2,<sp/>0.2,<sp/>-0.2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>b(1.3,<sp/>0.2,<sp/>1.3);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Segment<sp/>segment_query(a,b);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>tests<sp/>intersections<sp/>with<sp/>segment<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(tree.do_intersect(segment_query))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;intersection(s)&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;no<sp/>intersection&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>#intersections<sp/>with<sp/>segment<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>tree.number_of_intersected_primitives(segment_query)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>intersection(s)&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>first<sp/>encountered<sp/>intersection<sp/>with<sp/>segment<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>(generally<sp/>a<sp/>point)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Segment_intersection<sp/><ref refid="group__intersection__linear__grp_1gade00253914ac774cce3d2031c07d74fe" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">intersection</ref><sp/>=</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tree.any_intersection(segment_query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="group__intersection__linear__grp_1gade00253914ac774cce3d2031c07d74fe" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">intersection</ref>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>gets<sp/>intersection<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point*<sp/>p<sp/>=<sp/>std::get_if&lt;Point&gt;(&amp;(<ref refid="group__intersection__linear__grp_1gade00253914ac774cce3d2031c07d74fe" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">intersection</ref>-&gt;first));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(p)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;intersection<sp/>object<sp/>is<sp/>a<sp/>point<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>*p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>all<sp/>intersections<sp/>with<sp/>segment<sp/>query<sp/>(as<sp/>pairs<sp/>object<sp/>-<sp/>primitive_id)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::list&lt;Segment_intersection&gt;<sp/>intersections;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>tree.all_intersections(segment_query,<sp/>std::back_inserter(intersections));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>all<sp/>intersected<sp/>primitives<sp/>with<sp/>segment<sp/>query<sp/>as<sp/>primitive<sp/>ids</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::list&lt;Primitive_id&gt;<sp/>primitives;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>tree.all_intersected_primitives(segment_query,<sp/>std::back_inserter(primitives));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>plane<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector<sp/>vec(0.0,0.0,1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Plane<sp/>plane_query(a,vec);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>first<sp/>encountered<sp/>intersection<sp/>with<sp/>plane<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>(generally<sp/>a<sp/>segment)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Plane_intersection<sp/>plane_intersection<sp/>=<sp/>tree.any_intersection(plane_query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(plane_intersection)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(std::get_if&lt;Segment&gt;(&amp;(plane_intersection-&gt;first)))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;intersection<sp/>object<sp/>is<sp/>a<sp/>segment&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_ray_shooting">
+<title>Ray Shooting</title>
+<para>In the following example we load a closed polyhedral surface and perform a ray shooting query from the centroid of each face, orthogonally to the face towards the interior. As the centroid is computed with floating point arithmetic the first face hit by the ray may be the face of the centroid. The skip functor takes care of ignoring the face.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_ray_shooting_example_8cpp-example" kindref="compound">AABB_tree/AABB_ray_shooting_example.cpp</ref> <programlisting filename="AABB_tree/AABB_ray_shooting_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_face_graph_triangle_primitive.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/compute_normal.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_mesh_processing/orientation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Vector_3<sp/>Vector;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Ray_3<sp/>Ray;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Surface_mesh&lt;Point&gt;<sp/>Mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::face_descriptor<sp/>face_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Mesh&gt;::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__face__graph__triangle__primitive" kindref="compound">CGAL::AABB_face_graph_triangle_primitive&lt;Mesh&gt;</ref><sp/>Primitive;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound">CGAL::AABB_traits_3&lt;K, Primitive&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits&gt;</ref><sp/>Tree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::optional&lt;Tree::Intersection_and_primitive_id&lt;Ray&gt;::Type&gt;<sp/>Ray_intersection;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Skip</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face_descriptor<sp/>fd;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Skip(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>face_descriptor<sp/>fd)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>:<sp/>fd(fd)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>face_descriptor&amp;<sp/>t)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{<sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(t<sp/>==<sp/>fd){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;ignore<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>t<sp/><sp/>&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">(t<sp/>==<sp/>fd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/tetrahedron.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Tree<sp/>tree(faces(mesh).first,<sp/>faces(mesh).second,<sp/>mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>d<sp/>=<sp/>CGAL::Polygon_mesh_processing::is_outward_oriented(mesh)?-1:1;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(face_descriptor<sp/>fd<sp/>:<sp/>faces(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>halfedge_descriptor<sp/>hd<sp/>=<sp/>halfedge(fd,mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>p<sp/>=<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::centroid</ref>(mesh.point(source(hd,mesh)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>mesh.point(target(hd,mesh)),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>mesh.point(target(next(hd,mesh),mesh)));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Vector<sp/>v<sp/>=<sp/>CGAL::Polygon_mesh_processing::compute_face_normal(fd,mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Ray<sp/>ray(p,d<sp/>*<sp/>v);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Skip<sp/>skip(fd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Ray_intersection<sp/><ref refid="group__intersection__linear__grp_1gade00253914ac774cce3d2031c07d74fe" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">intersection</ref><sp/>=<sp/>tree.first_intersection(ray,<sp/>skip);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<ref refid="group__intersection__linear__grp_1gade00253914ac774cce3d2031c07d74fe" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">intersection</ref>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(std::get_if&lt;Point&gt;(&amp;(<ref refid="group__intersection__linear__grp_1gade00253914ac774cce3d2031c07d74fe" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">intersection</ref>-&gt;first))){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point*<sp/>p<sp/>=<sp/><sp/>std::get_if&lt;Point&gt;(&amp;(<ref refid="group__intersection__linear__grp_1gade00253914ac774cce3d2031c07d74fe" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">intersection</ref>-&gt;first)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/><sp/>*p<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_tree_examples_3">
+<title>Tree of Polyhedron Triangle Facets for Distance Queries</title>
+<para>In the following example the AABB primitive wraps a facet handle of a triangle polyhedral surface as <computeroutput>id</computeroutput> and the corresponding 3D triangle as geometric object. From a point query we compute the squared distance, the closest point as well as the closest point and primitive id. The latter returns a pair composed of a point and a face handle.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_polyhedron_facet_distance_example_8cpp-example" kindref="compound">AABB_tree/AABB_polyhedron_facet_distance_example.cpp</ref> <programlisting filename="AABB_tree/AABB_polyhedron_facet_distance_example.cpp"><codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Author(s)<sp/>:<sp/>Pierre<sp/>Alliez</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_face_graph_triangle_primitive.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_3<sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;K&gt;</ref><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__face__graph__triangle__primitive" kindref="compound">CGAL::AABB_face_graph_triangle_primitive&lt;Polyhedron&gt;</ref><sp/>Primitive;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound">CGAL::AABB_traits_3&lt;K, Primitive&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits&gt;</ref><sp/>Tree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Tree::Point_and_primitive_id<sp/>Point_and_primitive_id;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>p(1.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>q(0.0,<sp/>1.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>r(0.0,<sp/>0.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>s(0.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Polyhedron<sp/>polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polyhedron.make_tetrahedron(p,<sp/>q,<sp/>r,<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>AABB<sp/>tree<sp/>and<sp/>computes<sp/>internal<sp/>KD-tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>data<sp/>structure<sp/>to<sp/>accelerate<sp/>distance<sp/>queries</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Tree<sp/>tree(faces(polyhedron).first,<sp/>faces(polyhedron).second,<sp/>polyhedron);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>query<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>query(0.0,<sp/>0.0,<sp/>3.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>squared<sp/>distance<sp/>from<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FT<sp/>sqd<sp/>=<sp/>tree.squared_distance(query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;squared<sp/>distance:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sqd<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>closest<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>closest<sp/>=<sp/>tree.closest_point(query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;closest<sp/>point:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>closest<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>closest<sp/>point<sp/>and<sp/>primitive<sp/>id</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point_and_primitive_id<sp/>pp<sp/>=<sp/>tree.closest_point_and_primitive(query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>closest_point<sp/>=<sp/>pp.first;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Polyhedron::Face_handle<sp/>f<sp/>=<sp/>pp.second;<sp/></highlight><highlight class="comment">//<sp/>closest<sp/>primitive<sp/>id</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;closest<sp/>point:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>closest_point<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;closest<sp/>triangle:<sp/>(<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>f-&gt;halfedge()-&gt;vertex()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>,<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>f-&gt;halfedge()-&gt;next()-&gt;vertex()-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>,<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>f-&gt;halfedge()-&gt;next()-&gt;next()-&gt;vertex()-&gt;point()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>)&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_tree_examples_4">
+<title>Tree of Segments for Intersection and Distance Queries</title>
+<para>In the following example the segments are stored into a list, and the AABB primitive wraps a segment as <computeroutput>datum</computeroutput> and an iterator in the list as <computeroutput>id</computeroutput>. We compute the number of intersections with plane and triangles queries, and the closest point from a point query. <linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_segment_3_example_8cpp-example" kindref="compound">AABB_tree/AABB_segment_3_example.cpp</ref> <programlisting filename="AABB_tree/AABB_segment_3_example.cpp"><codeline><highlight class="comment">//<sp/>Author<sp/>:<sp/>Pierre<sp/>Alliez</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_segment_primitive_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Plane_3<sp/>Plane;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_3<sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Triangle_3<sp/>Triangle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::list&lt;Segment&gt;::iterator<sp/><ref refid="classIterator" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Iterator</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__segment__primitive__3" kindref="compound">CGAL::AABB_segment_primitive_3&lt;K, Iterator&gt;</ref><sp/>Primitive;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound">CGAL::AABB_traits_3&lt;K, Primitive&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits&gt;</ref><sp/>Tree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>a(1.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>b(0.0,<sp/>1.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>c(0.0,<sp/>0.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>d(0.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::list&lt;Segment&gt;<sp/>segments;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments.push_back(Segment(a,b));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments.push_back(Segment(a,c));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>segments.push_back(Segment(c,d));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>the<sp/>AABB<sp/>tree<sp/>and<sp/>the<sp/>internal<sp/>search<sp/>tree<sp/>for</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>efficient<sp/>distance<sp/>computations.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Tree<sp/>tree(segments.begin(),segments.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>counts<sp/>#intersections<sp/>with<sp/>a<sp/>plane<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Plane<sp/>plane_query(a,b,d);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>tree.number_of_intersected_primitives(plane_query)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>intersections(s)<sp/>with<sp/>plane&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>counts<sp/>#intersections<sp/>with<sp/>a<sp/>triangle<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Triangle<sp/>triangle_query(a,b,c);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>tree.number_of_intersected_primitives(triangle_query)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>intersections(s)<sp/>with<sp/>triangle&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>the<sp/>closest<sp/>point<sp/>from<sp/>a<sp/>point<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>point_query(2.0,<sp/>2.0,<sp/>2.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>closest<sp/>=<sp/>tree.closest_point(point_query);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;closest<sp/>point<sp/>is:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>closest<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_tree_examples_8">
+<title>Tree of Polyline and Polygon Segments for Intersection and Distance Queries</title>
+<para>The following example uses segments given by a polyline and a polygon. The difference is that the polygon is closed. The <computeroutput>id</computeroutput> in this case is the iterator pointing to a <computeroutput><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref></computeroutput> in the polyline or the polygon. The datum, a <computeroutput><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref></computeroutput>, is created on the fly from the points using the <computeroutput>id</computeroutput> as the source and the following <computeroutput><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_2</ref></computeroutput> as the target. We count the intersections with a <computeroutput><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Segment_2</ref></computeroutput> and the closest point and id from a point query. <linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_polyline_segment_2_example_8cpp-example" kindref="compound">AABB_tree/AABB_polyline_segment_2_example.cpp</ref> <programlisting filename="AABB_tree/AABB_polyline_segment_2_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_polyline_segment_primitive_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_segment_primitive_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polygon_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_2<sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_2<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;Point&gt;<sp/>PointRange;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>PointRange::const_iterator<sp/>Iterator_pr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__polyline__segment__primitive__2" kindref="compound">CGAL::AABB_polyline_segment_primitive_2&lt;K, Iterator_pr, PointRange&gt;</ref><sp/>Primitive_pr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__2" kindref="compound">CGAL::AABB_traits_2&lt;K, Primitive_pr&gt;</ref><sp/>Traits_pr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits_pr&gt;</ref><sp/>Tree_pr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Tree_pr::Point_and_primitive_id<sp/>Point_and_primitive_id_pr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Polygon_2&lt;K&gt;<sp/>Polygon_2;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Polygon_2::const_iterator<sp/>Iterator_poly;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__polyline__segment__primitive__2" kindref="compound">CGAL::AABB_polyline_segment_primitive_2&lt;K, Iterator_poly, Polygon_2&gt;</ref><sp/>Primitive_poly;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__2" kindref="compound">CGAL::AABB_traits_2&lt;K, Primitive_poly&gt;</ref><sp/>Traits_poly;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits_poly&gt;</ref><sp/>Tree_poly;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Tree_poly::Point_and_primitive_id<sp/>Point_and_primitive_id_poly;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>AABBTree,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>PPId&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>test(AABBTree<sp/>tree)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>tree.<ref refid="classCGAL_1_1AABB__tree_1a817b811901a9f3c43400ddb49f4cc121" kindref="member">build</ref>();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>tree.accelerate_distance_queries();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>counts<sp/>#intersections<sp/>with<sp/>a<sp/>segment<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment<sp/>segment_query(Point(1.0,<sp/>0.0),<sp/>Point(0.0,<sp/>7.0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>tree.number_of_intersected_primitives(segment_query)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>intersections(s)<sp/>with<sp/>segment&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>the<sp/>closest<sp/>point<sp/>from<sp/>a<sp/>point<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>point_query(1.5,<sp/>3.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>closest<sp/>=<sp/>tree.closest_point(point_query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;closest<sp/>point<sp/>is:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>closest<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>PPId<sp/></highlight><highlight class="keywordtype">id</highlight><highlight class="normal"><sp/>=<sp/>tree.closest_point_and_primitive(point_query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="keywordtype">id</highlight><highlight class="normal">.first<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>a(0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>b(2.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>c(3.0,<sp/>4.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>d(1.0,<sp/>6.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>e(-1.0,<sp/>3.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point&gt;<sp/>polyline<sp/>=<sp/>{<sp/>a,<sp/>b,<sp/>c,<sp/>d,<sp/>e<sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polygon_2<sp/>poly(polyline.begin(),<sp/>polyline.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>test&lt;Tree_poly,<sp/>Point_and_primitive_id_poly&gt;(Tree_poly(poly.begin(),<sp/>poly.end(),<sp/>poly));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>For<sp/>a<sp/>point<sp/>range,<sp/>the<sp/>second<sp/>iterator<sp/>must<sp/>be<sp/>of<sp/>the<sp/>second-last<sp/>point<sp/>in<sp/>the<sp/>range.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>If<sp/>it<sp/>points<sp/>to<sp/>the<sp/>end<sp/>of<sp/>the<sp/>range,<sp/>to<sp/>polyline<sp/>is<sp/>considered<sp/>to<sp/>be<sp/>closed.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>test&lt;Tree_pr,<sp/>Point_and_primitive_id_pr&gt;(Tree_pr(polyline.begin(),<sp/>std::prev(polyline.end()),<sp/>polyline));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_tree_examples_5">
+<title>Tree of Polyhedron Edge Segments for Intersection and Distance Queries</title>
+<para>In the following example the AABB primitive wraps a halfedge handle as <computeroutput>id</computeroutput> and generates a 3D segment on the fly, each time its method <computeroutput>datum</computeroutput> is called. We compute the number of intersections with a triangle query and the closest point from a point query. <linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_polyhedron_edge_example_8cpp-example" kindref="compound">AABB_tree/AABB_polyhedron_edge_example.cpp</ref> <programlisting filename="AABB_tree/AABB_polyhedron_edge_example.cpp"><codeline><highlight class="comment">//<sp/>Author(s)<sp/>:<sp/>Pierre<sp/>Alliez</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_halfedge_graph_segment_primitive.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Triangle_3<sp/>Triangle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;K&gt;</ref><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__halfedge__graph__segment__primitive" kindref="compound">CGAL::AABB_halfedge_graph_segment_primitive&lt;Polyhedron&gt;</ref><sp/>Primitive;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound">CGAL::AABB_traits_3&lt;K, Primitive&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits&gt;</ref><sp/>Tree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>p(1.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>q(0.0,<sp/>1.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>r(0.0,<sp/>0.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>s(0.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Polyhedron<sp/>polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polyhedron.make_tetrahedron(p,<sp/>q,<sp/>r,<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>the<sp/>AABB<sp/>tree<sp/>and<sp/>the<sp/>internal<sp/>search<sp/>tree<sp/>for</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>efficient<sp/>distance<sp/>queries.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Tree<sp/>tree(<sp/>CGAL::edges(polyhedron).first,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::edges(polyhedron).second,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>polyhedron);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>counts<sp/>#intersections<sp/>with<sp/>a<sp/>triangle<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Triangle<sp/>triangle_query(p,q,r);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>tree.number_of_intersected_primitives(triangle_query)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>intersections(s)<sp/>with<sp/>triangle&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>the<sp/>closest<sp/>point<sp/>from<sp/>a<sp/>query<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>point_query(2.0,<sp/>2.0,<sp/>2.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>closest<sp/>=<sp/>tree.closest_point(point_query);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;closest<sp/>point<sp/>is:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>closest<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_tree_examples_6">
+<title>Incremental Insertion of Primitives</title>
+<para>The AABB tree is a static data structure, but it allows to insert primitives, and will internally rebuild triggered by the first query, or because the user calls the <computeroutput>AABB_tree::build()</computeroutput> method. The following example illustrates this for two polyhedral surfaces.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="AABB_tree_2AABB_insertion_example_8cpp-example" kindref="compound">AABB_tree/AABB_insertion_example.cpp</ref> <programlisting filename="AABB_tree/AABB_insertion_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_tree.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_traits_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/AABB_face_graph_triangle_primitive.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Segment_3<sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;K&gt;</ref><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__face__graph__triangle__primitive" kindref="compound">CGAL::AABB_face_graph_triangle_primitive&lt;Polyhedron, CGAL::Default, CGAL::Tag_false&gt;</ref><sp/>Primitive;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__traits__3" kindref="compound">CGAL::AABB_traits_3&lt;K, Primitive&gt;</ref><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1AABB__tree" kindref="compound">CGAL::AABB_tree&lt;Traits&gt;</ref><sp/>Tree;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Tree::Point_and_primitive_id<sp/>Point_and_primitive_id;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>p(1.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>q(0.0,<sp/>1.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>r(0.0,<sp/>0.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>s(0.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Polyhedron<sp/>polyhedron1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polyhedron1.make_tetrahedron(p,<sp/>q,<sp/>r,<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>p2(11.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>q2(10.0,<sp/>1.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>r2(10.0,<sp/>0.0,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>s2(10.0,<sp/>0.0,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Polyhedron<sp/>polyhedron2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>polyhedron2.make_tetrahedron(p2,<sp/>q2,<sp/>r2,<sp/>s2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>constructs<sp/>AABB<sp/>tree<sp/>and<sp/>computes<sp/>internal<sp/>KD-tree</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>data<sp/>structure<sp/>to<sp/>accelerate<sp/>distance<sp/>queries</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Tree<sp/>tree(faces(polyhedron1).first,<sp/>faces(polyhedron1).second,<sp/>polyhedron1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>tree.insert(faces(polyhedron2).first,<sp/>faces(polyhedron2).second,<sp/>polyhedron2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>query<sp/>point</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Point<sp/>query(0.0,<sp/>0.0,<sp/>3.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>computes<sp/>squared<sp/>distance<sp/>from<sp/>query</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FT<sp/>sqd<sp/>=<sp/>tree.squared_distance(query);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;squared<sp/>distance:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sqd<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1aabb_tree_examples_7">
+<title>Trees of Custom Primitives</title>
+<para>The AABB tree example folder contains three examples of trees constructed with custom primitives. In <ref refid="AABB_tree_2AABB_custom_example_8cpp-example" kindref="compound">AABB_custom_example.cpp</ref> the primitive contains triangles which are defined by three pointers to custom points. In <ref refid="AABB_tree_2AABB_custom_triangle_soup_example_8cpp-example" kindref="compound">AABB_custom_triangle_soup_example.cpp</ref> all input triangles are stored into a single array so as to form a triangle soup. The primitive internally uses a <computeroutput>boost::iterator_adaptor</computeroutput> so as to provide the three functions <computeroutput><ref refid="classAABBPrimitive_1aad2d8d9a155772ba15a1135015edfc82" kindref="member">AABBPrimitive::id()</ref></computeroutput>, <computeroutput><ref refid="classAABBPrimitive_1acb837dcde757979ebc79b16a16f6c454" kindref="member">AABBPrimitive::datum()</ref></computeroutput>, and <computeroutput><ref refid="classAABBPrimitive_1aca33166314d35fa50fb4d280ed6c3f40" kindref="member">AABBPrimitive::reference_point()</ref></computeroutput>) required by the primitive concept. In <ref refid="AABB_tree_2AABB_custom_indexed_triangle_set_example_8cpp-example" kindref="compound">AABB_custom_indexed_triangle_set_example.cpp</ref> the input is an indexed triangle set stored through two arrays: one array of points and one array of indices which refer to the point array. Here also the primitive internally uses a <computeroutput>boost::iterator_adaptor</computeroutput>.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1aabb_tree_perf">
+<title>Performances</title>
+<para>We provide some performance numbers for the case where the AABB tree contains a set of polyhedron triangle facets. We measure the tree construction time, the memory occupancy and the number of queries per second for a variety of intersection and distance queries. The machine used is a PC running Windows XP64 with an Intel CPU Core2 Extreme clocked at 3.06 GHz with 4GB of RAM. By default the kernel used is <computeroutput><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref>&lt;double&gt;</computeroutput> (the fastest in our experiments). The program has been compiled with Visual C++ 2005 compiler with the O2 option which maximizes speed.</para>
+<sect2 id="index_1aabb_tree_perf_cons">
+<title>Construction</title>
+<para>The surface triangle mesh chosen for benchmarking the tree construction is the knot model (14,400 triangles) depicted by <ref refid="index_1fig__figAABB-tree-bench" kindref="member">fig__figAABB-tree-bench</ref>. We measure the tree construction time (both AABB tree alone and AABB tree with internal KD-tree) for this model as well as for three denser versions subdivided through the Loop subdivision scheme which multiplies the number of triangles by four.</para>
+<para><table rows="5" cols="3"><row>
+<entry thead="yes" align='right'><para>Number of triangles   </para>
+</entry><entry thead="yes" align='right'><para>Construction (in ms)   </para>
+</entry><entry thead="yes" align='right'><para>Construction with internal KD-tree (in ms)    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>14,400   </para>
+</entry><entry thead="no" align='right'><para>156   </para>
+</entry><entry thead="no" align='right'><para>157    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>57,600   </para>
+</entry><entry thead="no" align='right'><para>328   </para>
+</entry><entry thead="no" align='right'><para>328    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>230,400   </para>
+</entry><entry thead="no" align='right'><para>1,141   </para>
+</entry><entry thead="no" align='right'><para>1,437    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>921,600   </para>
+</entry><entry thead="no" align='right'><para>4,813   </para>
+</entry><entry thead="no" align='right'><para>5,953   </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1aabb_tree_perf_mem">
+<title>Memory</title>
+<para>When using the polyhedron triangle facet primitive (defined in <computeroutput>AABB_face_graph_triangle_primitive.h</computeroutput>) the AABB tree occupies approximately 61 bytes per primitive (without constructing the internal KD-tree). It increases to approximately 150 bytes per primitive when constructing the internal KD-tree with one reference point per primitive (the default mode when calling the function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a5d3877d3f2afbd09341eb4b8c230080b" kindref="member">AABB_tree::accelerate_distance_queries()</ref></computeroutput>). Note that the polyhedron facet primitive primitive stores only one facet handle as primitive id and computes on the fly a 3D triangle from the facet handle stored internally. When explicitly storing a 3D triangle in the primitive the tree occupies approximately 140 bytes per primitive instead of 60 (without constructing the internal KD-tree).</para>
+<para>The following table provides orders of memory occupancy in MBytes for an increasing number of triangles. As the internal KD-tree used to accelerate the distance queries dominates the memory occupancy, we recommend to specify for large models a lower number of reference point (evenly distributed) to construct the internal KD-tree through the function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a5d3877d3f2afbd09341eb4b8c230080b" kindref="member">AABB_tree::accelerate_distance_queries()</ref></computeroutput> which takes an iterator range as input.</para>
+<para><table rows="5" cols="3"><row>
+<entry thead="yes" align='right'><para>Number of triangles   </para>
+</entry><entry thead="yes" align='right'><para>AABB tree (in MBytes)   </para>
+</entry><entry thead="yes" align='right'><para>AABB tree with internal KD-tree (in MBytes)    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>18,400   </para>
+</entry><entry thead="no" align='right'><para>1.10   </para>
+</entry><entry thead="no" align='right'><para>2.76    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>102,400   </para>
+</entry><entry thead="no" align='right'><para>6.33   </para>
+</entry><entry thead="no" align='right'><para>14.73    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>1,022,400   </para>
+</entry><entry thead="no" align='right'><para>59.56   </para>
+</entry><entry thead="no" align='right'><para>151.31    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>1,822,400   </para>
+</entry><entry thead="no" align='right'><para>108.34   </para>
+</entry><entry thead="no" align='right'><para>291.84   </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1aabb_tree_perf_inter">
+<title>Intersections</title>
+<para>The following table measures the number of intersection queries per second on the 14,400 triangle version of the knot mesh model for ray, line, segment and plane queries. Each ray query is generated by choosing a random source point within the mesh bounding box and a random vector. A line or segment query is generated by choosing two random points inside the bounding box. A plane query is generated by picking a random point inside the bounding box and a random normal vector. Note that a plane query generally intersects many triangles of the input surface mesh. This explains the low performance numbers for the intersection functions which enumerate all intersections.</para>
+<para><table rows="7" cols="5"><row>
+<entry thead="yes" align='left'><para>Function   </para>
+</entry><entry thead="yes" align='right'><para>Segment   </para>
+</entry><entry thead="yes" align='right'><para>Ray   </para>
+</entry><entry thead="yes" align='right'><para>Line   </para>
+</entry><entry thead="yes" align='right'><para>Plane    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><ref refid="classCGAL_1_1AABB__tree_1a36b4cfa21c223461bde0da2b020a67d1" kindref="member">AABB_tree::do_intersect()</ref>   </para>
+</entry><entry thead="no" align='right'><para>187,868   </para>
+</entry><entry thead="no" align='right'><para>185,649   </para>
+</entry><entry thead="no" align='right'><para>206,096   </para>
+</entry><entry thead="no" align='right'><para>377,969    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><ref refid="classCGAL_1_1AABB__tree_1af4d94dc88ad5bd31d6368d96d3d07780" kindref="member">AABB_tree::any_intersected_primitive()</ref>   </para>
+</entry><entry thead="no" align='right'><para>190,684   </para>
+</entry><entry thead="no" align='right'><para>190,027   </para>
+</entry><entry thead="no" align='right'><para>208,941   </para>
+</entry><entry thead="no" align='right'><para>360,337    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><ref refid="classCGAL_1_1AABB__tree_1a8ccaea5223809316c67d03713109e7a1" kindref="member">AABB_tree::any_intersection()</ref>   </para>
+</entry><entry thead="no" align='right'><para>147,468   </para>
+</entry><entry thead="no" align='right'><para>143,230   </para>
+</entry><entry thead="no" align='right'><para>148,235   </para>
+</entry><entry thead="no" align='right'><para>229,336    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><ref refid="classCGAL_1_1AABB__tree_1a872a72b57bbbb1d322fc8ef696e19057" kindref="member">AABB_tree::number_of_intersected_primitives()</ref>   </para>
+</entry><entry thead="no" align='right'><para>64,389   </para>
+</entry><entry thead="no" align='right'><para>52,943   </para>
+</entry><entry thead="no" align='right'><para>54,559   </para>
+</entry><entry thead="no" align='right'><para>7,906    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><ref refid="classCGAL_1_1AABB__tree_1a9f40594599eded5f9a79f74186710697" kindref="member">AABB_tree::all_intersected_primitives()</ref>   </para>
+</entry><entry thead="no" align='right'><para>65,553   </para>
+</entry><entry thead="no" align='right'><para>54,838   </para>
+</entry><entry thead="no" align='right'><para>53,183   </para>
+</entry><entry thead="no" align='right'><para>5,693    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><ref refid="classCGAL_1_1AABB__tree_1adf42c2edae69f92db5646d2c81d3bbff" kindref="member">AABB_tree::all_intersections()</ref>   </para>
+</entry><entry thead="no" align='right'><para>46,507   </para>
+</entry><entry thead="no" align='right'><para>38,471   </para>
+</entry><entry thead="no" align='right'><para>36,374   </para>
+</entry><entry thead="no" align='right'><para>2,644   </para>
+</entry></row>
+</table>
+</para>
+<para>Curve of <ref refid="index_1fig__figAABB-tree-bench" kindref="member">fig__figAABB-tree-bench</ref> plots the number of queries per second (here the <computeroutput><ref refid="classCGAL_1_1AABB__tree_1adf42c2edae69f92db5646d2c81d3bbff" kindref="member">AABB_tree::all_intersections()</ref></computeroutput> function with random segment queries) against the number of input triangles for the knot triangle surface mesh.</para>
+<para><anchor id="index_1fig__figAABB-tree-bench"/> <image type="html" name="bench.png"></image>
+ <image type="latex" name="bench.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figAABB-tree-bench" kindref="member">fig__figAABB-tree-bench</ref> Number of queries per second against number of triangles for the knot model with 14K (shown), 57K, 230K and 921K triangles. We call the <computeroutput>all_intersections()</computeroutput> function with segment queries randomly chosen within the bounding box. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The following table measures the number of <computeroutput><ref refid="classCGAL_1_1AABB__tree_1adf42c2edae69f92db5646d2c81d3bbff" kindref="member">AABB_tree::all_intersections()</ref></computeroutput> queries per second against several kernels. We use the 14,400 triangle version of the knot mesh model for random segment queries. Note how the <computeroutput><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref></computeroutput> kernel is substantially faster than the <computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref></computeroutput> kernel.</para>
+<para><table rows="6" cols="2"><row>
+<entry thead="yes" align='left'><para><ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>   </para>
+</entry><entry thead="yes" align='right'><para>Queries/s (all_intersections() with segment queries)    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref>&lt;double&gt;</computeroutput>   </para>
+</entry><entry thead="no" align='right'><para>46,507    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref>&lt;float&gt;</computeroutput>   </para>
+</entry><entry thead="no" align='right'><para>43,187    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref>&lt;double&gt;</computeroutput>   </para>
+</entry><entry thead="no" align='right'><para>5,335    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput><ref refid="structCGAL_1_1Cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Cartesian</ref>&lt;float&gt;</computeroutput>   </para>
+</entry><entry thead="no" align='right'><para>5,522    </para>
+</entry></row>
+<row>
+<entry thead="no" align='left'><para><computeroutput><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Exact_predicates_inexact_constructions_kernel</ref></computeroutput>   </para>
+</entry><entry thead="no" align='right'><para>18,411   </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1aabb_tree_perf_dist">
+<title>Distances</title>
+<para>The surface triangle mesh chosen for benchmarking distances is again the knot model in four increasing resolutions obtained through Loop subdivision. In the following table we first measure the tree construction time (which includes the construction of the internal KD-tree data structure used to accelerate the distance queries by up to one order of magnitude in our experiments). We then measure the number of queries per second for the three types distance queries (<computeroutput><ref refid="classCGAL_1_1AABB__tree_1abe3e1ab4a89de2623b6930324343b2fa" kindref="member">AABB_tree::closest_point()</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a24efb545081b6796d8843861a4bf49e6" kindref="member">AABB_tree::squared_distance()</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a1b3ac9521fd7257f760deafff3743437" kindref="member">AABB_tree::closest_point_and_primitive()</ref></computeroutput>) from point queries randomly chosen inside the bounding box.</para>
+<para><table rows="5" cols="5"><row>
+<entry thead="yes" align='right'><para>Nb triangles   </para>
+</entry><entry thead="yes" align='right'><para>Construction (ms)   </para>
+</entry><entry thead="yes" align='right'><para>Closest_point()   </para>
+</entry><entry thead="yes" align='right'><para>Squared_distance()   </para>
+</entry><entry thead="yes" align='right'><para>Closest_point_and_primitive()    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>14,400   </para>
+</entry><entry thead="no" align='right'><para>157.000   </para>
+</entry><entry thead="no" align='right'><para>45,132   </para>
+</entry><entry thead="no" align='right'><para>45,626   </para>
+</entry><entry thead="no" align='right'><para>45,770    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>57,600   </para>
+</entry><entry thead="no" align='right'><para>328.000   </para>
+</entry><entry thead="no" align='right'><para>21,589   </para>
+</entry><entry thead="no" align='right'><para>21,312   </para>
+</entry><entry thead="no" align='right'><para>21,137    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>230,400   </para>
+</entry><entry thead="no" align='right'><para>1.437   </para>
+</entry><entry thead="no" align='right'><para>11,063   </para>
+</entry><entry thead="no" align='right'><para>10,962   </para>
+</entry><entry thead="no" align='right'><para>11,086    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>921,600   </para>
+</entry><entry thead="no" align='right'><para>5.953   </para>
+</entry><entry thead="no" align='right'><para>5,636   </para>
+</entry><entry thead="no" align='right'><para>5,722   </para>
+</entry><entry thead="no" align='right'><para>5,703   </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1aabb_tree_perf_summary">
+<title>Summary</title>
+<para>The experiments described above are neither exhaustive nor conclusive as we have chosen one specific case where the input primitives are the facets of a triangle surface polyhedron. Nevertheless we now provide some general observations and advises about how to put the AABB tree to use with satisfactory performances. While the tree construction times and memory occupancy do not fluctuate much in our experiments depending on the input surface triangle mesh, the performance expressed in number of queries varies greatly depending on a complex combination of criteria: type of kernel, number of input primitives, distribution of primitives in space, type of function queried, type of query and location of query in space.</para>
+<para><itemizedlist>
+<listitem><para>Kernel: The type of CGAL kernel turns out to dominate the final execution times, the maximum performances being obtained with the <computeroutput><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Simple_cartesian</ref></computeroutput> kernel parameterized with the double precision number type. In applications where the intersection and distance execution times are crucial it is possible to use this kernel for the AABB tree in combination with a more robust kernel for the main data structure.</para>
+</listitem><listitem><para>Primitives: Although the number of input primitives plays an obvious role in the final performance, their distribution in space is at least equally important in order to obtain a well-balanced AABB tree. Ideally the primitives must be evenly distributed in space and the long primitives spanning the bounding box of the tree root node must be avoided as much as possible. It is often beneficial to split these long primitives into smaller ones before constructing the tree, e.g., through recursive longest edge bisection for triangle surface meshes.</para>
+</listitem><listitem><para>Function: The type of function queried plays another important role. Obviously the <emphasis>exhaustive</emphasis> functions, which list all intersections, are slower than the ones stopping after the first intersection. Within each of these functions the ones which call only intersection tests (<computeroutput><ref refid="classCGAL_1_1AABB__tree_1a36b4cfa21c223461bde0da2b020a67d1" kindref="member">AABB_tree::do_intersect()</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a872a72b57bbbb1d322fc8ef696e19057" kindref="member">AABB_tree::number_of_intersected_primitives()</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1AABB__tree_1af4d94dc88ad5bd31d6368d96d3d07780" kindref="member">AABB_tree::any_intersected_primitive()</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a9f40594599eded5f9a79f74186710697" kindref="member">AABB_tree::all_intersected_primitives()</ref></computeroutput>) are faster than the ones which explicitly construct the intersections (<computeroutput><ref refid="classCGAL_1_1AABB__tree_1a8ccaea5223809316c67d03713109e7a1" kindref="member">AABB_tree::any_intersection()</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1AABB__tree_1adf42c2edae69f92db5646d2c81d3bbff" kindref="member">AABB_tree::all_intersections()</ref></computeroutput>).</para>
+</listitem><listitem><para>Query: The type of query (e.g., line, ray, segment or plane used above) plays another role, strongly correlated with the type of function (exhaustive or not, and whether or not it constructs the intersections). When all intersection constructions are needed, the final execution times highly depend on the complexity of the general intersection object. For example a plane query generally intersects a surface triangle mesh into many segments while a segment query generally intersects a surface triangle mesh into few points. Finally, the location of the query in space also plays an obvious role in the performances, especially for the distance queries. Assuming the internal KD-tree constructed through the function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a5d3877d3f2afbd09341eb4b8c230080b" kindref="member">AABB_tree::accelerate_distance_queries()</ref></computeroutput>, it is preferable to specify a query point already close to the surface triangle mesh so that the query traverses only few AABBs of the tree. For a large number of primitive data (greater than 2M faces in our experiments) however we noticed that it is not necessary (and sometimes even slower) to use all reference points when constructing the KD-tree. In these cases we recommend to specify through the function <computeroutput><ref refid="classCGAL_1_1AABB__tree_1a5d3877d3f2afbd09341eb4b8c230080b" kindref="member">AABB_tree::accelerate_distance_queries()</ref></computeroutput> fewer reference points (typically not more than 100K) evenly distributed over the input primitives.</para>
+</listitem></itemizedlist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1aabb_tree_impl">
+<title>Implementation Details</title>
+<para>The AABB tree construction is initialized by computing the AABB of the whole set of input primitives. All primitives are then sorted along the longest coordinate axis of this box, and the primitives are separated into two equal size sets. This procedure is applied recursively until an AABB contains a single primitive. The tree is leafless as presented in <computeroutput>OPCODE</computeroutput> <ref refid="citelist_1CITEREF_cgal:t-ocdl-05" kindref="member">[1]</ref>. An intersection query traverses the tree by computing intersection tests only with respect to the AABBs during traversal, and with respect to the input primitives at the end of traversal (in the leafs of the tree).</para>
+<para>The reference id is not used internally but simply used by the AABB tree to refer to the primitive in the results provided to the user. It follows that, while in most cases each reference id corresponds to a unique primitive, this is not a requirement of the component. This way a user may use these reference ids as labels, each of them being shared by several geometric objects.</para>
+<para>A distance query between a query point <computeroutput>q</computeroutput> and the input primitives is turned into a <emphasis>ball</emphasis> query centered at <computeroutput>q</computeroutput>. The ball traverses the tree while recursively querying intersections with the AABBs, and computes the closest point <computeroutput>p</computeroutput> from the query point to the input primitives at the leafs of the tree. The ball radius is then shrunk to the distance between <computeroutput>p</computeroutput> and <computeroutput>q</computeroutput> for all remaining recursive traversals of the tree. Efficiency is achieved through setting the initial ball radius to a small value still guaranteed to intersect the input primitives. This is achieved by constructing an internal secondary data structure which provides a good hint to the algorithm at the beginning of the traversal (done by default). Calling <computeroutput><ref refid="classCGAL_1_1AABB__tree_1abde62f52ccdf411847151aa5000ba4a4" kindref="member">AABB_tree::do_not_accelerate_distance_queries()</ref></computeroutput> will disable the construction and the usage of this internal secondary data structure.</para>
+</sect1>
+<sect1 id="index_1aabb_tree_history">
+<title>Design and Implementation History</title>
+<para>Camille Wormser and Pierre Alliez started working on a data structure for efficient collision detection in 2007. The generic design for implementing both intersection and distance queries, and for generic queries and primitives was developed by Camille Wormser. In 2009, Pierre Alliez, Stéphane Tayeb and Camille Wormser made the implementation CGAL-compliant, with the help of Laurent Rineau for optimizing the tree construction. Additionally, Andreas Fabri, Jane Tournois, Mariette Yvinec and Sylvain Lefèbvre are given thanks for helpful comments and discussions during that period. Later, Sébastien Loriot contributed several improvements: thread-safe queries, introduction of shared data stored in the traits for lighter primitive types, ... In 2024, the package was made compatible with 2D and 3D primitives by Andreas Fabri, Sébastien Loriot, and Sven Oesau. </para>
+</sect1>
+    </detaileddescription>
+    <location file="aabb_tree.txt"/>
+  </compounddef>
+</doxygen>

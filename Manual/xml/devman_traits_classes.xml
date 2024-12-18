@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="devman_traits_classes" kind="page">
+    <compoundname>devman_traits_classes</compoundname>
+    <title>Traits Classes</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><simplesect kind="author"><para>Bernd G<aumlaut/>rtner (<computeroutput><ulink url="mailto:gaertner@inf.ethz.ch">gaertner@inf.ethz.ch</ulink></computeroutput>)</para>
+</simplesect>
+The concept of a traits class is central to CGAL. The name <emphasis>traits class</emphasis> comes from a standard C++ design pattern <ref refid="citelist_1CITEREF_cgal:m-tnutt-95" kindref="member">[9]</ref>; you may have heard about iterator traits which follow this design pattern. The traits class is used in template code to reflect properties (traits) of the actual template argument. On the lower levels, such as the number types, the traits classes in CGAL indeed follow this pattern. However, in higher level packages the term traits class is used in a slightly different spirit. The most noticeable change is that the traits class becomes the template argument. This allows to bundle several template arguments and provides more flexibility as explained in the subsequent sections.</para>
+<sect1 id="devman_traits_classes_1secwhat_is_a_traits_class">
+<title>What are traits classes in CGAL?</title>
+<para>The algorithms in <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL</ref>&apos;s basic library are implemented as function templates or class templates, usually having a template parameter whose name contains the word <computeroutput>Traits</computeroutput>. This template parameter represents a concept and so has a corresponding set of requirements that define the interface between the algorithm and the geometric (or numeric) primitives it uses. Any concrete class that serves as a model for this concept is a traits class for the given algorithm or data structure.</para>
+</sect1>
+<sect1 id="devman_traits_classes_1secwhy_traits_classes">
+<title>Why are traits classes in CGAL?</title>
+<para>Using traits concepts as template parameters allows for customization of the behavior of algorithms without changing implementations. At least one model for each traits concept should be provided in CGAL (in the simplest case, the kernel models fit; see Section <ref refid="devman_traits_classes_1seckernel_traits" kindref="member">Kernel as traits</ref> ), but often more than one are provided in order to supply certain customizations that users may want. The user is also free to supply his or her own class as a model of the traits concept when the desired tailoring is not present in the library.</para>
+<para>Traits classes allow for tailoring of algorithms not only at compile time but also at run time. Some primitive operations that appear in the traits class (in the form of functor types) may need additional data that are not known at compile time. A standard example is the following: we have three-dimensional points, but we want the convex hull of the two-dimensional points that arise after projecting along some direction in space, which is computed as the program runs. How does the algorithm get to know about this direction? If there is a traits class object as a parameter, the information can be provided to the proper primitives through a proper initialization of the traits class object. For this reason, traits class objects are passed as parameters to functions.</para>
+</sect1>
+<sect1 id="devman_traits_classes_1sectraits_class_example">
+<title>An example - planar convex hulls</title>
+<para>Consider convex hulls in the plane. What are the geometric primitives a typical convex hull algorithm uses? Of course, this depends on the algorithm, so let us consider what is probably the simplest efficient algorithm, the so-called Graham Scan. This algorithm first sorts the points from left to right, and then builds the convex hull incrementally by adding one point after another from the sorted list. To do this, it must at least know about some point type, it should have some idea how to sort those points, and it must be able to evaluate the orientation of a triple of points. The signature of the Graham Scan algorithm in CGAL (actually a variation due to Andrews) is as follows:</para>
+<para><anchor id="devman_traits_classes_1ch_grham_andrew"/> <programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>InputIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>OutputIterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Traits&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgConvexHull2Functions_1gaeccc6dda2f9d3096c94a7ff84cc91a85" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ch_graham_andrew</ref>(<sp/><ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/><sp/>first,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classInputIterator" kindref="compound">InputIterator</ref><sp/><sp/>beyond,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classOutputIterator" kindref="compound">OutputIterator</ref><sp/>result,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Traits<sp/>&amp;<sp/>ch_traits);</highlight></codeline>
+</programlisting></para>
+<para>You notice that there is a template parameter named <computeroutput>Traits</computeroutput>, and you also see a comment that mentions three identifiers (<computeroutput>Point_2</computeroutput>, <computeroutput>Left_turn_2</computeroutput> and <computeroutput>Less_xy_2</computeroutput>) that have to be defined in the scope of the traits class in order for the algorithm to work. As you can guess, <computeroutput>Left_turn_2</computeroutput> is responsible for the orientation test, while <computeroutput>Less_xy_2</computeroutput> does the sorting. So, obviously, the traits class must provide these three identifiers. The requirements it has to satisfy beyond that are documented in full with the concept <computeroutput><ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref></computeroutput>.</para>
+<sect2 id="devman_traits_classes_1subsectraits_class_requirements">
+<title>Traits class requirements</title>
+<para>Whenever you write a function or class that is parameterized with a traits class, you must provide the requirements that class has to fulfill. These requirements should be documented as a concept. For the example above, if you look in the manual at the description of the concept <computeroutput><ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref></computeroutput>, you will find that the traits class itself and the identifiers that are mentioned have to meet the following specifications:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">concept<sp/></highlight><highlight class="normal"><ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>typename<sp/>Point_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>typename<sp/>Left_xy_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>typename<sp/>Left_turn_2;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref>(<ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">ConvexHullTraits_2</ref>&amp;<sp/>t);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Less_xy_2<sp/>less_xy_2_object();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Left_turn_2<sp/>left_turn_2_object();</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting></para>
+<para>This ends the copied manual text. Some comments are in order here. You might have expected <computeroutput>Less_xy_2</computeroutput> and <computeroutput>Left_turn_2</computeroutput> to be simply member functions of the traits class. Instead, they are functor types, and there are member functions generating instances of these types, <emphasis>i.e.</emphasis>, the actual functors. Reasons for this are the following. <itemizedlist>
+<listitem>
+<para><emphasis>CGAL</emphasis> is designed to have an STL-like look-and-feel. All algorithms in the STL that depend on computational primitives (like a sorting algorithm depending on a comparison operator), receive those primitives via parameters which are functors. (The only way to pass an actual function as a parameter would be via function pointers.) </para>
+</listitem>
+<listitem>
+<para>More flexibility. In contrast to member functions, functors can carry data. For example, repeated calls to a function with only slightly different parameters might be handled efficiently by storing intermediate results. Functors are the natural framework here. See <ref refid="citelist_1CITEREF_hhkps-aegk-01" kindref="member">[5]</ref> for more exposition. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>If you really look up the documentation of the <ref refid="classConvexHullTraits__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">concept</ref> in the manual, you will find a larger list of requirements. A traits class fulfilling this complete list of requirements can be used for all of the 2-dimensional convex hull algorithms provided in CGAL. For example, there are also algorithms that require a sorting of points by angle, and a traits class for that algorithm has to supply appropriate predicates for that. Still, to use the Graham Scan, a traits class meeting only the specifications listed above is sufficient.</para>
+</sect2>
+<sect2 id="devman_traits_classes_1subseccgal_traits_classes">
+<title>CGAL-provided traits classes</title>
+<para>As mentioned in Section <ref refid="devman_traits_classes_1secwhat_is_a_traits_class" kindref="member">What are traits classes in CGAL?</ref> , the traits class requirements define a concept. An actual traits class that complies with these requirements is a model for that concept. At least one such model must be provided for all CGAL algorithms. Often this is called the default traits class. Default traits classes are very easy to use, especially when they are invoked via default arguments. Look at the function <ref refid="group__PkgConvexHull2Functions_1gaeccc6dda2f9d3096c94a7ff84cc91a85" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag"><computeroutput>CGAL::ch_graham_andrew()</computeroutput> </ref> again. The signature does not tell the whole story. In reality, the third template parameter defaults to the default traits class, and the last function parameter defaults to a default instance of the default traits class. Of course, such behavior must be specified in the <ref refid="group__PkgConvexHull2Functions_1gaeccc6dda2f9d3096c94a7ff84cc91a85" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Convex_hull_2.tag">description of the function</ref>.</para>
+<para>The implication is that a user can call <computeroutput>ch_graham_andrew</computeroutput> with just three parameters, which delimit the iterator range to be handled and supply the iterator for the result. The types and primitives used by the algorithm in this case are the ones from the CGAL 2D and 3D kernel.</para>
+<para>In many cases, there are more than one traits classes provided by CGAL. In the case of convex hulls, for example, there are traits classes that interface the algorithms with the geometry kernel of LEDA. Though the user who has a third-party geometric kernel will not be able to profit from the CGAL or LEDA traits, he or she can still provide own traits classes, which meet the specified requirements.</para>
+</sect2>
+</sect1>
+<sect1 id="devman_traits_classes_1seckernel_traits">
+<title>Kernel as traits</title>
+<para>Most default traits classes in CGAL are written in terms of the types and classes provided in the CGAL kernel. So one may wonder why it is not possible to plug the kernel in as a traits class directly. Ideally, it provides all the primitives an algorithm needs. However, some algorithms and data structures require specialized predicates that would not be appropriate to add to a general-purpose kernel. The traits classes for these algorithms and data structures should use kernel primitives wherever possible, and for those primitives not provided by the kernel the fixed naming scheme for predicates and constructions (Section <ref refid="devman_code_format_1secnaming_scheme" kindref="member">Naming scheme</ref> ) should be used to make the library more consistent and thus easier to use.</para>
+</sect1>
+<sect1 id="devman_traits_classes_1sectraits_class_req_and_rec">
+<title>Requirements and recommendations</title>
+<para>This section condenses the previous material into a few guidelines you have to observe when you design a traits class yourself. <itemizedlist>
+<listitem>
+<para>Keep it small and simple. In particular, avoid redundant functionality in the traits class requirements. For example, if you require <computeroutput>Less_xy_2</computeroutput>, there is no reason to require <computeroutput>Greater_xy_2</computeroutput>, because the latter can be constructed from the former. In general, designing a good traits class requires a deep understanding of the algorithm it is made for. Finding the &quot;right&quot; set of geometric primitives required by the algorithm can be a nontrivial task. However, spending effort on that task decreases the effort needed later to implement traits classes and increases the ease of use of the algorithm.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Obey the naming conventions (Section <ref refid="devman_code_format_1secnaming_scheme" kindref="member">Naming scheme</ref> ).</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Use functors instead of member functions for the predicates required. This is not only necessary for the kernel traits, it also gives the benefit of more flexibility. For each type you must provide a member function to get the actual functor and thus this seems to increase the size of the traits class. However, if you follow the naming scheme, the signatures of these functions are obvious and obtainable mechanically.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Provide at least one model (which should normally be the kernel traits class) for every traits concept.</para>
+<para></para>
+</listitem>
+<listitem>
+<para>Define and document a default traits class so the user need not provide a traits class argument if customization of the algorithm is not needed.</para>
+<para></para>
+</listitem>
+</itemizedlist>
+</para>
+</sect1>
+    </detaileddescription>
+    <location file="Developer_manual/Chapter_traits_classes.txt"/>
+  </compounddef>
+</doxygen>

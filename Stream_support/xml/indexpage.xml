@@ -1,0 +1,407 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_IO_Streams"/><anchor id="index_1Chapter_operator_for_IO_streams"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="authors"><para>Andreas Fabri, Geert-Jan Giezeman, Lutz Kettner, and Maxime Gimeno</para>
+</simplesect>
+</para>
+<sect1 id="index_1IOstreamIntro">
+<title>Introduction</title>
+<para>An algorithm is the application of a series of steps to convert some input data into output data. As such, it is necessary to have a way to input and output external data into CGAL data structures. This is achieved using <emphasis>input/output (I/O) streams</emphasis> of data, which enables reading and writing to and from files, the console, or other custom structures.</para>
+<sect2 id="index_1StreamSupportOutline">
+<title>Outline</title>
+<para><itemizedlist>
+<listitem><para><ref refid="index_1IOstreamIO" kindref="member">Reading and Writing Data With Streams</ref> : the most essential data structures of CGAL, its kernel objects, all provide adapted input and output operators. In addition, CGAL provides tools to enhance the existing stream system of the STL to easily read and write classes external to CGAL.</para>
+</listitem><listitem><para><ref refid="index_1IOstreamSupportedFormats" kindref="member">Importing and Exporting Data using Standard File Formats</ref> : a number of traditional data structures such as point sets or polygon meshes have well-established standards specifying a particular data format to facilitate data exchanges. Formats supported for CGAL data structures are detailed in this section; the page <ref refid="IOStreamSupportedFileFormats" kindref="compound">Supported File Formats</ref> offers the reversed viewpoint (file format to CGAL data structure). Finally, an alternative to standard file formats is serialization of data, see Section <ref refid="index_1IOstreamOther" kindref="member">Reading Unsupported Formats</ref>.</para>
+</listitem></itemizedlist>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1IOstreamPrecision">
+<title>Stream Precision</title>
+<para>When manipulating floating point-based number types, it is important to always keep in mind that the stream of the precision should be chosen appropriately, lest potentially significant loss of data might incur. For example, consider the following extreme case: <programlisting filename=".cpp"><codeline><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>v<sp/>=<sp/>184,<sp/>w<sp/>=<sp/>182;</highlight></codeline>
+<codeline><highlight class="normal">std::cout<sp/>&lt;&lt;<sp/>std::setprecision(2)<sp/>&lt;&lt;<sp/>v<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>w<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+</programlisting> This snipplet will produce the output <computeroutput>1.8e+02 1.8e+02</computeroutput> despite <computeroutput>v</computeroutput> and <computeroutput>w</computeroutput> being different. As the default precision of output streams of the STL is <computeroutput>6</computeroutput>, this can be a real source of bugs and wrong outputs.</para>
+<para>The stream precision of STL streams can be modified using <ulink url="https://en.cppreference.com/w/cpp/io/manip/setprecision">std::setprecision</ulink>. File I/O functions also offer an optional named parameter to set the output stream precision.</para>
+</sect1>
+<sect1 id="index_1IOstreamIO">
+<title>Reading and Writing Data With Streams</title>
+<para>All classes in the CGAL kernel provide input and output operators for I/O streams. Classes external to CGAL are also supported, by means of <computeroutput>oformat()</computeroutput> (Section <ref refid="index_1seciofornoncgaltypes" kindref="member">I/O for Non CGAL Types</ref>). The basic task of such an operator is to produce a representation of an object that can be written as a sequence of characters on devices as a console, a file, or a pipe. In CGAL we distinguish between a raw ASCII, a raw binary, and a pretty printing format.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">enum</highlight><highlight class="normal"><sp/>Mode<sp/>{ASCII<sp/>=<sp/>0,<sp/>BINARY,<sp/>PRETTY};</highlight></codeline>
+</programlisting></para>
+<para>In ASCII mode, objects are written as a set of numbers, e.g. the coordinates of a point or the coefficients of a line, in a machine independent format. In <computeroutput>BINARY</computeroutput> mode, data are written in a binary format, e.g. a double is represented as a sequence of four byte. The format depends on the machine. The mode <computeroutput>PRETTY</computeroutput> serves mainly for debugging as the type of the geometric object is written, as well as the data defining the object. For example for a point at the origin with Cartesian double coordinates, the output would be <computeroutput>PointC2(0.0, 0.0)</computeroutput>. At the moment CGAL does not provide input operations for pretty printed data. By default a stream is in ASCII mode.</para>
+<para>CGAL provides the following functions to modify the mode of an I/O stream.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal"><ref refid="group__PkgStreamSupportEnumRef_1gac0c882c273b950eb9efca32420e2bef0" kindref="member">IO::Mode</ref><sp/>set_mode(std::ios&amp;<sp/>s,<sp/><ref refid="group__PkgStreamSupportEnumRef_1gac0c882c273b950eb9efca32420e2bef0" kindref="member">IO::Mode</ref><sp/>m);</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgStreamSupportEnumRef_1gac0c882c273b950eb9efca32420e2bef0" kindref="member">IO::Mode</ref><sp/><ref refid="group__PkgStreamSupportRef_1ga7d51c854b865a7eb367e21fc43bd37b8" kindref="member">IO::set_ascii_mode</ref>(std::ios&amp;<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgStreamSupportEnumRef_1gac0c882c273b950eb9efca32420e2bef0" kindref="member">IO::Mode</ref><sp/><ref refid="group__PkgStreamSupportRef_1ga7eb5683e79d8aa69059a453dc44cbaa7" kindref="member">IO::set_binary_mode</ref>(std::ios&amp;<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="group__PkgStreamSupportEnumRef_1gac0c882c273b950eb9efca32420e2bef0" kindref="member">IO::Mode</ref><sp/><ref refid="group__PkgStreamSupportRef_1ga2cbb865dd83eedd780f4a452635b1d28" kindref="member">IO::set_pretty_mode</ref>(std::ios&amp;<sp/>s);</highlight></codeline>
+</programlisting></para>
+<para>The following functions enable testing whether a stream is in a certain mode: <programlisting filename=".cpp"><codeline><highlight class="normal"><ref refid="group__PkgStreamSupportEnumRef_1gac0c882c273b950eb9efca32420e2bef0" kindref="member">IO::Mode</ref><sp/>get_mode(std::ios&amp;<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_ascii(std::ios&amp;<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_binary(std::ios&amp;<sp/>s);</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_pretty(std::ios&amp;<sp/>s);</highlight></codeline>
+</programlisting></para>
+<sect2 id="index_1IOstreamInput">
+<title>Input Operator</title>
+<para>CGAL defines input operators for classes that are derived from the class <computeroutput>istream</computeroutput>. This allows to read from istreams as <computeroutput>std::cin</computeroutput>, as well as from <computeroutput>std::istringstream</computeroutput> and <computeroutput>std::ifstream</computeroutput>. The input operator is defined for all classes in the CGAL <computeroutput><ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref></computeroutput>. Let <computeroutput>is</computeroutput> be an input stream.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="comment">//<sp/>Extracts<sp/>object<sp/>`c`<sp/>from<sp/>the<sp/>stream<sp/>`is`.<sp/>Returns<sp/>`is`.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">istream&amp;<sp/><ref refid="group__PkgArrangementOnSurface2op__right__shift_1ga153c183e5eeb01e5fda67ae0e391aa23" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">operator&gt;&gt;</ref>(istream&amp;<sp/>is,<sp/>Class<sp/>c);</highlight></codeline>
+</programlisting></para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Segment_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Point_2&lt; CGAL::Cartesian&lt;double&gt;</ref><sp/>&gt;<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Segment_2&lt; CGAL::Cartesian&lt;double&gt;</ref><sp/>&gt;<sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>p,<sp/>q;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment<sp/>s;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga7d51c854b865a7eb367e21fc43bd37b8" kindref="member">CGAL::IO::set_ascii_mode</ref>(std::cin);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cin<sp/>&gt;&gt;<sp/>p<sp/>&gt;&gt;<sp/>q;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>f(</highlight><highlight class="stringliteral">&quot;data.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga7eb5683e79d8aa69059a453dc44cbaa7" kindref="member">CGAL::IO::set_binary_mode</ref>(f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>f<sp/>&gt;&gt;<sp/>s<sp/>&gt;&gt;<sp/>p;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1IOstreamOutput">
+<title>Output Operator</title>
+<para>CGAL defines output operators for classes that are derived from the class <computeroutput>ostream</computeroutput>. This allows to write to ostreams as <computeroutput>std::cout</computeroutput> or <computeroutput>std::cerr</computeroutput>, as well as to <computeroutput>std::ostringstream</computeroutput> and <computeroutput>std::ofstream</computeroutput>. The output operator is defined for all classes in the CGAL <computeroutput><ref refid="classKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref></computeroutput> and for the class <computeroutput>Color</computeroutput> (see Section <ref refid="index_1IOstreamColors" kindref="member">Colors</ref>) as well. Let <computeroutput>os</computeroutput> be an output stream.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="comment">//<sp/>Inserts<sp/>object<sp/>`c`<sp/>in<sp/>the<sp/>stream<sp/>`os`.<sp/>Returns<sp/>`os`.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">ostream&amp;<sp/><ref refid="group__PkgArrangementOnSurface2op__left__shift_1ga8b30fa13c4f865df66cf6a14718240e9" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Arrangement_on_surface_2.tag">operator&lt;&lt;</ref>(ostream&amp;<sp/>os,<sp/>Class<sp/>c);</highlight></codeline>
+</programlisting></para>
+<para><programlisting filename=".cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Segment_2.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Point_2&lt; CGAL::Cartesian&lt;double&gt;</ref><sp/>&gt;<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Segment__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Segment_2&lt; CGAL::Cartesian&lt;double&gt;</ref><sp/>&gt;<sp/>Segment;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point<sp/>p(0,1),<sp/>q(2,2);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Segment<sp/>s(p,q);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga2cbb865dd83eedd780f4a452635b1d28" kindref="member">CGAL::IO::set_pretty_mode</ref>(std::cout);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>p<sp/>&lt;&lt;<sp/>std::endl<sp/>&lt;&lt;<sp/>q<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>f(</highlight><highlight class="stringliteral">&quot;data.txt&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgStreamSupportRef_1ga7eb5683e79d8aa69059a453dc44cbaa7" kindref="member">CGAL::IO::set_binary_mode</ref>(f);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>f<sp/>&lt;&lt;<sp/>s<sp/>&lt;&lt;<sp/>p<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1seciofornoncgaltypes">
+<title>IO for Non-CGAL Types</title>
+<sect3 id="index_1IOstreamUsingOutputFormatting">
+<title>Using Output Formatting</title>
+<para>To ensure that non-CGAL types are formatted correctly (i.e., respecting <ref refid="group__PkgStreamSupportEnumRef" kindref="compound"><computeroutput>IO::Mode</computeroutput> </ref>), <computeroutput>oformat()</computeroutput> can be used. For types with a <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput> specialization, the respective output routine of <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput> will be called by <computeroutput>oformat()</computeroutput>. Otherwise, the stream output operator will be called.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgStreamSupportRef_1gaef04729ed020e200594efd0f0f26004f" kindref="member">CGAL::IO::oformat</ref>(<sp/>myobject<sp/>);</highlight></codeline>
+</programlisting></para>
+<para>Optionally, you can provide a second template parameter <computeroutput>F</computeroutput> as a formatting tag: <programlisting filename=".cpp"><codeline><highlight class="normal">std::cout<sp/>&lt;&lt;<sp/><ref refid="group__PkgStreamSupportRef_1gaef04729ed020e200594efd0f0f26004f" kindref="member">CGAL::IO::oformat</ref>(<sp/>myobject,<sp/>My_formatting_tag()<sp/>);</highlight></codeline>
+</programlisting></para>
+<para>For a list of formatting tags supported by the type <computeroutput>T</computeroutput>, please refer to the documentation of the respective type.</para>
+</sect3>
+<sect3 id="index_1IOstreamCustomizingOutputFormatting">
+<title>Customizing Output Formatting</title>
+<para>In some situations, you want to control the output formatting for a type <computeroutput>T</computeroutput>. For external types (third party libraries etc.), there might be problems if their stream output operator does not respect <ref refid="group__PkgStreamSupportEnumRef" kindref="compound"><computeroutput>IO::Mode</computeroutput> </ref>. The purpose of <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput> is to provide a way to control output formatting that works independently of the object&apos;s stream output operator.</para>
+<para>Instead of putting <computeroutput>T</computeroutput> directly into an output stream, <computeroutput>T</computeroutput> is wrapped into an output representation <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput>. For convenience, a function <computeroutput>oformat()</computeroutput> exists, which constructs an instance of <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput>.</para>
+<para>If you do not specialize <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput> for <computeroutput>T</computeroutput>, <computeroutput>T</computeroutput>&apos;s stream output operator is called from within <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput>, by default. If you want another behavior for your type <computeroutput>T</computeroutput>, you have to provide a specialization for that type. Furthermore, you can provide specializations with a second template parameter (a formatting tag). The second template parameter defaults to <computeroutput><ref refid="structCGAL_1_1Null__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Null_tag</ref></computeroutput> and means <emphasis>default behavior</emphasis>.</para>
+<para>For example, specializing <computeroutput><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref></computeroutput> for <computeroutput>CORE::BigRat</computeroutput> (without a formatting tag parameter) could look like this:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>F&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref>&lt;<sp/>::CORE::BigRat,<sp/>F&gt;<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>const<sp/>::CORE::BigRat&amp;<sp/>t;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Output__rep" kindref="compound">Output_rep</ref>(<sp/>const<sp/>::CORE::BigRat&amp;<sp/>tt)<sp/>:<sp/>t(tt)<sp/>{}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ostream&amp;<sp/><ref refid="classCGAL_1_1Output__rep_1a1b1b7fadac7aa87e1db910a70a5fc240" kindref="member">operator()</ref>(<sp/>std::ostream&amp;<sp/>out)</highlight><highlight class="keyword"><sp/>const<sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">switch</highlight><highlight class="normal"><sp/>(get_mode(out))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">case</highlight><highlight class="normal"><sp/>IO::PRETTY:{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(CGAL_CORE_DENOMINATOR(t)<sp/>==<sp/>::CORE::BigRat(1))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>out<sp/>&lt;&lt;CGAL_CORE_NUMERATOR(t);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>out<sp/>&lt;&lt;<sp/>CGAL_CORE_NUMERATOR(t)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>CGAL_CORE_DENOMINATOR(t);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">default</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>out<sp/>&lt;&lt;<sp/>CGAL_CORE_NUMERATOR(t)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;/&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>CGAL_CORE_DENOMINATOR(t);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+</programlisting></para>
+</sect3>
+</sect2>
+<sect2 id="index_1IOstreamColors">
+<title>Colors</title>
+<para>An object of the class <computeroutput>Color</computeroutput> is a color available for drawing operations in many CGAL output streams.</para>
+<para>Each color is defined by a triple of integers <computeroutput>(r,g,b)</computeroutput> with 0 <formula id="0">$ \le $</formula> r,g,b <formula id="0">$ \le $</formula> 255, the so-called <emphasis>rgb-value</emphasis> of the color. There are a 11 predefined <computeroutput>Color</computeroutput> functions available: <computeroutput>black()</computeroutput>, <computeroutput>white()</computeroutput>, <computeroutput>gray()</computeroutput>, <computeroutput>red()</computeroutput>, <computeroutput>green()</computeroutput>, <computeroutput>deep_blue()</computeroutput>, <computeroutput>blue()</computeroutput>, <computeroutput>purple()</computeroutput>, <computeroutput>violet()</computeroutput>, <computeroutput>orange()</computeroutput>, and <computeroutput>yellow()</computeroutput>.</para>
+</sect2>
+<sect2 id="index_1IOstreamStream">
+<title>Stream Support</title>
+<para>Three classes are provided by CGAL as adaptors to input and output stream iterators. The class <computeroutput><ref refid="classCGAL_1_1Istream__iterator" kindref="compound">Istream_iterator</ref></computeroutput> is an input iterator adaptor and is particularly useful for classes that are similar but not compatible to <computeroutput>std::istream</computeroutput>. Similarly, the class <computeroutput><ref refid="classCGAL_1_1Ostream__iterator" kindref="compound">Ostream_iterator</ref></computeroutput> is an output iterator adaptor. The class <computeroutput><ref refid="classCGAL_1_1Verbose__ostream" kindref="compound">Verbose_ostream</ref></computeroutput> can be used as an output stream. The stream output operator <computeroutput>&lt;&lt;</computeroutput> is defined for any type. The class stores in an internal state a stream and whether the output is active or not. If the state is active, the stream output operator <computeroutput>&lt;&lt;</computeroutput> uses the internal stream to output its argument. If the state is inactive, nothing happens.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1IOstreamSupportedFormats">
+<title>Importing and Exporting Data using Standard File Formats</title>
+<para>Specific standards have been created to facilite the exchange of data for traditional data structures such as point sets or polygon meshes.</para>
+<para>CGAL aims to provide a uniform and consistent approach for Input/Output functions, providing for a given file format with shorter name <computeroutput>XXX</computeroutput> an input function <computeroutput>read_XXX(input, data_structure)</computeroutput>, and an output function called <computeroutput>write_XXX(output, data_structure)</computeroutput>. Whenever possible, a <emphasis>generic</emphasis> I/O function which can deduce the file format from the extension is also provided for convenience.</para>
+<para>In the following subsections, file formats supported in CGAL are listed along with compatible CGAL data structures. A reverse viewpoint, listing the data structures which can be used for a specific file format is available on the page: <ref refid="IOStreamSupportedFileFormats" kindref="compound">Supported File Formats</ref>.</para>
+<para>Note that these categories will grow as the on-going effort to uniformize I/O in CGAL progresses.</para>
+<sect2 id="index_1IOstreamPointSetIO">
+<title>Point Set IO</title>
+<para>A set of points - possibly with normals - is the basic input of many algorithms. The following table shows which file formats can be read from and written for point ranges.</para>
+<para><table rows="3" cols="6"><row>
+<entry thead="yes" colspan="1"><para></para>
+</entry><entry thead="yes" colspan="1"><para>Generic </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamOFF" kindref="member">OFF</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamXYZ" kindref="member">XYZ</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamPLY" kindref="member">PLY</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamLAS" kindref="member">LAS</ref>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Input </para>
+</entry><entry thead="no"><para><computeroutput>read_points()</computeroutput> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOOff" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>CGAL::IO::read_OFF()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOXyz" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>GAL::IO::read_XYZ()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOPly" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>GAL::IO::read_PLY()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOLas" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>GAL::IO::read_LAS()</computeroutput> </ref>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Output </para>
+</entry><entry thead="no"><para><computeroutput>write_points()</computeroutput> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOOff" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>GAL::IO::write_OFF()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOXyz" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>GAL::IO::write_XYZ()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOPly" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>GAL::IO::write_PLY()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSetProcessing3IOLas" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag"><computeroutput>GAL::IO::write_LAS()</computeroutput> </ref>  </para>
+</entry></row>
+</table>
+</para>
+<para>All of these functions (with the exception of the LAS format) can read and write either points alone or points with normals (depending on whether the <computeroutput>normal_map</computeroutput> named parameter is used by the user or not).</para>
+<para>Note that the PLY format handles both ASCII and binary formats. In addition, PLY and LAS are extensible formats that can embed additional properties. These can also be read by CGAL (see Section <ref refid="index_1Point_set_processing_3Properties_io" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_processing_3.tag">Points With Properties</ref>).</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3</ref></computeroutput> is the data structure used in CGAL to represent point sets. It is a vector-based data structure that contains a default property (named <emphasis>point</emphasis>) for the coordinates of the points, and is able to work with dynamic properties. The file formats supported for <computeroutput><ref refid="classCGAL_1_1Point__set__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::Point_set_3</ref></computeroutput> are detailed in the table below.</para>
+<para><table rows="3" cols="6"><row>
+<entry thead="yes" colspan="1"><para></para>
+</entry><entry thead="yes" colspan="1"><para>Generic </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamOFF" kindref="member">OFF</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamXYZ" kindref="member">XYZ</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamPLY" kindref="member">PLY</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamLAS" kindref="member">LAS</ref>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Input </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgPointSet3IO_1gade7dbb6c22e93441b0868c214e2858e6" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::IO::read_point_set()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOOFF" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::read_OFF()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOXYZ" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::read_XYZ()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOPLY" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::read_PLY()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOLAS" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::read_LAS()</computeroutput> </ref>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Output </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgPointSet3IO_1gacba0bfce8fbaa7cacd291d9649891f6a" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag">CGAL::IO::write_point_set()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOOFF" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::write_OFF()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOXYZ" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::write_XYZ()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOPLY" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::write_PLY()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgPointSet3IOLAS" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Point_set_3.tag"><computeroutput>GAL::IO::write_LAS()</computeroutput> </ref>  </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1IOstreamPolygonSoupIO">
+<title>Polygon Soup IO</title>
+<para>A polygon soup is a set of polygons with no global combinatorial information, stored in a two containers: one storing the points, and the other one storing their indices per face (i.e a vector of 3 integers represent a triangle face).</para>
+<para><table rows="3" cols="10"><row>
+<entry thead="yes" colspan="1"><para></para>
+</entry><entry thead="yes" colspan="1"><para>Generic </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamOFF" kindref="member">OFF</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamOBJ" kindref="member">OBJ</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamSTL" kindref="member">STL</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamPLY" kindref="member">PLY</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamVTK" kindref="member">VTP</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamGocad" kindref="member">GOCAD</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamWKT" kindref="member">WKT</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStream3MF" kindref="member">3MF</ref>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Input </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__IOstreamFunctions_1gaafb0e02f4669802c727709743065804c" kindref="member">CGAL::IO::read_polygon_soup()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsOFF" kindref="compound"><computeroutput>GAL::IO::read_OFF()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsOBJ" kindref="compound"><computeroutput>GAL::IO::read_OBJ()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsSTL" kindref="compound"><computeroutput>GAL::IO::read_STL()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsPLY" kindref="compound"><computeroutput>GAL::IO::read_PLY()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsVTK" kindref="compound"><computeroutput>GAL::IO::read_VTP()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsGOCAD" kindref="compound"><computeroutput>GAL::IO::read_GOCAD()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsWKT" kindref="compound"><computeroutput>GAL::IO::read_WKT()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncs3MF" kindref="compound"><computeroutput>GAL::IO::read_3MF()</computeroutput> </ref>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Output </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__IOstreamFunctions_1ga030115449f48c379b0c080328fd730b0" kindref="member">CGAL::IO::write_polygon_soup()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsOFF" kindref="compound"><computeroutput>GAL::IO::write_OFF()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsOBJ" kindref="compound"><computeroutput>GAL::IO::write_OBJ()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsSTL" kindref="compound"><computeroutput>GAL::IO::write_STL()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsPLY" kindref="compound"><computeroutput>GAL::IO::write_PLY()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsVTK" kindref="compound"><computeroutput>GAL::IO::write_VTP()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsGOCAD" kindref="compound"><computeroutput>GAL::IO::write_GOCAD()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncsWKT" kindref="compound"><computeroutput>GAL::IO::write_WKT()</computeroutput> </ref> </para>
+</entry><entry thead="no"><para><ref refid="group__PkgStreamSupportIoFuncs3MF" kindref="compound"><computeroutput>GAL::IO::write_3MF()</computeroutput> </ref>  </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1IOstreamPolygonMeshIO">
+<title>Polygon Mesh IO</title>
+<para>A <emphasis>polygon</emphasis> <emphasis>mesh</emphasis> is a consistent and orientable surface mesh, that can have one or more boundaries. This refines the concept of <computeroutput><ref refid="classFaceGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">FaceGraph</ref></computeroutput> with some additional restrictions; a complete definition can be found <ref refid="index_1PMPDef" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag">here</ref>. The table above only lists the functions that work with any polygon mesh.</para>
+<para><table rows="3" cols="8"><row>
+<entry thead="yes" colspan="1"><para></para>
+</entry><entry thead="yes" colspan="1"><para>Generic </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamOFF" kindref="member">OFF</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamSTL" kindref="member">STL</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamVTK" kindref="member">VTP</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamOBJ" kindref="member">OBJ</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamGocad" kindref="member">GOCAD</ref> </para>
+</entry><entry thead="yes" colspan="1"><para><ref refid="IOStreamSupportedFileFormats_1IOStreamWRL" kindref="member">WRL</ref>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Input </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsOFF_1gadd0f59b6789ef565bb7e95f3d0d89e91" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_OFF()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsSTL_1ga786746f64cb281de5bb1fc4caacb82f6" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_STL()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsVTP_1gabd10bfa6ce66f2c223dc29d9e00c4b5f" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_VTP()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsOBJ_1ga28e1caa147b4e44e0870f7ba02f34ec2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_OBJ()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsGOCAD_1gad6ba9ef0b9b83b454b73dae1f7ac1a0d" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_GOCAD()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><center> - </center>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Output </para>
+</entry><entry thead="no"><para>`<computeroutput><ref refid="group__PkgBGLIOFct_1gafa143949a33371dc6df8307be1ab8a66" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_polygon_mesh()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsOFF_1ga7fea2ad290d2bdd73e490740769f28c4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_OFF()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsSTL_1ga8e0ffa2cd1bc0e341c0def1ca20e1149" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_STL()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsVTP_1gadfd363ca9af3100387eaa70a66083356" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_VTP()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsOBJ_1ga71c52dff3021f71894a12563f80602a9" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_OBJ()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsGOCAD_1gaf820010477649ec0ed0fc88281095d32" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_GOCAD()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgBGLIoFuncsWRL_1ga7d5bd98fc59e8d8ff894fe1f50c24ef7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::write_WRL()</ref></computeroutput>  </para>
+</entry></row>
+</table>
+</para>
+<para>Some particular polygon mesh data structures such as <computeroutput><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh</ref></computeroutput> have specific overloads of these functions, enabling reading and writing of dynamic information for some file format. See the reference manual of each data structure for more information.</para>
+<para>The functions above require the input to represent a 2-manifold surface (possibly with boundaries). If this is not the case, the package <ref refid="packages_1PkgPolygonMeshProcessing" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Polygon Mesh Processing</ref> offers the function <ref refid="group__PMP__IO__grp" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon_mesh_processing.tag"><computeroutput>CGAL::Polygon_mesh_processing::IO::read_polygon_mesh()</computeroutput> </ref> which can perform some combinatorial repairing to ensure the input data is a 2-manifold.</para>
+</sect2>
+<sect2 id="index_1IOstream2DGeo">
+<title>Simple 2D Geometry IO</title>
+<para><computeroutput>WKT</computeroutput> stands for <emphasis>Well-Known Text</emphasis> and it is a text markup language for representing vector geometry objects on a geographical map. See the <ulink url="https://en.wikipedia.org/wiki/Well-known_text">wikipedia page</ulink> for details. <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Alpha_shapes_3.tag">CGAL</ref> supports a subset of WKT types: point, multipoint, linestring, multilinestring, polygon and multipolygon. Free functions are provided for reading and writing several CGAL types using these WKT types, namely:<itemizedlist>
+<listitem><para><computeroutput><ref refid="classCGAL_1_1Point__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Point_2</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Point_3</ref></computeroutput></para>
+</listitem><listitem><para><computeroutput><ref refid="classCGAL_1_1Polygon__with__holes__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polygon.tag">CGAL::Polygon_with_holes_2</ref></computeroutput></para>
+</listitem><listitem><para>random access range of the above types.</para>
+</listitem></itemizedlist>
+</para>
+<para>You can find more information about WKT <ref refid="group__PkgStreamSupportRef" kindref="compound">here</ref>. The following table summarizes the most useful functions. Note that the name deviates from the standard CGAL I/O functions.</para>
+<para><table rows="3" cols="5"><row>
+<entry thead="yes" colspan="1"><para></para>
+</entry><entry thead="yes" colspan="1"><para>Generic </para>
+</entry><entry thead="yes" colspan="1"><para>Points </para>
+</entry><entry thead="yes" colspan="1"><para>Polylines </para>
+</entry><entry thead="yes" colspan="1"><para>Polygons  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Input </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgStreamSupportIoFuncsWKT_1ga774fb181cf36889b2d4da65f4c72bdf7" kindref="member">CGAL::IO::read_WKT()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgStreamSupportIoFuncsWKT_1gac41ebb86e6ca704a703bc7fa73bc1cf8" kindref="member">CGAL::IO::read_multi_point_WKT()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgStreamSupportIoFuncsWKT_1gadfbdad1b3362b91368d112ac7484f009" kindref="member">CGAL::IO::read_multi_linestring_WKT()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgStreamSupportIoFuncsWKT_1gab00420bb054eb7aa139a74910ab9fbd9" kindref="member">CGAL::IO::read_multi_polygon_WKT()</ref></computeroutput>  </para>
+</entry></row>
+<row>
+<entry thead="no"><para>Output </para>
+</entry><entry thead="no"><para><center> - </center> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgStreamSupportIoFuncsWKT_1gaafca9701184dfc1f147ef3771f348209" kindref="member">CGAL::IO::write_multi_point_WKT()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgStreamSupportIoFuncsWKT_1ga4c077a50b5782e54133d27ea11c0c3e3" kindref="member">CGAL::IO::write_multi_linestring_WKT()</ref></computeroutput> </para>
+</entry><entry thead="no"><para><computeroutput><ref refid="group__PkgStreamSupportIoFuncsWKT_1ga56eb9fc151c6a52af723d65612f4d2ee" kindref="member">CGAL::IO::write_multi_polygon_WKT()</ref></computeroutput>  </para>
+</entry></row>
+</table>
+</para>
+</sect2>
+<sect2 id="index_1IOstreamOtherIO">
+<title>Other Data Structures</title>
+<para>Other data structures of CGAL have their own I/O functions, see their respective user and reference manuals.</para>
+</sect2>
+<sect2 id="index_1IOstreamOther">
+<title>Reading Unsupported Formats</title>
+<para>If CGAL does not support the file format of your data, the <ulink url="https://www.boost.org/doc/libs/release/libs/property_tree/"><computeroutput>boost::property_tree</computeroutput></ulink> might come in handy if your data has a simple-enough structure. The following small example shows how to parse an <ulink url="https://en.wikipedia.org/wiki/XML">XML</ulink> file, which might look as follows:</para>
+<para><programlisting filename=".xml"><codeline><highlight class="normal">&lt;?</highlight><highlight class="keyword">xml</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">version</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;1.0&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">encoding</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;UTF-8&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">standalone</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;yes&quot;</highlight><highlight class="normal">?&gt;</highlight></codeline>
+<codeline><highlight class="normal">&lt;</highlight><highlight class="keywordtype">PolySet</highlight><highlight class="normal">&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>&lt;</highlight><highlight class="keywordtype">Polygon</highlight><highlight class="normal">&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;</highlight><highlight class="keywordtype">Point</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">X</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-715.8811978465&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">Y</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-2729.9490000000&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">Z</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-534.9000000000&quot;</highlight><highlight class="normal">/&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;</highlight><highlight class="keywordtype">Point</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">X</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-718.1905989232&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">Y</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-2729.9490000000&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">Z</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-538.9000000000&quot;</highlight><highlight class="normal">/&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;</highlight><highlight class="keywordtype">Point</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">X</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-722.8094010768&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">Y</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-2729.9490000000&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">Z</highlight><highlight class="normal">=</highlight><highlight class="stringliteral">&quot;-538.9000000000&quot;</highlight><highlight class="normal">/&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>&lt;/</highlight><highlight class="keywordtype">Polygon</highlight><highlight class="normal">&gt;</highlight></codeline>
+<codeline><highlight class="normal">&lt;/</highlight><highlight class="keywordtype">PolySet</highlight><highlight class="normal">&gt;</highlight></codeline>
+</programlisting></para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Stream_support_2read_xml_8cpp-example" kindref="compound">Stream_support/read_xml.cpp</ref> <programlisting filename="Stream_support/read_xml.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/property_tree/ptree.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;boost/property_tree/xml_parser.hpp&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>in(<sp/>(argc&gt;1)?<sp/>argv[1]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;data/cloud.pol&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::property_tree::ptree<sp/>tree;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::property_tree::read_xml(in,<sp/>tree);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Point_3&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(boost::property_tree::ptree::value_type&amp;<sp/>node<sp/>:<sp/>tree.get_child(</highlight><highlight class="stringliteral">&quot;PolySet.Polygon&quot;</highlight><highlight class="normal">)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>boost::property_tree::ptree<sp/>subtree<sp/>=<sp/>node.second;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<sp/>node.first<sp/>==<sp/></highlight><highlight class="stringliteral">&quot;Point&quot;</highlight><highlight class="normal"><sp/>){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>boost::property_tree::ptree::value_type<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal">&amp;<sp/>v<sp/>:<sp/>subtree.get_child(<sp/></highlight><highlight class="stringliteral">&quot;&quot;</highlight><highlight class="normal"><sp/>)<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::string<sp/>label<sp/>=<sp/>v.first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>label<sp/>==<sp/></highlight><highlight class="stringliteral">&quot;&lt;xmlattr&gt;&quot;</highlight><highlight class="normal"><sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref><sp/>p(subtree.get&lt;</highlight><highlight class="keywordtype">double</highlight><highlight class="normal">&gt;(<sp/>label+</highlight><highlight class="stringliteral">&quot;.X&quot;</highlight><highlight class="normal">),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>subtree.get&lt;</highlight><highlight class="keywordtype">double</highlight><highlight class="normal">&gt;(<sp/>label+</highlight><highlight class="stringliteral">&quot;.Y&quot;</highlight><highlight class="normal">),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>subtree.get&lt;</highlight><highlight class="keywordtype">double</highlight><highlight class="normal">&gt;(<sp/>label+</highlight><highlight class="stringliteral">&quot;.Z&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>points.push_back(p);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>points.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>points<sp/>read&quot;</highlight><highlight class="normal">&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="IOstream.txt"/>
+  </compounddef>
+</doxygen>

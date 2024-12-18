@@ -1,0 +1,356 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_HeatMethod"/><htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Christina Vaz, Keenan Crane, Andreas Fabri</para>
+</simplesect>
+<image type="html" name="octopus.png"></image>
+</para>
+<sect1 id="index_1sec_HM_introduction">
+<title>Introduction</title>
+<para>The <emphasis>heat method</emphasis> is an algorithm that solves the single- or multiple-source shortest path problem by returning an approximation of the <emphasis>geodesic distance</emphasis> for all vertices of a triangle mesh to the closest vertex in a given set of source vertices. The geodesic distance between two vertices of a mesh is the distance when walking on the surface, potentially through the interior of faces. Two vertices that are close in 3D space may be far away on the surface, for example on neighboring arms of the octopus. In the figures we color code the distance as a gradient red/green corresponding to close/far from the source vertices.</para>
+<para>The heat method is highly efficient, since the algorithm boils down to two standard sparse linear algebra problems. It is especially useful in situations where one wishes to perform repeated distance queries on a fixed domain, since precomputation done for the first query can be reused.</para>
+<para>As a rule of thumb, the method works well on triangle meshes, which are Delaunay, though in practice may also work fine for meshes that are far from Delaunay. In order to ensure good behavior, we enable a preprocessing step that constructs an <emphasis>intrinsic Delaunay triangulation (iDT)</emphasis>; this triangulation does not change the input geometry, but generally improves the quality of the solution. The cost of this preprocessing step roughly doubles the overall preprocessing cost.</para>
+<para><anchor id="index_1fig__landscape_meshes"/> <image type="html" name="landscape.jpg"></image>
+ <image type="latex" name="landscape.jpg" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__landscape_meshes" kindref="member">fig__landscape_meshes</ref> Isolines placed on a mesh without and with iDT remeshing. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>In the next section we give some examples. Section <ref refid="index_1sec_HM_definitions" kindref="member">Theoretical Background</ref> presents the mathematical theory of the Heat method. The last section is about the <ref refid="index_1sec_HM_history" kindref="member">Implementation History</ref>.</para>
+<para>Note that this package depends on the third party <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen</ref> library (3.3 or greater), or another model of the concept <computeroutput><ref refid="classSparseLinearAlgebraWithFactorTraits__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Solver_interface.tag">SparseLinearAlgebraWithFactorTraits_d</ref></computeroutput>. This implementation is based on <ref refid="citelist_1CITEREF_cgal:cww-ghnac-13" kindref="member">[1]</ref> , <ref refid="citelist_1CITEREF_cgal:fsbs-acidt-06" kindref="member">[2]</ref> , and <ref refid="citelist_1CITEREF_cgal:sc-lntm-20" kindref="member">[3]</ref></para>
+<para>This package is related to the package <ref refid="packages_1PkgSurfaceMeshShortestPath" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Triangulated Surface Mesh Shortest Paths</ref>. Both deal with geodesic distances. The heat method package computes for every vertex of a mesh an approximate distance to one or several source vertices. The geodesic shortest path package computes the exact shortest path between any two points on the surface.</para>
+</sect1>
+<sect1 id="index_1sec_HM_examples">
+<title>Examples</title>
+<para>We give examples for the free function <computeroutput><ref refid="group__PkgHeatMethodRef_1ga7e2e30c0e5039e224b19b2e26c02216d" kindref="member">CGAL::Heat_method_3::estimate_geodesic_distances()</ref></computeroutput>, for the class template <computeroutput><ref refid="classCGAL_1_1Heat__method__3_1_1Surface__mesh__geodesic__distances__3" kindref="compound">CGAL::Heat_method_3::Surface_mesh_geodesic_distances_3</ref></computeroutput>, with and without the use of intrinsic Delaunay triangulation.</para>
+<sect2 id="index_1HM_example_Free_function">
+<title>Using a Free Function</title>
+<para>The first example calls the free function <computeroutput><ref refid="group__PkgHeatMethodRef_1ga7e2e30c0e5039e224b19b2e26c02216d" kindref="member">Heat_method_3::estimate_geodesic_distances()</ref></computeroutput>, which computes for all vertices of a triangle mesh the distances to a single source vertex.</para>
+<para>The distances are written into an internal property map of the surface mesh.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Heat_method_3_2heat_method_8cpp-example" kindref="compound">Heat_method_3/heat_method.cpp</ref> <programlisting filename="Heat_method_3/heat_method.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Heat_method_3/Surface_mesh_geodesic_distances_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Triangle_mesh::Property_map&lt;vertex_descriptor,double&gt;<sp/>Vertex_distance_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>tm)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgBGLHelperFct_1gab6e6f18e6de73b9f85e38d0b56145172" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_empty</ref>(tm)<sp/>||<sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//property<sp/>map<sp/>for<sp/>the<sp/>distance<sp/>values<sp/>to<sp/>the<sp/>source<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_distance_map<sp/>vertex_distance<sp/>=<sp/>tm.add_property_map&lt;vertex_descriptor,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal">&gt;(</highlight><highlight class="stringliteral">&quot;v:distance&quot;</highlight><highlight class="normal">,<sp/>0).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>source<sp/>=<sp/>*(vertices(tm).first);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgHeatMethodRef_1ga7e2e30c0e5039e224b19b2e26c02216d" kindref="member">CGAL::Heat_method_3::estimate_geodesic_distances</ref>(tm,<sp/>vertex_distance,<sp/>source)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Source<sp/>vertex<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>source<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>at:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>tm.point(source)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>vertices(tm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>(&quot;</highlight><highlight class="normal">&lt;&lt;<sp/>tm.point(vd)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;)&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/><sp/></highlight><highlight class="stringliteral">&quot;<sp/>is<sp/>at<sp/>distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(vertex_distance,<sp/>vd)<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>For a <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref></computeroutput> you can either add a data field to the vertex type, or, as shown in the following example, create a <computeroutput>boost::unordered_map</computeroutput> and pass it to the function <computeroutput>boost::make_assoc_property_map()</computeroutput>, which generates a vertex distance property map.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Heat_method_3_2heat_method_polyhedron_8cpp-example" kindref="compound">Heat_method_3/heat_method_polyhedron.cpp</ref> <programlisting filename="Heat_method_3/heat_method_polyhedron.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Heat_method_3/Surface_mesh_geodesic_distances_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;unordered_map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(filename);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!input<sp/>||<sp/>!(input<sp/>&gt;&gt;<sp/>tm)<sp/>||<sp/>tm.is_empty())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Not<sp/>a<sp/>valid<sp/>off<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>map<sp/>for<sp/>the<sp/>distance<sp/>values<sp/>to<sp/>the<sp/>source<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::unordered_map&lt;vertex_descriptor,<sp/>double&gt;<sp/>vertex_distance;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>source<sp/>=<sp/>*(vertices(tm).first);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgHeatMethodRef_1ga7e2e30c0e5039e224b19b2e26c02216d" kindref="member">CGAL::Heat_method_3::estimate_geodesic_distances</ref>(tm,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>boost::make_assoc_property_map(vertex_distance),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>source)<sp/>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Source<sp/>vertex<sp/>at:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>source-&gt;point()<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>vertices(tm)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd-&gt;point()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>is<sp/>at<sp/>distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>vertex_distance[vd]<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1HM_example_Class">
+<title>Using the Heat Method Class</title>
+<para>The following example shows the heat method class. It can be used when one adds and removes source vertices. It performs a precomputation, which depend only on the input mesh and not the particular set of source vertices. In the example we compute the distances to one source, add the farthest vertex as a second source vertex, and then compute the distances with respect to these two sources.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Heat_method_3_2heat_method_surface_mesh_8cpp-example" kindref="compound">Heat_method_3/heat_method_surface_mesh.cpp</ref> <programlisting filename="Heat_method_3/heat_method_surface_mesh.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Heat_method_3/Surface_mesh_geodesic_distances_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Triangle_mesh::Property_map&lt;vertex_descriptor,double&gt;<sp/>Vertex_distance_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Heat__method__3_1_1Surface__mesh__geodesic__distances__3" kindref="compound">CGAL::Heat_method_3::Surface_mesh_geodesic_distances_3&lt;Triangle_mesh&gt;</ref><sp/>Heat_method;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/larger_sphere.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>tm)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgBGLHelperFct_1gab6e6f18e6de73b9f85e38d0b56145172" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_empty</ref>(tm)<sp/>||<sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//property<sp/>map<sp/>for<sp/>the<sp/>distance<sp/>values<sp/>to<sp/>the<sp/>source<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_distance_map<sp/>vertex_distance<sp/>=<sp/>tm.add_property_map&lt;vertex_descriptor,<sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal">&gt;(</highlight><highlight class="stringliteral">&quot;v:distance&quot;</highlight><highlight class="normal">,<sp/>0).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Heat_method<sp/>hm(tm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//add<sp/>the<sp/>first<sp/>vertex<sp/>as<sp/>the<sp/>source<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>source<sp/>=<sp/>*(vertices(tm).first);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hm.add_source(source);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hm.estimate_geodesic_distances(vertex_distance);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Point_3<sp/>sp<sp/>=<sp/>tm.point(source);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;source:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sp<sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>source<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>vfar;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>sdistance<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>vertices(tm)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>is<sp/>at<sp/>distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(vertex_distance,<sp/>vd)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>to<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>source<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(get(vertex_distance,<sp/>vd)<sp/>&gt;<sp/>sdistance){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>vfar<sp/>=<sp/>vd;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>sdistance<sp/>=<sp/>get(vertex_distance,<sp/>vd);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;vfar:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>tm.point(vfar)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>vfar<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hm.add_source(vfar);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hm.estimate_geodesic_distances(vertex_distance);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>vertices(tm)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>is<sp/>at<sp/>distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(vertex_distance,<sp/>vd)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;to<sp/>the<sp/>set<sp/>of<sp/>two<sp/>sources&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;done&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1HM_example_Intrinsic">
+<title>Switching off the Intrinsic Delaunay Triangulation</title>
+<para>The following example shows the heat method on a triangle mesh without using the intrinsic Delaunay triangulation (iDT) algorithm, for example because by construction your meshes have a good quality (Poor quality in this case means that the input is far from Delaunay, though even in this case one may still get good results without iDT, depending on the specific geometry of the surface). The iDT algorithm is switched off by the template parameter <computeroutput><ref refid="structCGAL_1_1Heat__method__3_1_1Direct" kindref="compound">Heat_method_3::Direct</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Heat_method_3_2heat_method_surface_mesh_direct_8cpp-example" kindref="compound">Heat_method_3/heat_method_surface_mesh_direct.cpp</ref> <programlisting filename="Heat_method_3/heat_method_surface_mesh_direct.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Heat_method_3/Surface_mesh_geodesic_distances_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classKernel_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel::Point_3</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Surface_mesh.tag">CGAL::Surface_mesh&lt;Point_3&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Triangle_mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Triangle_mesh&gt;::vertex_descriptor<sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Triangle_mesh::Property_map&lt;vertex_descriptor,double&gt;<sp/>Vertex_distance_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Heat__method__3_1_1Surface__mesh__geodesic__distances__3" kindref="compound">CGAL::Heat_method_3::Surface_mesh_geodesic_distances_3&lt;Triangle_mesh, CGAL::Heat_method_3::Direct&gt;</ref><sp/>Heat_method_idt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elephant.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Triangle_mesh<sp/>tm;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!<ref refid="group__PkgBGLIOFct_1ga49f5b5e6fbfcbfaaac7604c88e10915c" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::IO::read_polygon_mesh</ref>(filename,<sp/>tm)<sp/>||</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><ref refid="group__PkgBGLHelperFct_1gab6e6f18e6de73b9f85e38d0b56145172" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_empty</ref>(tm)<sp/>||<sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(tm))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Invalid<sp/>input<sp/>file.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/></highlight><highlight class="comment">//property<sp/>map<sp/>for<sp/>the<sp/>distance<sp/>values<sp/>to<sp/>the<sp/>source<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_distance_map<sp/>vertex_distance<sp/>=<sp/>tm.add_property_map&lt;vertex_descriptor,</highlight><highlight class="keywordtype">double</highlight><highlight class="normal">&gt;(</highlight><highlight class="stringliteral">&quot;v:distance&quot;</highlight><highlight class="normal">,0).first;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//pass<sp/>in<sp/>the<sp/>idt<sp/>object<sp/>and<sp/>its<sp/>vertex_distance_map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Heat_method_idt<sp/>hm_idt(tm);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//add<sp/>the<sp/>first<sp/>vertex<sp/>as<sp/>the<sp/>source<sp/>set</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>source<sp/>=<sp/>*(vertices(tm).first);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hm_idt.add_source(source);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hm_idt.estimate_geodesic_distances(vertex_distance);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>vertices(tm)){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/>vd<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/><sp/>is<sp/>at<sp/>distance<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>get(vertex_distance,<sp/>vd)<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>from<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>source<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1sec_HM_definitions">
+<title>Theoretical Background</title>
+<para>Section <ref refid="index_1Subsection_HM_Definitions_Intro" kindref="member">The Heat Method Algorithm</ref> gives an overview of the theory needed by the Heat method. Section <ref refid="index_1Subsection_HM_IDT_Definitions" kindref="member">Intrinsic Delaunay Triangulation</ref> gives the background needed for the Intrinsic Delaunay triangulation.</para>
+<sect2 id="index_1Subsection_HM_Definitions_Intro">
+<title>The Heat Method Algorithm</title>
+<para>For a detailed overview of the heat method, the reader may consult <ref refid="citelist_1CITEREF_cgal:cww-ghnac-13" kindref="member">[1]</ref> to read the original article. In the sequel, we introduce the basic notions so as to explain our algorithms. In general, the heat method is applicable to any setting if there exists a gradient operator <formula id="0">$ \nabla$</formula>, a divergence operator <formula id="1">$\nabla \cdot$</formula> and a Laplace operator <formula id="2">$\Delta = \nabla \cdot
+\nabla$</formula>, which are standard derivatives from vector calculus.</para>
+<para>The Heat Method consists of three main steps:<orderedlist>
+<listitem><para>Integrate the heat flow <formula id="3">$ \dot u = \Delta u$</formula> for some fixed time <formula id="4">$t$</formula>.</para>
+</listitem><listitem><para>Evaluate the vector field <formula id="5">$ X = -\nabla u_t / |\nabla u_t| $</formula>.</para>
+</listitem><listitem><para>Solve the Poisson Equation <formula id="6">$ \Delta \phi = \nabla \cdot X $</formula>.</para>
+</listitem></orderedlist>
+</para>
+<para>The function <formula id="7">$ \phi $</formula> is an approximation of the distance to the given source set and approaches the true distance as t goes to zero. The algorithm must then be translated in to a discrete algorithm by replacing the derivatives in space and time with approximations.</para>
+<para>The heat equation can be discretized in time using a single backward <ref refid="group__PkgBGLEulerOperations" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Euler</ref> step. This means the following equation must be solved:</para>
+<para><formula id="8">$(id-t\Delta)u_t = \delta_{\gamma}(x) $</formula> where <formula id="9">$\delta_{\gamma}(x)$</formula> is a Dirac delta encoding an &quot;infinite&quot; spike of heat (1 if x is in the source set <formula id="10">$\gamma$</formula>, 0 otherwise), where id is the identity operator.</para>
+<para>The spatial discretization depends on the choice of discrete surface representation. For this package, we use triangle meshes exclusively. Let <formula id="11">$ u \in \R^{|V|}$</formula> specify a piecewise linear function on a triangulated surface with vertices <formula id="12">$V$</formula>, edges <formula id="13">$E$</formula> and faces <formula id="14">$F$</formula>. A standard discretization of the Laplacian at vertex <formula id="15">$i$</formula> is:</para>
+<para><formula id="16">$ {Lu}_i = \frac{1}{2A_i} \sum_{j}(cot \alpha_{ij} + cot \beta_{ij})(u_j-u_i)$</formula> where <formula id="17">$A_i$</formula> is one third the area of all triangles incident on vertex <formula id="15">$i$</formula>.</para>
+<para>The sum is taken over all of the neighboring vertices <formula id="18">$j$</formula>. Further, <formula id="19">$\alpha_{ij}$</formula> and <formula id="20">$\beta_{ij}$</formula> are the angles opposing the corresponding edge <formula id="21">$ij$</formula>. We express this operation via a matrix <formula id="22">$L = M^{-1}L_c$</formula> where <formula id="23">$M \in
+R^{|V|x|V|}$</formula> is a diagonal matrix containing the vertex areas and <formula id="24">$L_c \in R^{|V|x|V|} $</formula> is the cotan operator representing the remaining sum.</para>
+<para>From this, the symmetric positive-definite system <formula id="25">$(M-tL_C)u = \delta_{\gamma}$</formula> can be solved to find <formula id="26">$u$</formula> where <formula id="27">$\delta_{\gamma}$</formula> is the Kronecker delta over <formula id="10">$\gamma$</formula>.</para>
+<para>Next, the gradient in a given triangle can be expressed as</para>
+<para><formula id="28">$\nabla u = \frac{1}{2 A_f} \sum_i u_i ( N \times e_i ) $</formula></para>
+<para>where <formula id="29">$A_f$</formula> is the area of the triangle, <formula id="30">$N$</formula> is its outward unit normal, <formula id="31">$e_i$</formula> is the <formula id="15">$i$</formula>th edge vector (oriented counter-clockwise), and <formula id="32">$u_i$</formula> is the value of <formula id="26">$u$</formula> at the opposing vertex. The integrated divergence associated with vertex <formula id="15">$i$</formula> can be written as</para>
+<para><formula id="33">$\nabla \cdot X = \frac{1}{2} \sum_j cot\theta_1 (e_1 \cdot X_j) + cot \theta_2 (e_2 \cdot X_j)$</formula></para>
+<para>where the sum is taken over incident triangles <formula id="18">$j$</formula> each with a vector <formula id="34">$X_j$</formula>, <formula id="35">$e_1$</formula> and <formula id="36">$e_2$</formula> are the two edge vectors of triangle <formula id="18">$j$</formula> containing <formula id="15">$i$</formula> and <formula id="37">$\theta_1$</formula>, <formula id="38">$\theta_2$</formula> are the opposing angles.</para>
+<para>Finally, let <formula id="39">$b \in R^{|V|}$</formula> be the integrated divergences of the normalized vector field X. Thus, solving the symmetric Poisson problem <formula id="40">$ L_c \phi = b$</formula> computes the final distance function.</para>
+</sect2>
+<sect2 id="index_1Subsection_HM_IDT_Definitions">
+<title>Intrinsic Delaunay Triangulation</title>
+<para>The standard discretization of the cotan Laplace operator uses the cotangents of the angles in the triangle mesh. The intrinsic Delaunay algorithm constructs an alternative triangulation of the same polyhedral surface, which in turn yields a different (typically more accurate) cotan Laplace operator. Conceptually, the edges of the iDT still connect pairs of vertices from the original (input) surface, but are now allowed to be geodesic paths along the polyhedron and do not have to correspond to edges of the input triangulation. These paths are not stored explicitly; instead, we simply keep track of their lengths as the triangulation is updated. These lengths are sufficient to determine areas and angles of the intrinsic triangles, and in turn, the new cotan Laplace matrix.</para>
+<para>An edge of a mesh is locally Delaunay if the sum of opposite angles is not smaller than pi, or equivalently, if the cotangents of the opposing angles are non-negative. A mesh is Delaunay if all of its edges are locally Delaunay.</para>
+<para>A standard algorithm to convert a given planar triangulation into a Delaunay triangulation is to flip non-Delaunay edges in a mesh until the mesh is Delaunay. Similarly, the intrinsic Delaunay triangulation of a simplicial surface is constructed by performing intrinsic edge flips.</para>
+<para>Let <formula id="41">$ K = (V,E,T) $</formula> be a 2-manifold triangle mesh, where <formula id="12">$V$</formula> is the vertex set, <formula id="42">$ E $</formula> is the edge set and <formula id="43">$ T $</formula> is the face set (triangle set). Let <formula id="44">$ L $</formula> be the set of Euclidean distances, where <formula id="45">$ L(e_{ij}) = l_{ij} = || p_i - p_j || $</formula> , where <formula id="46">$ p_i $</formula> and <formula id="47">$ p_j $</formula> are the point positions <formula id="48">$ \in R^3 $</formula> of vertices <formula id="49">$ i $</formula> and <formula id="50">$ j $</formula> respectively. Then, let the pair <formula id="51">$ (K,L) $</formula> be the input to the iDT algorithm, which returns the pair <formula id="52">$(\tilde K, \tilde L)$</formula>, which are the intrinsic Delaunay mesh and the intrinsic lengths. The algorithm is as follows: <verbatim>        \code
+         for all edge e in E : Mark(e)
+         Stack s &lt;-- E
+         while !Empty(s) do
+           edge(ij) = Pop(s) and Unmark(edge(ij))
+            if !Delaunay(edge(ij)) then
+              edge(kl) = Flip(edge(ij)) and compute the new length length(kl) using the Cosine Theorem
+               for all edge e in {edge(kj), edge(jl), edge(li), edge(ik)} do
+                 if !Mark(e) then
+                   Mark(e) and Push(s,e)
+                 end if
+              end for
+            end if
+          end while
+        return (~K,~L)
+        \endcode
+</verbatim></para>
+<para>The new <formula id="52">$(\tilde K, \tilde L)$</formula> are then used to implement the heat method as usual.</para>
+<para>We already in the beginning gave an example where the intrinsic Delaunay triangulation improves the results. The mesh was obtained by giving elevation to a 2D triangulation, which lead to highly elongated triangles.</para>
+<para>The situation is similar for any triangle mesh that has faces with very small angles as can be seen in the figures below.</para>
+<para><anchor id="index_1fig__circle_box"/> <image type="html" name="red_circle_box_without_idt_bottom.png"></image>
+ <image type="latex" name="red_circle_box_without_idt_bottom.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__circle_box" kindref="member">fig__circle_box</ref> Isolines placed on a mesh without iDT remeshing <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+ <anchor id="index_1fig__circle_box_idt"/> <image type="html" name="red_circle_box_with_idt_bottom.png"></image>
+ <image type="latex" name="red_circle_box_with_idt_bottom.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__circle_box_idt" kindref="member">fig__circle_box_idt</ref> Isolines placed on a mesh with iDT remeshing <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1sec_HM_Performance">
+<title>Performance</title>
+<para>The time complexity of the algorithm is determined primarily by the choice of linear solver. In the current implementation, Cholesky prefactorization is roughly <formula id="53">$O(N^{1.5})$</formula> and computation of distances is roughly <formula id="54">$O(N)$</formula>, where <formula id="55">$ N$</formula> is the number of vertices in the triangulation. The algorithm uses two <formula id="56">$ N \times N$</formula> matrices, both with the same pattern of non-zeros (in average 7 non-zeros per row/column). The cost of computation is independent of the size of the source set. Primitive operations include sparse numerical linear algebra (in double precision), and basic arithmetic operations (including square roots).</para>
+<para>We perform the benchmark on an Intel Core i7-7700HQ, 2.8HGz, and compiled with Visual Studio 2013.</para>
+<para><center> <table rows="5" cols="5"><row>
+<entry thead="yes" align='right'><para>Number of triangles   </para>
+</entry><entry thead="yes" align='right'><para>Initialization iDT (sec)   </para>
+</entry><entry thead="yes" align='right'><para>Distance computation iDT (sec)   </para>
+</entry><entry thead="yes" align='right'><para>Initialization Direct (sec)   </para>
+</entry><entry thead="yes" align='right'><para>Distance computation Direct (sec)    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>30,000   </para>
+</entry><entry thead="no" align='right'><para>0.18   </para>
+</entry><entry thead="no" align='right'><para>0.02   </para>
+</entry><entry thead="no" align='right'><para>0.12   </para>
+</entry><entry thead="no" align='right'><para>0.01    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>200,000   </para>
+</entry><entry thead="no" align='right'><para>1.82   </para>
+</entry><entry thead="no" align='right'><para>1.31   </para>
+</entry><entry thead="no" align='right'><para>1.32   </para>
+</entry><entry thead="no" align='right'><para>0.11    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>500,000   </para>
+</entry><entry thead="no" align='right'><para>10.45   </para>
+</entry><entry thead="no" align='right'><para>0.75   </para>
+</entry><entry thead="no" align='right'><para>8.07   </para>
+</entry><entry thead="no" align='right'><para>0.55    </para>
+</entry></row>
+<row>
+<entry thead="no" align='right'><para>1,800,000   </para>
+</entry><entry thead="no" align='right'><para>38.91   </para>
+</entry><entry thead="no" align='right'><para>2.24   </para>
+</entry><entry thead="no" align='right'><para>35.68   </para>
+</entry><entry thead="no" align='right'><para>1.1   </para>
+</entry></row>
+</table>
+</center></para>
+<para><center></center></para>
+</sect1>
+<sect1 id="index_1sec_HM_history">
+<title>Implementation History</title>
+<para>This package was developed by Christina Vaz, Keenan Crane and Andreas Fabri as a project of the Google Summer of Code 2018. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Heat_method_3.txt"/>
+  </compounddef>
+</doxygen>

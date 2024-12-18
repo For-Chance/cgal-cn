@@ -1,0 +1,682 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Tetrahedral_Remeshing"/><anchor id="index_1userchaptertetrahedralremeshing"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Jane Tournois, Noura Faraj, Jean-Marc Thiery, Tamy Boubekeur</para>
+</simplesect>
+<image type="html" name="bimba_back.png"></image>
+ <image type="latex" name="bimba_back.png"></image>
+ <linebreak/>
+</para>
+<sect1 id="index_1secTetRemeshing">
+<title>Multi-Material Isotropic Tetrahedral Remeshing</title>
+<para>This package implements an algorithm for quality tetrahedral remeshing, introduced by Faraj et al in <ref refid="citelist_1CITEREF_faraj2016mvr" kindref="member">[1]</ref>. This practical iterative remeshing algorithm is designed to remesh multi-material tetrahedral meshes, by iteratively performing a sequence of elementary operations such as edge splits, edge collapses, edge flips, and vertex relocations following a Laplacian smoothing. The algorithm results in high-quality uniform isotropic meshes, with the desired mesh density, while preserving the input geometric curve and surface features.</para>
+<sect2 id="index_1ssecAlgorithm">
+<title>Remeshing Algorithm</title>
+<para>Specific remeshing rules have been designed to satisfy the following criteria. First, the algorithm preserves the geometric complex topology, including multi-material surface patches and polyline features. Polyline features can be defined as intersections between more than two subdomains, or listed by the user. Second, it has been made possible to remesh only a selection of cells, instead of remeshing the whole domain, while preserving or remeshing the interface surfaces between the preserved and the remeshed tetrahedra.</para>
+<para>All the local atomic operations that are performed by the algorithm preserve the input topology of the geometric complex.</para>
+<para>The tetrahedral remeshing algorithm improves the quality of dihedral angles, while targeting the user-defined uniform sizing field and preserving the topology of the feature complex, as highlighted by <ref refid="index_1fig__Remesh_liver" kindref="member">fig__Remesh_liver</ref>.</para>
+<para>Experimental evidence shows that a higher number of remeshing iterations leads to a mesh with a improved fidelity to the sizing criterion, and higher quality dihedral angles.</para>
+<para><anchor id="index_1fig__Remesh_liver"/> <image type="html" name="tetrahedral_remeshing_before_after.png"></image>
+ <image type="latex" name="tetrahedral_remeshing_before_after.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Remesh_liver" kindref="member">fig__Remesh_liver</ref> Tetrahedral mesh, modified by our tetrahedral remeshing method. (Left) Before remeshing, dihedral angles were in the interval [1.3; 177.8]. (Right) After remeshing and keeping the same density, dihedral angles are in the interval [12,7; 157.7]. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+<sect2 id="index_1ssecSizing">
+<title>Sizing Field</title>
+<para>Tetrahedral isotropic remeshing algorithm is led by a target sizing field, that can be either uniform, adaptive, or custom.</para>
+<para>The sizing field establishes the local target edge length for the remeshed tetrahedra. Two sizing fields are provided: a uniform and a mesh-adaptive sizing field. With <computeroutput><ref refid="classCGAL_1_1Uniform__sizing__field" kindref="compound">CGAL::Uniform_sizing_field</ref></computeroutput>, all tetrahedra edges are targeted to have equal lengths, as depicted in Section <ref refid="index_1secTetRemeshing" kindref="member">Multi-Material Isotropic Tetrahedral Remeshing</ref> . With <computeroutput><ref refid="classCGAL_1_1Adaptive__remeshing__sizing__field" kindref="compound">CGAL::Adaptive_remeshing_sizing_field</ref></computeroutput>, tetrahedra edge lengths remain locally close to the local size of simplices in the input mesh.</para>
+<para>The difference between remeshing with uniform and adaptive sizing fields is depicted in <ref refid="index_1fig__uniform_and_adaptive_tet" kindref="member">fig__uniform_and_adaptive_tet</ref>.</para>
+<para><anchor id="index_1fig__uniform_and_adaptive_tet"/> <image type="html" name="uniform_and_adaptive_remeshing.png"></image>
+ <image type="latex" name="uniform_and_adaptive_remeshing.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__uniform_and_adaptive_tet" kindref="member">fig__uniform_and_adaptive_tet</ref> Tetrahedral mesh, modified by our tetrahedral remeshing method. (Left) Before remeshing; dihedral angles in the interval [0.1; 179.8], 33,936 vertices. (Middle) After remeshing with uniform sizing field, targeting the average edge length of input (left) mesh; dihedral angles in the interval [9.8; 165.5], 301,127 vertices. (Right) After remeshing with adaptive sizing field; dihedral angles in the interval [6.8; 166.2], 38,602 vertices. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>It is also possible to use a custom sizing function, like for example the same sizing field as the one used for initial tetrahedral mesh generation using the CGAL <ref refid="packages_1PkgMesh3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Mesh Generation</ref> package, and consecutive consistent isotropic remeshing, as shown by <ref refid="index_1fig__sphere_sizing_field" kindref="member">fig__sphere_sizing_field</ref>. Note that the remeshed version is denser than the one generated by <computeroutput><ref refid="group__PkgMesh3Functions_1gac8599a0c967075f740bf8e2e92c4770e" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::make_mesh_3()</ref></computeroutput>. This happens because here, the sizing field is used both as a lower and an upper bound for edge lengths, whereas in mesh generation it is used only as an upper bound on simplex sizes.</para>
+<para><anchor id="index_1fig__sphere_sizing_field"/> <image type="html" name="sphere_with_sizing.png"></image>
+ <image type="latex" name="sphere_with_sizing.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__sphere_sizing_field" kindref="member">fig__sphere_sizing_field</ref> Tetrahedral mesh, modified by our uniform tetrahedral remeshing method. (Left) Before remeshing, dihedral angles were in the interval <computeroutput>[0.2; 179.7]</computeroutput>. (Middle) After remeshing with a uniform target edge length equal to the average edge length of the input mesh. Dihedral angles are in the interval <computeroutput>[13.2; 157.3]</computeroutput>. (Right) After remeshing with the same sizing field as the one used for mesh generation. Dihedral angles are in the interval <computeroutput>[10.4; 162.3]</computeroutput>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect2>
+</sect1>
+<sect1 id="index_1secTetRemeshingAPI">
+<title>API</title>
+<para>The tetrahedral remeshing algorithm is implemented as a single free function <computeroutput><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing()</ref></computeroutput> that takes only two required parameters: the input triangulation, and the desired edge length or sizing field, which drives the remeshing process.</para>
+<para><ref refid="index_1BGLNamedParameters" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> are used to deal with optional parameters. The page <ref refid="group__bgl__namedparameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">Named Parameters</ref> describes their usage.</para>
+</sect1>
+<sect1 id="index_1secTetRemeshingExamples">
+<title>Examples</title>
+<sect2 id="index_1ssecEx1">
+<title>Tetrahedral Remeshing Example</title>
+<para>The following example shows the simplest use of the tetrahedral remeshing function. The only required parameter is a given target edge length that drives the remeshing process towards a high-quality tetrahedral mesh with improved dihedral angles, and a more uniform mesh, with edge lengths getting closer to the input parameter value.</para>
+<para>By default, the cells with a non-zero <computeroutput>Subdomain_index</computeroutput> are selected for remeshing. The cells with <computeroutput>Subdomain_index</computeroutput> equal to zero are ignored by the remeshing algorithm.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2tetrahedral_remeshing_example_8cpp-example" kindref="compound">Tetrahedral_remeshing/tetrahedral_remeshing_example.cpp</ref> <programlisting filename="Tetrahedral_remeshing/tetrahedral_remeshing_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Tetrahedral_remeshing/Remeshing_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;tetrahedral_remeshing_generate_input.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Tetrahedral__remeshing_1_1Remeshing__triangulation__3" kindref="compound">CGAL::Tetrahedral_remeshing::Remeshing_triangulation_3&lt;K&gt;</ref><sp/>Remeshing_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>target_edge_length<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>atof(argv[1])<sp/>:<sp/>0.1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>nbv<sp/>=<sp/>(argc<sp/>&gt;<sp/>2)<sp/>?<sp/>atoi(argv[2])<sp/>:<sp/>1000;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Remeshing_triangulation<sp/>tr;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Tetrahedral_remeshing::insert_random_points_in_cube(nbv,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>cell<sp/>:<sp/>tr.finite_cell_handles())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cell-&gt;set_subdomain_index(1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(tr,<sp/>target_edge_length);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1ssecEx2">
+<title>Tetrahedral Remeshing of a Selection</title>
+<para>Optional BGL named parameters offer more precise control on the remeshing process. In this example, a triangulation with two subdomains (defined by indices stored in cells) is given as input, but only one (defined by the <computeroutput>Subdomain_index</computeroutput> 2) of its subdomains is remeshed.</para>
+<para>Only the cells with a non-zero <computeroutput>Subdomain_index</computeroutput> will be remeshed. The named parameter <computeroutput>cell_is_selected_map</computeroutput> can be used to change this behavior.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2tetrahedral_remeshing_of_one_subdomain_8cpp-example" kindref="compound">Tetrahedral_remeshing/tetrahedral_remeshing_of_one_subdomain.cpp</ref> <programlisting filename="Tetrahedral_remeshing/tetrahedral_remeshing_of_one_subdomain.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Tetrahedral_remeshing/Remeshing_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;tetrahedral_remeshing_generate_input.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">K<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Remeshing_triangulation<sp/>=<sp/><ref refid="classCGAL_1_1Tetrahedral__remeshing_1_1Remeshing__triangulation__3" kindref="compound">CGAL::Tetrahedral_remeshing::Remeshing_triangulation_3&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Subdomain_index<sp/>=<sp/>Remeshing_triangulation::Tds::Cell::Subdomain_index;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Tr&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Cells_of_subdomain_pmap</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>m_subdomain;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">key_type<sp/>=<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Tr::Cell_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">value_type<sp/>=<sp/>bool;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">reference<sp/>=<sp/>bool;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">category<sp/>=<sp/>boost::read_write_property_map_tag;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">friend</highlight><highlight class="normal"><sp/>value_type<sp/>get(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Cells_of_subdomain_pmap&amp;<sp/>map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>key_type&amp;<sp/>c)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(map.m_subdomain<sp/>==<sp/>c-&gt;subdomain_index());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">friend</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>put(Cells_of_subdomain_pmap&amp;,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>key_type&amp;,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>value_type)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>;<sp/></highlight><highlight class="comment">//nothing<sp/>to<sp/>do<sp/>:<sp/>subdomain<sp/>indices<sp/>are<sp/>updated<sp/>in<sp/>remeshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">Subdomain_index<sp/>subdomain_on_side_of_plane(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>K::Point_3&amp;<sp/>p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>K::Plane_3&amp;<sp/>plane)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(plane.has_on_positive_side(p))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>2;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">K::Point_3<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">centroid</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Remeshing_triangulation::Cell_handle<sp/>c)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::centroid</ref>(c-&gt;vertex(0)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex(1)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex(2)-&gt;point(),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>c-&gt;vertex(3)-&gt;point());</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>target_edge_length<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>atof(argv[1])<sp/>:<sp/>0.05;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>nbv<sp/>=<sp/>(argc<sp/>&gt;<sp/>2)<sp/>?<sp/>atoi(argv[2])<sp/>:<sp/>1000;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::size_t<sp/>nbv_on_plane<sp/>=<sp/>(argc<sp/>&gt;<sp/>3)<sp/>?<sp/>atoi(argv[3])<sp/>:<sp/>100;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Remeshing_triangulation<sp/>tr;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Tetrahedral_remeshing::insert_random_points_in_cube(nbv,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>K::Plane_3<sp/>plane(0,<sp/>0,<sp/>1,<sp/>0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Tetrahedral_remeshing::insert_points_on_plane(plane,<sp/>nbv_on_plane,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keyword">auto</highlight><highlight class="normal"><sp/>cell<sp/>:<sp/>tr.finite_cell_handles())</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>K::Point_3<sp/>cc<sp/>=<sp/><ref refid="group__centroid__grp_1ga3ba0496a839f97ee6cd506baff51dfe4" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">centroid</ref>(cell);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cell-&gt;set_subdomain_index(subdomain_on_side_of_plane(cc,<sp/>plane));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(tr,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>target_edge_length,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::parameters::cell_is_selected_map(</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Cells_of_subdomain_pmap&lt;Remeshing_triangulation&gt;{2}));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>os(</highlight><highlight class="stringliteral">&quot;out.mesh&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1ga9e9fc0fac6919241501c228e438fa2b2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::IO::write_MEDIT</ref>(os,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1ssecEx3">
+<title>Tetrahedral Remeshing With Polyline Features</title>
+<para>Optional BGL named parameters offer more precise control on the remeshing process. In this example, a triangulation with polyline features that should be preserved - though resampled - during the remeshing process, is given as input. Preserving all surfaces exactly could also be achieved by setting the named parameter <computeroutput>remesh_boundaries</computeroutput> to <computeroutput>false</computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2tetrahedral_remeshing_with_features_8cpp-example" kindref="compound">Tetrahedral_remeshing/tetrahedral_remeshing_with_features.cpp</ref> <programlisting filename="Tetrahedral_remeshing/tetrahedral_remeshing_with_features.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Tetrahedral_remeshing/Remeshing_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;tetrahedral_remeshing_generate_input.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">K<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Remeshing_triangulation<sp/>=<sp/><ref refid="classCGAL_1_1Tetrahedral__remeshing_1_1Remeshing__triangulation__3" kindref="compound">CGAL::Tetrahedral_remeshing::Remeshing_triangulation_3&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/>Remeshing_triangulation::Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_handle<sp/>=<sp/>Remeshing_triangulation::Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_pair<sp/>=<sp/>std::pair&lt;Vertex_handle,<sp/>Vertex_handle&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Constraints_set<sp/>=<sp/>std::unordered_set&lt;Vertex_pair,<sp/>boost::hash&lt;Vertex_pair&gt;&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Constraints_pmap<sp/>=<sp/>CGAL::Boolean_property_map&lt;Constraints_set&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>target_edge_length<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>atof(argv[1])<sp/>:<sp/>0.02;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nb_iter<sp/>=<sp/>(argc<sp/>&gt;<sp/>2)<sp/>?<sp/>atoi(argv[2])<sp/>:<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nbv<sp/>=<sp/>(argc<sp/>&gt;<sp/>3)<sp/>?<sp/>atoi(argv[3])<sp/>:<sp/>500;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Remeshing_triangulation<sp/>t3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Constraints_set<sp/>constraints;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Tetrahedral_remeshing::generate_input_cube(nbv,<sp/>t3,<sp/>constraints);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>make_constraints_from_cube_edges(t3,<sp/>constraints);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(t3,<sp/>target_edge_length,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::edge_is_constrained_map(Constraints_pmap(constraints))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>.number_of_iterations(nb_iter));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>It is also possible to define the polyline features as the ones stored as complex edges in a <computeroutput><ref refid="classCGAL_1_1Mesh__complex__3__in__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">Mesh_complex_3_in_triangulation_3</ref></computeroutput> (e.g., generated by the <ref refid="packages_1PkgMesh3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Mesh Generation</ref> package).</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2mesh_and_remesh_c3t3_8cpp-example" kindref="compound">Tetrahedral_remeshing/mesh_and_remesh_c3t3.cpp</ref> <programlisting filename="Tetrahedral_remeshing/mesh_and_remesh_c3t3.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_complex_3_in_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_criteria_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedral_mesh_domain_with_features_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/make_mesh_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/File_medit.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;unordered_set&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">K<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Polyhedron<sp/>=<sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::Mesh_polyhedron_3&lt;K&gt;::type</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh_domain<sp/>=<sp/><ref refid="classCGAL_1_1Polyhedral__mesh__domain__with__features__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Polyhedral_mesh_domain_with_features_3&lt;K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_CONCURRENT_MESH_3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Concurrency_tag<sp/>=<sp/><ref refid="structCGAL_1_1Parallel__if__available__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Parallel_if_available_tag</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Concurrency_tag<sp/>=<sp/><ref refid="structCGAL_1_1Sequential__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Sequential_tag</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation<sp/>for<sp/>Meshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Tr<sp/>=<sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::Mesh_triangulation_3&lt;Mesh_domain, CGAL::Default, Concurrency_tag&gt;::type</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">C3t3<sp/>=<sp/><ref refid="classCGAL_1_1Mesh__complex__3__in__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::Mesh_complex_3_in_triangulation_3</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Tr,<sp/>Mesh_domain::Corner_index,<sp/>Mesh_domain::Curve_index&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh_criteria<sp/>=<sp/><ref refid="classCGAL_1_1Mesh__criteria__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Mesh_criteria_3&lt;Tr&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation<sp/>for<sp/>Remeshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref><sp/>=<sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_3</ref>&lt;Tr::Geom_traits,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tr::Triangulation_data_structure&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_handle<sp/>=<sp/><ref refid="classCGAL_1_1Triangulation__3_1a1ba56e37b3a5acb1ba49a56d9d101a19" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3::Vertex_handle</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_pair<sp/>=<sp/>std::pair&lt;Vertex_handle,<sp/>Vertex_handle&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Constraints_set<sp/>=<sp/>std::unordered_set&lt;Vertex_pair,<sp/>boost::hash&lt;Vertex_pair&gt;&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Constraints_pmap<sp/>=<sp/>CGAL::Boolean_property_map&lt;Constraints_set&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Corners_set<sp/>=<sp/>std::unordered_set&lt;Vertex_handle,<sp/>boost::hash&lt;Vertex_handle&gt;&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Corners_pmap<sp/>=<sp/>CGAL::Boolean_property_map&lt;Corners_set&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>To<sp/>avoid<sp/>verbose<sp/>function<sp/>and<sp/>named<sp/>parameters<sp/>call</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>fname<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/fandisk.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(fname);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(input.fail()<sp/>||<sp/>!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(polyhedron))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>Input<sp/>invalid<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>fname<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_domain<sp/>domain(polyhedron);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>sharp<sp/>features</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>domain.detect_features();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_criteria<sp/>criteria(edge_size<sp/>=<sp/>0.025,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>facet_angle<sp/>=<sp/>25,<sp/>facet_size<sp/>=<sp/>0.05,<sp/>facet_distance<sp/>=<sp/>0.005,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>cell_radius_edge_ratio<sp/>=<sp/>3,<sp/>cell_size<sp/>=<sp/>0.05);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>generation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>C3t3<sp/>c3t3<sp/>=<sp/>CGAL::make_mesh_3&lt;C3t3&gt;(domain,<sp/>criteria);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Property<sp/>map<sp/>of<sp/>constraints</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Constraints_set<sp/>constraints;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Constraints_pmap<sp/>constraints_pmap(constraints);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Corners_set<sp/>corners;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Corners_pmap<sp/>corners_pmap(corners);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref><sp/>tr<sp/>=<sp/><ref refid="group__PkgTetrahedralRemeshingRef_1gacbc8c23061a2db7654c2ef9209adcfb2" kindref="member">CGAL::convert_to_triangulation_3</ref>(std::move(c3t3),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>edge_is_constrained_map(constraints_pmap).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_is_constrained_map(corners_pmap));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//note<sp/>we<sp/>use<sp/>the<sp/>move<sp/>semantic,<sp/>with<sp/>std::move(c3t3),</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>to<sp/>avoid<sp/>a<sp/>copy<sp/>of<sp/>the<sp/>triangulation<sp/>by<sp/>the<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>`CGAL::convert_to_triangulation_3()`</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>After<sp/>the<sp/>call<sp/>to<sp/>this<sp/>function,<sp/>c3t3<sp/>is<sp/>an<sp/>empty<sp/>and<sp/>valid<sp/>C3t3.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//It<sp/>is<sp/>possible<sp/>to<sp/>use<sp/>:<sp/><sp/>CGAL::convert_to_triangulation_3(c3t3),</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>Then<sp/>the<sp/>triangulation<sp/>is<sp/>copied<sp/>and<sp/>duplicated,<sp/>and<sp/>c3t3<sp/>remains<sp/>as<sp/>is.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>target_edge_length<sp/>=<sp/>0.1;</highlight><highlight class="comment">//coarsen<sp/>the<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(tr,<sp/>target_edge_length,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>number_of_iterations(5)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>.smooth_constrained_edges(</highlight><highlight class="keyword">true</highlight><highlight class="normal">)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/>.edge_is_constrained_map(constraints_pmap));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;out_remeshed.mesh&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1ga9e9fc0fac6919241501c228e438fa2b2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::IO::write_MEDIT</ref>(out,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1ssecEx4">
+<title>Tetrahedral Remeshing After Mesh Generation</title>
+<para>The tetrahedral remeshing algorithm is designed as a post-processing for mesh generation algorithms. The API allows to generate a tetrahedral mesh with the CGAL <ref refid="packages_1PkgMesh3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Mesh Generation</ref> package, and further improve it with the tetrahedral remeshing algorithm. This example shows how to use tetrahedral mesh generation and remeshing in sequence, from a polyhedral domain with features.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2mesh_and_remesh_polyhedral_domain_with_features_8cpp-example" kindref="compound">Tetrahedral_remeshing/mesh_and_remesh_polyhedral_domain_with_features.cpp</ref> <programlisting filename="Tetrahedral_remeshing/mesh_and_remesh_polyhedral_domain_with_features.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_complex_3_in_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_criteria_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedral_mesh_domain_with_features_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/make_mesh_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/File_medit.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;unordered_set&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">K<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Surface_mesh<sp/>=<sp/>CGAL::Surface_mesh&lt;K::Point_3&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh_domain<sp/>=<sp/><ref refid="classCGAL_1_1Polyhedral__mesh__domain__with__features__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Polyhedral_mesh_domain_with_features_3&lt;K, Surface_mesh&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_CONCURRENT_MESH_3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Concurrency_tag<sp/>=<sp/><ref refid="structCGAL_1_1Parallel__if__available__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Parallel_if_available_tag</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Concurrency_tag<sp/>=<sp/><ref refid="structCGAL_1_1Sequential__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Sequential_tag</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Tr<sp/>=<sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::Mesh_triangulation_3&lt;Mesh_domain, CGAL::Default, Concurrency_tag&gt;::type</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">C3t3<sp/>=<sp/><ref refid="classCGAL_1_1Mesh__complex__3__in__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::Mesh_complex_3_in_triangulation_3</ref>&lt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Tr,<sp/>Mesh_domain::Corner_index,<sp/>Mesh_domain::Curve_index&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh_criteria<sp/>=<sp/><ref refid="classCGAL_1_1Mesh__criteria__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Mesh_criteria_3&lt;Tr&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation<sp/>for<sp/>Remeshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal"><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref><sp/>=<sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_3</ref>&lt;Tr::Geom_traits,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tr::Triangulation_data_structure&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_handle<sp/>=<sp/><ref refid="classCGAL_1_1Triangulation__3_1a1ba56e37b3a5acb1ba49a56d9d101a19" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3::Vertex_handle</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Vertex_pair<sp/>=<sp/>std::pair&lt;Vertex_handle,<sp/>Vertex_handle&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Constraints_set<sp/>=<sp/>std::unordered_set&lt;Vertex_pair,<sp/>boost::hash&lt;Vertex_pair&gt;&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Constraints_pmap<sp/>=<sp/>CGAL::Boolean_property_map&lt;Constraints_set&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>To<sp/>avoid<sp/>verbose<sp/>function<sp/>and<sp/>named<sp/>parameters<sp/>call</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>fname<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/fandisk.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nb_iter<sp/>=<sp/>(argc<sp/>&gt;<sp/>2)<sp/>?<sp/>atoi(argv[2])<sp/>:<sp/>5;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(fname);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>filename(fname);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(input.fail())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>Cannot<sp/>read<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>fname<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Input<sp/>geometry<sp/>is<sp/>not<sp/>triangulated.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_domain<sp/>domain(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Get<sp/>sharp<sp/>features</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>domain.detect_features();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>size<sp/>=<sp/>0.072;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_criteria<sp/>criteria(edge_size<sp/>=<sp/>size,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>facet_angle<sp/>=<sp/>25,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>facet_size<sp/>=<sp/>size,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>facet_distance<sp/>=<sp/>0.1<sp/>*<sp/>size,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cell_radius_edge_ratio<sp/>=<sp/>2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cell_size<sp/>=<sp/>size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>generation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>C3t3<sp/>c3t3<sp/>=<sp/>CGAL::make_mesh_3&lt;C3t3&gt;(domain,<sp/>criteria,<sp/><ref refid="group__PkgMesh3Parameters_1ga9f696ff6caf3c4efd246e43946a89294" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">no_perturb</ref>(),<sp/><ref refid="group__PkgMesh3Parameters_1gab24d8652fbb6ae045e989769c5bc69f0" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">no_exude</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Constraints_set<sp/>constraints;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Constraints_pmap<sp/>constraints_pmap(constraints);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref><sp/>tr<sp/>=<sp/><ref refid="group__PkgTetrahedralRemeshingRef_1gacbc8c23061a2db7654c2ef9209adcfb2" kindref="member">CGAL::convert_to_triangulation_3</ref>(std::move(c3t3),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>edge_is_constrained_map(constraints_pmap));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Remeshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(tr,<sp/>size,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>number_of_iterations(nb_iter)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>.edge_is_constrained_map(constraints_pmap));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;out_remeshed.mesh&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1ga9e9fc0fac6919241501c228e438fa2b2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::IO::write_MEDIT</ref>(out,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1ssecEx4a">
+<title>Tetrahedral Remeshing With Sizing Field</title>
+<para>The API enables the user to run tetrahedral remeshing with a custom sizing field, that is used as a sizing criterion to trigger mesh refinement and decimation. The following examples show how to use this type of sizing field.</para>
+<para>In the first example, we show how to use the same sizing field as the one used as a meshing criterion for tetrahedral mesh generation using the CGAL <ref refid="packages_1PkgMesh3" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">3D Mesh Generation</ref> package. <linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2mesh_and_remesh_with_sizing_8cpp-example" kindref="compound">Tetrahedral_remeshing/mesh_and_remesh_with_sizing.cpp</ref> <programlisting filename="Tetrahedral_remeshing/mesh_and_remesh_with_sizing.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_complex_3_in_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_criteria_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Labeled_mesh_domain_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/make_mesh_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#ifdef<sp/>CGAL_CONCURRENT_MESH_3</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Parallel__if__available__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Parallel_if_available_tag</ref><sp/>Concurrency_tag;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Sequential__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::Sequential_tag</ref><sp/>Concurrency_tag;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#endif</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/>Point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>FT<sp/>(Function)(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;);</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Labeled__mesh__domain__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Labeled_mesh_domain_3&lt;K&gt;</ref><sp/>Mesh_domain;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::Mesh_triangulation_3&lt;Mesh_domain, CGAL::Default, Concurrency_tag&gt;::type</ref><sp/>Tr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Mesh__complex__3__in__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::Mesh_complex_3_in_triangulation_3&lt;Tr&gt;</ref><sp/>C3t3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Mesh__criteria__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Mesh_criteria_3&lt;Tr&gt;</ref><sp/>Mesh_criteria;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation<sp/>for<sp/>Remeshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">T3<sp/>=<sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_3</ref>&lt;Tr::Geom_traits,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tr::Triangulation_data_structure&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">namespace<sp/></highlight><highlight class="normal">params<sp/>=<sp/><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Sizing<sp/>field</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Spherical_sizing_field</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::FT<sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Mesh_domain::Index<sp/><ref refid="classIndex" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Index</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/>operator()(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Point__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Point_3</ref>&amp;<sp/>p,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal">,<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classIndex" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">Index</ref>&amp;)</highlight><highlight class="keyword"><sp/>const</highlight></codeline>
+<codeline><highlight class="keyword"><sp/><sp/></highlight><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>FT<sp/>sq_d_to_origin<sp/>=<sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(p,<sp/>Point(<ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__PkgAlgebraicFoundationsRef_1ga1d5106cf8be16adb4c4dc8b1ec3a5a92" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL::abs</ref>(<ref refid="group__PkgAlgebraicFoundationsRef_1gab922269072ee9ee99ba8c541418b2e11" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Algebraic_foundations.tag">CGAL::sqrt</ref>(sq_d_to_origin)<sp/>-<sp/>0.5)<sp/>/<sp/>5.<sp/>+<sp/>0.025;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">FT<sp/>sphere_function<sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Point&amp;<sp/>p)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/><ref refid="group__squared__distance__grp_1ga1ff73525660a052564d33fbdd61a4f71" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::squared_distance</ref>(p,<sp/>Point(<ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>))<sp/>-<sp/>1;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_domain<sp/>domain<sp/>=<sp/>Mesh_domain::create_implicit_mesh_domain</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>(sphere_function,<sp/>K::Sphere_3(<ref refid="group__kernel__enums_1ga9d272a8e3a8080b851741b6d3a44afdc" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::ORIGIN</ref>,<sp/>K::FT(2))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Spherical_sizing_field<sp/>size;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_criteria<sp/>criteria(params::facet_angle(30).facet_size(0.1).facet_distance(0.025).</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cell_radius_edge_ratio(2).cell_size(size));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>generation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>C3t3<sp/>c3t3<sp/>=<sp/>CGAL::make_mesh_3&lt;C3t3&gt;(domain,<sp/>criteria,<sp/>params::no_exude().<ref refid="group__PkgMesh3Parameters_1ga9f696ff6caf3c4efd246e43946a89294" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">no_perturb</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T3<sp/>tr<sp/>=<sp/><ref refid="group__PkgTetrahedralRemeshingRef_1gacbc8c23061a2db7654c2ef9209adcfb2" kindref="member">CGAL::convert_to_triangulation_3</ref>(std::move(c3t3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//note<sp/>we<sp/>use<sp/>the<sp/>move<sp/>semantic,<sp/>with<sp/>std::move(c3t3),</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>to<sp/>avoid<sp/>a<sp/>copy<sp/>of<sp/>the<sp/>triangulation<sp/>by<sp/>the<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>`CGAL::convert_to_triangulation_3()`</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>After<sp/>the<sp/>call<sp/>to<sp/>this<sp/>function,<sp/>c3t3<sp/>is<sp/>an<sp/>empty<sp/>and<sp/>valid<sp/>C3t3.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//It<sp/>is<sp/>possible<sp/>to<sp/>use<sp/>:<sp/><sp/>CGAL::convert_to_triangulation_3(c3t3),</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>Then<sp/>the<sp/>triangulation<sp/>is<sp/>copied<sp/>and<sp/>duplicated,<sp/>and<sp/>c3t3<sp/>remains<sp/>as<sp/>is.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Remeshing...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.flush();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(tr,<sp/>size);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\rRemeshing<sp/>done.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>In the second example, we show how to use the provided adaptive sizing field, <computeroutput><ref refid="classCGAL_1_1Adaptive__remeshing__sizing__field" kindref="compound">CGAL::Adaptive_remeshing_sizing_field</ref></computeroutput>, that automatically sets the target edge length to keep a mesh density consistent with the density of the input mesh. <linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2mesh_and_remesh_with_adaptive_sizing_8cpp-example" kindref="compound">Tetrahedral_remeshing/mesh_and_remesh_with_adaptive_sizing.cpp</ref> <programlisting filename="Tetrahedral_remeshing/mesh_and_remesh_with_adaptive_sizing.cpp"><codeline><highlight class="preprocessor">#define<sp/>CGAL_TETRAHEDRAL_REMESHING_VERBOSE</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedral_mesh_domain_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_complex_3_in_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Mesh_criteria_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/make_mesh_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Adaptive_remeshing_sizing_field.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/File_medit.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;string&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">K<sp/>=<sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Point<sp/>=<sp/>K::Point_3;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">FT<sp/>=<sp/>K::FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Polyhedron<sp/>=<sp/>CGAL::Polyhedron_3&lt;K&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh_domain<sp/>=<sp/><ref refid="classCGAL_1_1Polyhedral__mesh__domain__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Polyhedral_mesh_domain_3&lt;Polyhedron, K&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation<sp/>for<sp/>Meshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Tr<sp/>=<sp/><ref refid="classunspecified__type" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::Mesh_triangulation_3&lt;Mesh_domain&gt;::type</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">C3t3<sp/>=<sp/><ref refid="classCGAL_1_1Mesh__complex__3__in__triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::Mesh_complex_3_in_triangulation_3&lt;Tr&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">Mesh_criteria<sp/>=<sp/><ref refid="classCGAL_1_1Mesh__criteria__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">CGAL::Mesh_criteria_3&lt;Tr&gt;</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Triangulation<sp/>for<sp/>Remeshing</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/></highlight><highlight class="normal">T3<sp/>=<sp/><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_3</ref>&lt;Tr::Geom_traits,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Tr::Triangulation_data_structure&gt;;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>To<sp/>avoid<sp/>verbose<sp/>function<sp/>and<sp/>named<sp/>parameters<sp/>call</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">using<sp/>namespace<sp/></highlight><highlight class="normal"><ref refid="namespaceCGAL_1_1parameters" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/STL_Extension.tag">CGAL::parameters</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::string<sp/>fname<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/><ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/elk.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(fname);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(input.fail())<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error:<sp/>Cannot<sp/>read<sp/>file<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>fname<sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(!<ref refid="group__PkgBGLHelperFct_1ga11883d231eec1b58f37efe4acedd9588" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">CGAL::is_triangle_mesh</ref>(polyhedron))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Input<sp/>geometry<sp/>is<sp/>not<sp/>triangulated.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_FAILURE;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>domain</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_domain<sp/>domain(polyhedron);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Meshing...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.flush();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>criteria</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Mesh_criteria<sp/>criteria(facet_angle<sp/>=<sp/>25,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>facet_distance<sp/>=<sp/>0.2,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cell_size<sp/>=<sp/>10.,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cell_radius_edge_ratio<sp/>=<sp/>3.);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Mesh<sp/>generation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>C3t3<sp/>c3t3<sp/>=<sp/>CGAL::make_mesh_3&lt;C3t3&gt;(domain,<sp/>criteria,<sp/><ref refid="group__PkgMesh3Parameters_1ga9f696ff6caf3c4efd246e43946a89294" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">no_perturb</ref>().<ref refid="group__PkgMesh3Parameters_1gab24d8652fbb6ae045e989769c5bc69f0" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Mesh_3.tag">no_exude</ref>());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\rMeshing<sp/>done.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out_mesh(</highlight><highlight class="stringliteral">&quot;out_meshing.mesh&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1ga9e9fc0fac6919241501c228e438fa2b2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::IO::write_MEDIT</ref>(out_mesh,<sp/>c3t3.triangulation());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out_mesh.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T3<sp/>tr<sp/>=<sp/><ref refid="group__PkgTetrahedralRemeshingRef_1gacbc8c23061a2db7654c2ef9209adcfb2" kindref="member">CGAL::convert_to_triangulation_3</ref>(std::move(c3t3));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//note<sp/>we<sp/>use<sp/>the<sp/>move<sp/>semantic,<sp/>with<sp/>std::move(c3t3),</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>to<sp/>avoid<sp/>a<sp/>copy<sp/>of<sp/>the<sp/>triangulation<sp/>by<sp/>the<sp/>function</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>`CGAL::convert_to_triangulation_3()`</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>After<sp/>the<sp/>call<sp/>to<sp/>this<sp/>function,<sp/>c3t3<sp/>is<sp/>an<sp/>empty<sp/>and<sp/>valid<sp/>C3t3.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//It<sp/>is<sp/>possible<sp/>to<sp/>use<sp/>:<sp/><sp/>CGAL::convert_to_triangulation_3(c3t3),</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/><sp/>Then<sp/>the<sp/>triangulation<sp/>is<sp/>copied<sp/>and<sp/>duplicated,<sp/>and<sp/>c3t3<sp/>remains<sp/>as<sp/>is.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Remeshing...&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout.flush();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(tr,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::create_adaptive_remeshing_sizing_field(tr),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::parameters::number_of_iterations(5));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\rRemeshing<sp/>done.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;out_remeshing.mesh&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1ga9e9fc0fac6919241501c228e438fa2b2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::IO::write_MEDIT</ref>(out,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1ssecEx5">
+<title>Tetrahedral Remeshing from Any Tetrahedral Mesh</title>
+<para>The following example shows how to read a mesh from a triangulation stored in a Medit file, perform tetrahedral remeshing, and save the output triangulation. The input triangulation should follow the validity requirements of a <computeroutput><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">CGAL::Triangulation_3</ref></computeroutput> (valid connectivity, positive orientation of the cells, and coverage of the convex hull of the vertices).</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Tetrahedral_remeshing_2tetrahedral_remeshing_from_mesh_8cpp-example" kindref="compound">Tetrahedral_remeshing/tetrahedral_remeshing_from_mesh.cpp</ref> <programlisting filename="Tetrahedral_remeshing/tetrahedral_remeshing_from_mesh.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Tetrahedral_remeshing/Remeshing_triangulation_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/tetrahedral_remeshing.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/IO/File_medit.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Tetrahedral__remeshing_1_1Remeshing__triangulation__3" kindref="compound">CGAL::Tetrahedral_remeshing::Remeshing_triangulation_3&lt;K&gt;</ref><sp/>Remeshing_triangulation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,<sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>argv[])</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal">*<sp/>filename<sp/>=<sp/>(argc<sp/>&gt;<sp/>1)<sp/>?<sp/>argv[1]<sp/>:<sp/></highlight><highlight class="stringliteral">&quot;data/sphere.mesh&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>target_edge_length<sp/>=<sp/>(argc<sp/>&gt;<sp/>2)<sp/>?<sp/>atof(argv[2])<sp/>:<sp/>0.1;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Remeshing_triangulation<sp/>tr;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>is(filename,<sp/>std::ios_base::in);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1gab02697fc5c1e8ebf986fdbf4cf3737fb" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::IO::read_MEDIT</ref>(is,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgTetrahedralRemeshingRef_1ga263775c52eeb483a86a16aeb9eb31af0" kindref="member">CGAL::tetrahedral_isotropic_remeshing</ref>(tr,<sp/>target_edge_length);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>os(</highlight><highlight class="stringliteral">&quot;after_remeshing.mesh&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSMDS3IOFunctions_1ga9e9fc0fac6919241501c228e438fa2b2" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/SMDS_3.tag">CGAL::IO::write_MEDIT</ref>(os,<sp/>tr);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>EXIT_SUCCESS;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+</sect1>
+<sect1 id="index_1secTetRemeshingHistory">
+<title>Implementation History</title>
+<para>This package implements the uniform version of the &quot;Multi-Material Adaptive Volume Remesher&quot; algorithm for quality tetrahedral remeshing, described by Noura Faraj et al. in <ref refid="citelist_1CITEREF_faraj2016mvr" kindref="member">[1]</ref>.</para>
+<para>A first version of the code was written by Noura Faraj, Jean-Marc Thiery, and Tamy Boubekeur. Jane Tournois worked on the finalization of the code, the API, and documentation.</para>
+<para>It was initially published in CGAL-5.1.</para>
+<para>The ability to use a sizing field as variable target edge length was introduced by Jane Tournois in CGAL-6.0. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Tetrahedral_remeshing.txt"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,765 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_Triangulations"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Olivier Devillers, Samuel Hornus, and Clément Jamin.</para>
+</simplesect>
+This package proposes data structures and algorithms to compute triangulations of points in any dimensions <ref refid="citelist_1CITEREF_boissonnat2009Delaunay" kindref="member">[1]</ref>. The <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">Triangulation_data_structure</ref></computeroutput> handles the combinatorial aspect of triangulations while the geometric classes <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">Triangulation</ref></computeroutput>, <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation" kindref="compound">Delaunay_triangulation</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Regular__triangulation" kindref="compound">Regular_triangulation</ref></computeroutput> allow to compute and maintain triangulations, Delaunay triangulations, and regular triangulations of sets of points.</para>
+<sect1 id="index_1TriangulationSecIntro">
+<title>Introduction</title>
+<para><heading level="2">Some Definitions</heading>
+</para>
+<para>A <emphasis>finite abstract simplicial complex</emphasis> is built on a finite set of vertices <formula id="57">$ V$</formula> and consists of a collection <formula id="58">$ S$</formula> of subsets of <formula id="57">$ V$</formula> such that, if <formula id="59">$ s$</formula> is a set of vertices in <formula id="58">$ S$</formula>, then all the subsets of <formula id="59">$ s$</formula> are also in <formula id="58">$ S$</formula>.</para>
+<para>The sets in <formula id="58">$ S$</formula> (which are subsets of <formula id="57">$ V$</formula>) are called <emphasis>faces</emphasis> or <emphasis>simplices</emphasis> (the singular of which is <emphasis>simplex</emphasis>). A simplex <formula id="60">$ s\in S$</formula> is <emphasis>maximal</emphasis> if it is not a proper subset of some other set in <formula id="58">$ S$</formula>. A simplex having <formula id="61">$ k+1 $</formula> vertices is said of dimension <formula id="62">$ k $</formula>. An <formula id="13">$ k$</formula>-face denotes a <formula id="13">$ k$</formula>-dimensional simplex, i.e., a simplex with <formula id="63">$ k+1$</formula> vertices. The simplicial complex is <emphasis>pure</emphasis> if all the maximal simplices have the same dimension.</para>
+<para>A <emphasis>triangulation</emphasis> is a simplicial complex that is pure, connected and without boundaries nor singularities. The <emphasis>dimension</emphasis> of the triangulation is the dimension of its maximal simplices.</para>
+<para>In the sequel, we will call these maximal simplices <emphasis>full cells</emphasis>. A <emphasis>face</emphasis> of a simplex is a subset of this simplex. A <emphasis>proper face</emphasis> of a simplex is a strict subset of this simplex. Two faces <formula id="29">$ \sigma$</formula> and <formula id="31">$ \sigma&apos;$</formula> are <emphasis>incident</emphasis> if and only if <formula id="31">$ \sigma&apos;$</formula> is a proper face of <formula id="29">$ \sigma$</formula> or <emphasis>vice versa</emphasis>.</para>
+<para>A complex has <emphasis>no boundaries</emphasis> if any proper face of a simplex is also a proper face of another simplex.</para>
+<para>If the triangulation is of dimension <formula id="6">$ d $</formula>, we use the following terminology:<itemizedlist>
+<listitem>
+<para><emphasis>face</emphasis>: an <formula id="7">$ i$</formula>-face for some <formula id="64">$ i\in[0,d]$</formula>; </para>
+</listitem>
+<listitem>
+<para><emphasis>vertex</emphasis>: a <formula id="26">$ 0$</formula>-face; </para>
+</listitem>
+<listitem>
+<para><emphasis>edge</emphasis>: a <formula id="65">$ 1$</formula>-face; </para>
+</listitem>
+<listitem>
+<para><emphasis>ridge</emphasis>: a <formula id="66">$ (d-2)$</formula>-face; </para>
+</listitem>
+<listitem>
+<para><emphasis>facet</emphasis>: a <formula id="33">$ (d-1)$</formula>-face; </para>
+</listitem>
+<listitem>
+<para><emphasis>full cell</emphasis>: a <formula id="22">$ d$</formula>-face. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>If the vertices are embedded into Euclidean space <formula id="67">$ \mathbb{R}^n$</formula>, we deal with <emphasis>finite simplicial complexes</emphasis>, which have slightly different simplices and additional requirements: <itemizedlist>
+<listitem>
+<para>vertices correspond to points in space. </para>
+</listitem>
+<listitem>
+<para>a simplex <formula id="60">$ s\in S$</formula> is the convex hull of its vertices. </para>
+</listitem>
+<listitem>
+<para>the vertices of a simplex <formula id="60">$ s\in S$</formula> are affinely independent. </para>
+</listitem>
+<listitem>
+<para>the intersection of any two simplices of <formula id="58">$ S$</formula> is a proper face of both simplices (the empty set counts). </para>
+</listitem>
+</itemizedlist>
+</para>
+<para><heading level="2">What is Provided in this Package?</heading>
+</para>
+<para>This CGAL package provides four main classes for creating and manipulating triangulations.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">CGAL::Triangulation_data_structure</ref>&lt;Dimensionality, TriangulationDSVertex_, TriangulationDSFullCell_&gt;</computeroutput> models an <emphasis>abstract triangulation</emphasis>: vertices in this class are not embedded in Euclidean space but are only of combinatorial nature.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation</ref>&lt;TriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> describes an embedded triangulation that has as vertices a given set of points. Methods are provided for the insertion of points in the triangulation, the traversal of various elements of the triangulation, as well as the location of a query point inside the triangulation. The triangulation covers the convex hull of the set of points.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation" kindref="compound">CGAL::Delaunay_triangulation</ref>&lt;DelaunayTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> builds the Delaunay triangulation of a set of points. In a Delaunay triangulation, each face has the so-called <emphasis>Delaunay</emphasis> or <emphasis>empty-ball</emphasis> property: there exists a circumscribing ball whose interior does not contain any vertex of the triangulation.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Regular__triangulation" kindref="compound">CGAL::Regular_triangulation</ref>&lt;RegularTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> builds the regular triangulation <ndash/> also known as weighted Delaunay triangulation <ndash/> of a set of points. A detailed definition of such a triangulation is available in section <ref refid="index_1TriangulationSecRT" kindref="member">Regular Triangulations</ref>.</para>
+</sect1>
+<sect1 id="index_1TriangulationSecTDS">
+<title>Triangulation Data Structure</title>
+<para>In this section, we describe the concept <computeroutput><ref refid="classTriangulationDataStructure" kindref="compound">TriangulationDataStructure</ref></computeroutput> for which CGAL provides one model class: <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">CGAL::Triangulation_data_structure</ref>&lt;Dimensionality, TriangulationDSVertex_, TriangulationDSFullCell_&gt;</computeroutput>.</para>
+<para>A triangulation data structure can represent an abstract triangulation.</para>
+<para>The <emphasis>maximal dimension</emphasis> of a triangulation data structure is a positive integer equal to the maximum dimension a full cell can have. This maximal dimension can be chosen by the user at the creation of the triangulation data structure and can then be obtained using the method <computeroutput>tds.maximal_dimension()</computeroutput>. A triangulation data structure also knows the <emphasis>current dimension</emphasis> of its full cells, which can be obtained using <computeroutput>tds.current_dimension()</computeroutput>. In the sequel, let us denote the maximal dimension with <formula id="68">$ D $</formula> and the current dimension with <formula id="6">$ d $</formula>. The inequalities <formula id="69">$ -2 \leq d \leq D$</formula> and <formula id="70">$ 0 &lt; D$</formula> always hold. The special meaning of negative values for <formula id="71">$d$</formula> is explained below.</para>
+<para><heading level="2">The Set of Faces</heading>
+</para>
+<para>The set of faces of a triangulation data structure with current dimension <formula id="6">$ d $</formula> forms a triangulation of the topological sphere <formula id="23">$ \mathbb{S}^d$</formula>.</para>
+<para>Two full cells <formula id="29">$ \sigma$</formula> and <formula id="31">$ \sigma&apos;$</formula> sharing a facet are called <emphasis>neighbors</emphasis>. A full cell has always exactly <formula id="72">$ d+1$</formula> neighbors.</para>
+<para>Possible values of <formula id="71">$d$</formula> (the <emphasis>current dimension</emphasis> of the triangulation) include <simplesect kind="par"><title></title><para><variablelist>
+<varlistentry><term><bold> <formula id="73">$d=-2$</formula></bold></term></varlistentry>
+<listitem><para>This corresponds to an empty triangulation data structure. </para>
+</listitem>
+<varlistentry><term><bold> <formula id="74">$d=-1$</formula></bold></term></varlistentry>
+<listitem><para>This corresponds to an abstract simplicial complex reduced to a single vertex.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold> <formula id="75">$d=0$</formula></bold></term></varlistentry>
+<listitem><para>This corresponds to an abstract simplicial complex including two vertices, each corresponding to a full cell; the two full cells being neighbors of each other. This is the unique triangulation of the <formula id="26">$ 0$</formula>-sphere.</para>
+<para></para>
+</listitem>
+<varlistentry><term><bold> <formula id="76">$ 0&lt; d \le D$</formula></bold></term></varlistentry>
+<listitem><para>This corresponds to a triangulation of the sphere <formula id="23">$ \mathbb{S}^d$</formula>. </para>
+</listitem>
+</variablelist>
+</para>
+</simplesect>
+<heading level="2">The <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">Triangulation_data_structure</ref></computeroutput> Class</heading>
+</para>
+<para>We give here some details about the class <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">Triangulation_data_structure</ref>&lt;Dimensionality, TriangulationDSVertex_, TriangulationDSFullCell_&gt;</computeroutput> implementing the concept <computeroutput><ref refid="classTriangulationDataStructure" kindref="compound">TriangulationDataStructure</ref></computeroutput>.</para>
+<para><heading level="3">Storage</heading>
+</para>
+<para>A triangulation data structure explicitly stores its vertices and full cells.</para>
+<para>Each vertex stores a reference to one of its incident full cells.</para>
+<para>Each full cell <formula id="77">$ \sigma $</formula> stores references to its <formula id="72">$ d+1$</formula> vertices and neighbors. Its vertices and neighbors are indexed from <formula id="26">$ 0$</formula> to <formula id="6">$ d $</formula>. The indices of its neighbors have the following meaning: the <formula id="7">$ i$</formula>-th neighbor of <formula id="29">$ \sigma$</formula> is the unique neighbor of <formula id="29">$ \sigma$</formula> that does not contain the <formula id="7">$ i$</formula>-th vertex of <formula id="29">$ \sigma$</formula>; in other words, it is the neighbor of <formula id="29">$ \sigma$</formula> <emphasis>opposite</emphasis> to the <formula id="7">$ i$</formula>-th vertex of <formula id="29">$ \sigma$</formula> (Figure <ref refid="index_1fig__triangulationfigfullcell" kindref="member">fig__triangulationfigfullcell</ref>).</para>
+<para>The vertices and full cells of the triangulations are accessed through <computeroutput>handles</computeroutput> and <computeroutput>iterators</computeroutput>. A handle is a model of the <computeroutput><ref refid="classHandle" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Circulator.tag">Handle</ref></computeroutput> concept, and supports the two dereference operators and <computeroutput>operator-&gt;</computeroutput>.</para>
+<para><anchor id="index_1fig__triangulationfigfullcell"/> <image type="html" name="simplex-structure.png"></image>
+ <image type="latex" name="simplex-structure.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__triangulationfigfullcell" kindref="member">fig__triangulationfigfullcell</ref> Indexing the vertices and neighbors of a full cell <formula id="2">$ c$</formula> in dimension <formula id="36">$ d=2$</formula>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Faces of dimension between 0 and <formula id="78">$ d-1 $</formula> can be accessed as subfaces of a full cell, through the nested type <computeroutput>Face</computeroutput>. The <computeroutput>Face</computeroutput> instance corresponding to a face <formula id="79">$ f $</formula> stores a reference to a full cell <computeroutput>c</computeroutput> containing <formula id="79">$ f $</formula>, and the indices of the vertices of <computeroutput>c</computeroutput> that belong to <formula id="79">$ f $</formula>.</para>
+<para><heading level="3">Template Parameters</heading>
+</para>
+<para>The <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">Triangulation_data_structure</ref>&lt;Dimensionality, TriangulationDSVertex_, TriangulationDSFullCell_&gt;</computeroutput> class is designed in such a way that its user can choose <itemizedlist>
+<listitem>
+<para>the maximal dimension of the triangulation data structure by specifying the <computeroutput>Dimensionality</computeroutput> template parameter, </para>
+</listitem>
+<listitem>
+<para>the type used to represent vertices by specifying the <computeroutput>TriangulationDSVertex_</computeroutput> template parameter and </para>
+</listitem>
+<listitem>
+<para>the type used to represent full cells by specifying the <computeroutput>TriangulationDSFullCell_</computeroutput> template parameter. </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>The last two parameters have default values and are thus not necessary, unless the user needs custom types (see <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">Triangulation_data_structure</ref></computeroutput>). The first template parameter, <computeroutput>Dimensionality</computeroutput>, must be one of the following: <itemizedlist>
+<listitem>
+<para><computeroutput><ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag</ref>&lt;D&gt;</computeroutput> for some integer <formula id="68">$ D $</formula>. This indicates that the triangulation can store full cells of dimension at most <formula id="68">$ D $</formula>. The maximum dimension <formula id="68">$ D $</formula> is known by the compiler, which triggers some optimizations. </para>
+</listitem>
+<listitem>
+<para><computeroutput><ref refid="structCGAL_1_1Dynamic__dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dynamic_dimension_tag</ref></computeroutput>. In this case, the maximum dimension of the full cells must be passed as an integer argument to an instance constructor (see <computeroutput><ref refid="classTriangulationDataStructure" kindref="compound">TriangulationDataStructure</ref></computeroutput>). </para>
+</listitem>
+</itemizedlist>
+</para>
+<para>The <computeroutput>TriangulationDSVertex_</computeroutput> and <computeroutput>TriangulationDSFullCell_</computeroutput> parameters to the class template must be models of the concepts <computeroutput><ref refid="classTriangulationDSVertex" kindref="compound">TriangulationDSVertex</ref></computeroutput> and <computeroutput><ref refid="classTriangulationDSFullCell" kindref="compound">TriangulationDSFullCell</ref></computeroutput> respectively. CGAL provides models for these concepts: <computeroutput><ref refid="classCGAL_1_1Triangulation__ds__vertex" kindref="compound">Triangulation_ds_vertex</ref>&lt;TriangulationDataStructure_&gt;</computeroutput> and <computeroutput><ref refid="classCGAL_1_1Triangulation__ds__full__cell" kindref="compound">Triangulation_ds_full_cell</ref>&lt;TriangulationDataStructure_, TriangulationDSFullCellStoragePolicy&gt;</computeroutput>, which, as one can see, take the triangulation data structure as a template parameter in order to get access to some nested types in <computeroutput>TriangulationDataStructure_</computeroutput>.</para>
+<para>The default values are <computeroutput><ref refid="classCGAL_1_1Triangulation__ds__vertex" kindref="compound">CGAL::Triangulation_ds_vertex</ref>&lt;TDS&gt;</computeroutput> and <computeroutput><ref refid="classCGAL_1_1Triangulation__ds__full__cell" kindref="compound">CGAL::Triangulation_ds_full_cell</ref>&lt;TDS&gt;</computeroutput> where <computeroutput>TDS</computeroutput> is the current class <computeroutput><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">Triangulation_data_structure</ref>&lt;Dimensionality, TriangulationDSVertex_, TriangulationDSFullCell_&gt;</computeroutput>. <emphasis>This creates a circular dependency</emphasis>, which we resolve in the same way as in the CGAL <computeroutput><ref refid="classCGAL_1_1Triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Triangulation_2</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref></computeroutput> packages (see Chapters <ref refid="index_1Chapter_2D_Triangulation_Data_Structure" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_2.tag">Chapter_2D_Triangulation_Data_Structure</ref>, <ref refid="index_1Chapter_2D_Triangulations" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Chapter_2D_Triangulations</ref>, <ref refid="index_1Chapter_3D_Triangulation_Data_Structure" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/TDS_3.tag">Chapter_3D_Triangulation_Data_Structure</ref>, and <ref refid="index_1Chapter_3D_Triangulations" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Chapter_3D_Triangulations</ref>). In particular, models of the concepts <computeroutput><ref refid="classTriangulationDSVertex" kindref="compound">TriangulationDSVertex</ref></computeroutput> and <computeroutput><ref refid="classTriangulationDSFullCell" kindref="compound">TriangulationDSFullCell</ref></computeroutput> must provide a nested template <computeroutput>Rebind_TDS</computeroutput> which is documented in those two concept&apos;s reference manual pages. This mechanism can be used to provide a custom vertex or full cell class. The user is encouraged to read the documentation of the CGAL <computeroutput><ref refid="classCGAL_1_1Triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Triangulation_2</ref></computeroutput> or <computeroutput><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref></computeroutput> package.</para>
+<para><heading level="2">Examples</heading>
+</para>
+<para><heading level="3">Incremental Construction</heading>
+</para>
+<para>The following examples shows how to construct a triangulation data structure by inserting vertices. Its main interest is that it demonstrates most of the API to insert new vertices into the triangulation.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="triangulation_data_structure_static_8cpp-example" kindref="compound">triangulation_data_structure_static.cpp</ref> <programlisting filename="triangulation_data_structure_static.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_data_structure.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">CGAL::Triangulation_data_structure&lt;CGAL::Dimension_tag&lt;7&gt;</ref><sp/>&gt;<sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>TDS<sp/>S;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>7<sp/>==<sp/>S.maximal_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>-2<sp/>==<sp/>S.current_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>S.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;TDS::Vertex_handle&gt;<sp/>V(10);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[0]<sp/>=<sp/>S.insert_increase_dimension();<sp/></highlight><highlight class="comment">//insert<sp/>first<sp/>vertex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>-1<sp/>==<sp/>S.current_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>1;<sp/>i<sp/>&lt;=<sp/>5;<sp/>++i<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>V[i]<sp/>=<sp/>S.insert_increase_dimension(V[0]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>first<sp/>6<sp/>vertices<sp/>have<sp/>created<sp/>a<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>of<sp/>the<sp/>4-dimensional<sp/>topological<sp/>sphere</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>(the<sp/>boundary<sp/>of<sp/>a<sp/>five<sp/>dimensional<sp/>simplex).</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>4<sp/>==<sp/>S.current_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>6<sp/>==<sp/>S.number_of_vertices()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>6<sp/>==<sp/>S.number_of_full_cells()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>TDS::Full_cell_handle<sp/>c<sp/>=<sp/>V[5]-&gt;full_cell();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[6]<sp/>=<sp/>S.insert_in_full_cell(c);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>full<sp/>cell<sp/>c<sp/>is<sp/>split<sp/>in<sp/>5</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>7<sp/>==<sp/>S.number_of_vertices()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>10<sp/>==<sp/>S.number_of_full_cells()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>c<sp/>=<sp/>V[3]-&gt;full_cell();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>TDS::Facet<sp/>ft(c,<sp/>2);<sp/></highlight><highlight class="comment">//<sp/>the<sp/>Facet<sp/>opposite<sp/>to<sp/>vertex<sp/>2<sp/>in<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[7]<sp/>=<sp/>S.insert_in_facet(ft);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>facet<sp/>ft<sp/>is<sp/>split<sp/>in<sp/>4<sp/>and<sp/>the<sp/>two<sp/>incident<sp/>cells<sp/>are<sp/>split<sp/>accordingly</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>8<sp/>==<sp/>S.number_of_vertices()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>16<sp/>==<sp/>S.number_of_full_cells()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>c<sp/>=<sp/>V[3]-&gt;full_cell();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>TDS::Face<sp/>face(c);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>meant<sp/>to<sp/>contain<sp/>the<sp/>edge<sp/>joining<sp/>vertices<sp/>2<sp/>and<sp/>4<sp/>of<sp/>full_cell<sp/>c</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face.set_index(0,<sp/>2);<sp/></highlight><highlight class="comment">//<sp/>namely<sp/>vertex<sp/>2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>face.set_index(1,<sp/>4);<sp/></highlight><highlight class="comment">//<sp/>and<sp/>vertex<sp/>4</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[8]<sp/>=<sp/>S.insert_in_face(face);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>face<sp/>is<sp/>split<sp/>in<sp/>2,<sp/>and<sp/>all<sp/>incident<sp/>full<sp/>cells<sp/>also</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>S.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>TDS::Full_cell_handle<sp/>hole[2];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole[0]<sp/>=<sp/>V[8]-&gt;full_cell();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>hole[1]<sp/>=<sp/>hole[0]-&gt;neighbor(0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>hole<sp/>is<sp/>made<sp/>of<sp/>two<sp/>adjacent<sp/>full<sp/>cells</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>ft<sp/>=<sp/>TDS::Facet(hole[0],<sp/>1);<sp/><sp/></highlight><highlight class="comment">//<sp/>a<sp/>face<sp/>on<sp/>the<sp/>boundary<sp/>of<sp/>hole[0]</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[9]<sp/>=<sp/>S.insert_in_hole(hole,<sp/>hole+2,<sp/>ft);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>hole<sp/>is<sp/>triangulated<sp/>by<sp/>linking<sp/>a<sp/>new<sp/>vertex<sp/>to<sp/>its<sp/>boundary</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>S.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>In the previous example, the maximal dimension is fixed at compile time. It is also possible to fix it at run time, as in the next example.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="triangulation_data_structure_dynamic_8cpp-example" kindref="compound">triangulation_data_structure_dynamic.cpp</ref> <programlisting filename="triangulation_data_structure_dynamic.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_data_structure.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>ddim<sp/>=<sp/>5;<sp/></highlight><highlight class="comment">//<sp/>dimension<sp/>of<sp/>TDS<sp/>with<sp/>dynamic<sp/>dimension</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">CGAL::Triangulation_data_structure&lt;CGAL::Dynamic_dimension_tag&gt;</ref></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>TDS::Vertex_handle<sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>TDS<sp/>D(ddim);<sp/></highlight><highlight class="comment">//<sp/>the<sp/>argument<sp/>is<sp/>taken<sp/>into<sp/>account.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>ddim<sp/>==<sp/>D.maximal_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>-2<sp/>==<sp/>D.current_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>D.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Vertex_handle&gt;<sp/>V(5);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[0]<sp/>=<sp/>D.insert_increase_dimension();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[1]<sp/>=<sp/>D.insert_increase_dimension(V[0]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[2]<sp/>=<sp/>D.insert_increase_dimension(V[0]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[3]<sp/>=<sp/>D.insert_increase_dimension(V[0]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>V[4]<sp/>=<sp/>D.insert_in_full_cell(V[3]-&gt;full_cell());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>6<sp/>==<sp/>D.number_of_full_cells()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>2<sp/>==<sp/>D.current_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>D.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><heading level="3">Barycentric Subdivision</heading>
+</para>
+<para>This example provides a function for computing the barycentric subdivision of a single full cell <computeroutput>c</computeroutput> in a triangulation data structure. The other full cells adjacent to <computeroutput>c</computeroutput> are automatically subdivided to match the subdivision of the full cell <computeroutput>c</computeroutput>. The barycentric subdivision of <computeroutput>c</computeroutput> is obtained by enumerating all the faces of <computeroutput>c</computeroutput> in order of decreasing dimension, from the dimension of <computeroutput>c</computeroutput> to dimension 1, and inserting a new vertex in each face.</para>
+<para><anchor id="index_1fig__triangulationfigbarycentric"/> <image type="html" name="barycentric-subdivision.png"></image>
+ <image type="latex" name="barycentric-subdivision.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__triangulationfigbarycentric" kindref="member">fig__triangulationfigbarycentric</ref> Barycentric subdivision in dimension <formula id="36">$ d=2$</formula>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="barycentric_subdivision_8cpp-example" kindref="compound">barycentric_subdivision.cpp</ref> <programlisting filename="barycentric_subdivision.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation_data_structure.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Combination_enumerator.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>find_face_from_vertices(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>TDS<sp/>&amp;<sp/>tds,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;typename<sp/>TDS::Vertex_handle&gt;<sp/>&amp;<sp/>face_vertices,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Face<sp/>&amp;<sp/>face);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>barycentric_subdivide(TDS<sp/>&amp;<sp/>tds,<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Full_cell_handle<sp/>fc)</highlight></codeline>
+<codeline><highlight class="normal">{<sp/></highlight><highlight class="comment">/*<sp/>This<sp/>function<sp/>builds<sp/>the<sp/>barycentric<sp/>subdivision<sp/>of<sp/>a<sp/>single</highlight></codeline>
+<codeline><highlight class="comment"><sp/><sp/><sp/><sp/><sp/>full<sp/>cell<sp/>|fc|<sp/>from<sp/>a<sp/>triangulation<sp/>data<sp/>structure<sp/>|tds|.<sp/><sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Vertex_handle<sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Face<sp/>Face;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>dim<sp/>=<sp/>tds.current_dimension();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>First,<sp/>read<sp/>handles<sp/>to<sp/>the<sp/>cell&apos;s<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;Vertex_handle&gt;<sp/>vertices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;Vertex_handle&gt;<sp/>face_vertices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;=<sp/>dim;<sp/>++i<sp/>)<sp/>vertices.push_back(fc-&gt;vertex(i));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Then,<sp/>subdivide<sp/>the<sp/>cell<sp/>|fc|<sp/>once<sp/>by<sp/>inserting<sp/>one<sp/>vertex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>tds.insert_in_full_cell(fc);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>From<sp/>now<sp/>on,<sp/>we<sp/>can&apos;t<sp/>use<sp/>the<sp/>variable<sp/>|fc|...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Then,<sp/>subdivide<sp/>faces<sp/>of<sp/>|fc|<sp/>in<sp/>order<sp/>of<sp/>decreasing<sp/>dimension</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>d<sp/>=<sp/>dim-1;<sp/>d<sp/>&gt;<sp/>0;<sp/>--d<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face_vertices.resize(d+1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>following<sp/>class</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>enumerates<sp/>all<sp/>(d+1)-tuple<sp/>of<sp/>the<sp/>set<sp/>{0,<sp/>1,<sp/>...,<sp/>dim}</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>CGAL::Combination_enumerator&lt;unsigned<sp/>int&gt;<sp/>combi(d+1,<sp/>0,<sp/>dim);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal"><sp/>(<sp/>!combi.finished()<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;=<sp/>d;<sp/>++i<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face_vertices[i]<sp/>=<sp/>vertices[combi[i]];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>we<sp/>need<sp/>to<sp/>find<sp/>a<sp/>face<sp/>with<sp/>face_vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Face<sp/>face(dim);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>find_face_from_vertices(tds,<sp/>face_vertices,<sp/>face);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tds.insert_in_face(face);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>++combi;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>find_face_from_vertices(<sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>TDS<sp/>&amp;<sp/>tds,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>std::vector&lt;typename<sp/>TDS::Vertex_handle&gt;<sp/>&amp;<sp/>face_vertices,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Face<sp/>&amp;<sp/>face)</highlight></codeline>
+<codeline><highlight class="normal">{<sp/></highlight><highlight class="comment">/*<sp/>The<sp/>main<sp/>goal<sp/>of<sp/>this<sp/>function<sp/>is<sp/>to<sp/>find<sp/>a<sp/>full<sp/>cell<sp/>that</highlight></codeline>
+<codeline><highlight class="comment"><sp/><sp/><sp/><sp/><sp/>contains<sp/>a<sp/>given<sp/>set<sp/>of<sp/>vertices<sp/>|face_vertices|.<sp/>Then,<sp/>it</highlight></codeline>
+<codeline><highlight class="comment"><sp/><sp/><sp/><sp/><sp/>builds<sp/>a<sp/>corresponding<sp/>|face|.<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Vertex_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Full_cell_handle<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Full_cell_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>TDS::Full_cell::Vertex_handle_iterator<sp/>Vertex_h_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>get<sp/>the<sp/>dimension<sp/>of<sp/>the<sp/>face<sp/>we<sp/>want<sp/>to<sp/>build</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::size_t<sp/>fdim(face_vertices.size()<sp/>-<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<sp/>fdim<sp/>&lt;=<sp/>0)<sp/>exit(-1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>find<sp/>all<sp/>full<sp/>cells<sp/>incident<sp/>to<sp/>the<sp/>first<sp/>vertex<sp/>of<sp/>|face|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;Full_cell_handle&gt;<sp/>Cells;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Cells<sp/>cells;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::back_insert_iterator&lt;Cells&gt;<sp/>out(cells);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>tds.incident_full_cells(face_vertices[0],<sp/>out);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Iterate<sp/>over<sp/>the<sp/>cells<sp/>to<sp/>find<sp/>one<sp/>which<sp/>contains<sp/>the<sp/>face_vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/></highlight><highlight class="keyword">typename</highlight><highlight class="normal"><sp/>Cells::iterator<sp/>cit<sp/>=<sp/>cells.begin();<sp/>cit<sp/>!=<sp/>cells.end();<sp/>++cit){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>find<sp/>if<sp/>the<sp/>cell<sp/>*cit<sp/>contains<sp/>the<sp/>Face<sp/>|face|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>std::size_t<sp/>i<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>;<sp/>i<sp/>&lt;=<sp/>fdim;<sp/>++i<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_handle<sp/>face_v(face_vertices[i]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>found(</highlight><highlight class="keyword">false</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_h_iterator<sp/>vit<sp/>=<sp/>(*cit)-&gt;vertices_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>;<sp/>vit<sp/>!=<sp/>(*cit)-&gt;vertices_end();<sp/>++vit<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<sp/>*vit<sp/>==<sp/>face_v<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>found<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<sp/>!<sp/>found<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<sp/>i<sp/>&gt;<sp/>fdim<sp/>)<sp/>{</highlight><highlight class="comment">//<sp/>the<sp/>full<sp/>cell<sp/>|*cit|<sp/>contains<sp/>|face|</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face.set_full_cell(*cit);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>std::size_t<sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;=<sp/>fdim;<sp/>++i<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>face.set_index(</highlight><highlight class="keyword">static_cast&lt;</highlight><highlight class="keywordtype">int</highlight><highlight class="keyword">&gt;</highlight><highlight class="normal">(i),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>(*cit)-&gt;index(face_vertices[i]));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Could<sp/>not<sp/>build<sp/>a<sp/>face<sp/>from<sp/>vertices&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(</highlight><highlight class="keyword">false</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>sdim<sp/>=<sp/>5;<sp/></highlight><highlight class="comment">//<sp/>dimension<sp/>of<sp/>TDS<sp/>with<sp/>compile-time<sp/>dimension</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation__data__structure" kindref="compound">CGAL::Triangulation_data_structure&lt;CGAL::Dimension_tag&lt;sdim&gt;</ref><sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>TDS;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>TDS<sp/><sp/>tds(sdim);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>TDS::Vertex_handle<sp/>one_vertex<sp/>=<sp/>tds.insert_increase_dimension();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>1;<sp/>i<sp/>&lt;<sp/>sdim+2;<sp/>++i<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>tds.insert_increase_dimension(one_vertex);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>we<sp/>get<sp/>a<sp/>triangulation<sp/>of<sp/>space<sp/>of<sp/>dim<sp/>sdim<sp/>homeomorphic<sp/>to</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>the<sp/>boundary<sp/>of<sp/>simplex<sp/>of<sp/>dimension<sp/>sdim+1<sp/>with<sp/>sdim+2<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(<sp/>sdim<sp/><sp/><sp/>==<sp/>tds.current_dimension()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(<sp/>2+sdim<sp/>==<sp/>tds.number_of_vertices()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(<sp/>2+sdim<sp/>==<sp/>tds.number_of_full_cells()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>barycentric_subdivide(tds,<sp/>tds.full_cells_begin());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>number<sp/>of<sp/>full<sp/>cells<sp/>should<sp/>be<sp/>twice<sp/>the<sp/>factorial<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>|tds.current_dimension()+1|.<sp/>Eg,<sp/>1440<sp/>for<sp/>dimension<sp/>5.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Triangulation<sp/>has<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>tds.number_of_full_cells()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>full<sp/>cells&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(<sp/>tds.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>and<sp/>is<sp/>valid!&quot;</highlight><highlight class="normal">&lt;&lt;std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1TriangulationSecTriangulations">
+<title>Triangulations</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation</ref>&lt;TriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> maintains a triangulation embedded in Euclidean space. The triangulation covers the convex hull of the input points (the embedded vertices of the triangulation).</para>
+<para>To store this triangulation in a triangulation data structure, we turn the set of its faces into a topological sphere by adding a fictitious vertex, called the <emphasis>infinite vertex</emphasis>, as well as infinite simplices incident to boundary faces of the convex hull. Each infinite <formula id="7">$ i$</formula>-simplex is incident to the infinite vertex and to an <formula id="8">$ (i-1)$</formula>-simplex of the convex hull boundary.</para>
+<para>See Chapters <ref refid="index_1Chapter_2D_Triangulations" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">2D Triangulations</ref> or <ref refid="index_1Chapter_3D_Triangulations" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">3D Triangulations</ref> for more details about infinite vertices and cells.</para>
+<para>Methods are provided for the insertion of points in the triangulation, the contraction of faces, the traversal of various elements of the triangulation as well as the location of a query point inside the triangulation.</para>
+<para>The ordering of the vertices of a full cell defines an orientation of that full cell. As long as no <emphasis>advanced</emphasis> class method is called, it is guaranteed that all finite full cells have positive orientation. Each infinite full cell is oriented as if its infinite vertex was on the side of the hyperplane supported by its finite facet where there is no other point.</para>
+<para><heading level="2">Implementation</heading>
+</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation</ref>&lt;TriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> stores a model of the concept <computeroutput><ref refid="classTriangulationDataStructure" kindref="compound">TriangulationDataStructure</ref></computeroutput> that is instantiated with a vertex type that stores a point.</para>
+<para>The template parameter <computeroutput>TriangulationTraits_</computeroutput> must be a model of the concept <computeroutput><ref refid="classTriangulationTraits" kindref="compound">TriangulationTraits</ref></computeroutput>, which provides the point type as well as various geometric predicates used by the <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">Triangulation</ref></computeroutput> class.</para>
+<para>The <computeroutput><ref refid="classTriangulationTraits" kindref="compound">TriangulationTraits</ref></computeroutput> concept includes a nested type <computeroutput><ref refid="classTriangulationTraits_1a333a19426aa60c3363af494782caa891" kindref="member">TriangulationTraits::Dimension</ref></computeroutput>. This dimension governs the number of points given as arguments to the predicates. This type is either <computeroutput><ref refid="structCGAL_1_1Dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dimension_tag</ref>&lt;D&gt;</computeroutput> or <computeroutput><ref refid="structCGAL_1_1Dynamic__dimension__tag" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Dynamic_dimension_tag</ref></computeroutput>. In any case, the dimension of the traits must match the maximal dimension of the triangulation data structure.</para>
+<para>The template parameter <computeroutput>TriangulationDataStructure_</computeroutput> must be a model of the concept <computeroutput><ref refid="classTriangulationDataStructure" kindref="compound">TriangulationDataStructure</ref></computeroutput> which provides the triangulation data structure as described in the previous section.</para>
+<para><heading level="2">Examples</heading>
+</para>
+<para><heading level="3">Incremental Construction</heading>
+</para>
+<para>The following example shows how to construct a triangulation in which we insert random points. In <computeroutput>STEP 1</computeroutput>, we generate one hundred random points in <formula id="80">$ \mathbb{R}^5$</formula>, which we then insert into a triangulation. In <computeroutput>STEP 2</computeroutput>, we ask the triangulation to construct the set of edges ( <formula id="65">$ 1$</formula> dimensional faces) incident to the vertex at infinity. It is easy to see that these edges are in bijection with the vertices on the convex hull of the points. This gives us a handy way to count the convex hull vertices (include files <computeroutput>triangulation1.h</computeroutput> and <computeroutput>triangulation2.h</computeroutput> are given and commented below).</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="triangulation_8cpp-example" kindref="compound">triangulation.cpp</ref> <programlisting filename="triangulation.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/config.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Epick_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Triangulation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/algorithm.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Epick__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_d.tag">CGAL::Epick_d&lt; CGAL::Dynamic_dimension_tag &gt;</ref><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Triangulation" kindref="compound">Triangulation</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>D<sp/>=<sp/>5;<sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>we<sp/>work<sp/>in<sp/>Euclidean<sp/>5-space</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>N<sp/>=<sp/>100;<sp/></highlight><highlight class="comment">//<sp/>we<sp/>will<sp/>insert<sp/>100<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>STEP<sp/>1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>CGAL::Random_points_in_cube_d&lt;Triangulation::Point&gt;<sp/>rand_it(D,<sp/>1.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::vector&lt;Triangulation::Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::copy_n(rand_it,<sp/>N,<sp/>std::back_inserter(points));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Triangulation" kindref="compound">Triangulation</ref><sp/>t(D);<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>create<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(t.empty());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>t.insert(points.begin(),<sp/>points.end());<sp/><sp/></highlight><highlight class="comment">//<sp/>compute<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>assert(<sp/>t.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>-<sp/>STEP<sp/>2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation_1ada52cef984f0e0c3a4feba1caaf5b2ba" kindref="member">Triangulation::Face</ref><sp/>Face;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;Face&gt;<sp/>Faces;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>Faces<sp/>edges;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::back_insert_iterator&lt;Faces&gt;<sp/>out(edges);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>t.tds().incident_faces(t.infinite_vertex(),<sp/>1,<sp/>out);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>collect<sp/>faces<sp/>of<sp/>dimension<sp/>1<sp/>(edges)<sp/>incident<sp/>to<sp/>the<sp/>infinite<sp/>vertex</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;There<sp/>are<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>edges.size()</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices<sp/>on<sp/>the<sp/>convex<sp/>hull.&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;triangulation1.h&quot;</highlight><highlight class="normal"><sp/></highlight><highlight class="comment">//<sp/>See<sp/>below</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;triangulation2.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><heading level="3">Traversing the Facets of the Convex Hull</heading>
+</para>
+<para>Remember that a triangulation covers the convex hull of its vertices. Each facet of the convex hull is incident to one finite full cell and one infinite full cell. In fact there is a bijection between the infinite full cells and the facets of the convex hull. If vertices are not in general position, convex hull faces that are not simplices are triangulated. In order to traverse the convex hull facets, there are (at least) two possibilities:</para>
+<para>The first is to iterate over the full cells of the triangulation and check if they are infinite or not:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="triangulation1_8h-example" kindref="compound">triangulation1.h</ref> <programlisting filename="triangulation1.h"><codeline><highlight class="normal">{<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation_1a912c8764d774b853ee4965418ab39840" kindref="member">Triangulation::Full_cell_iterator</ref><sp/>Full_cell_iterator;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation_1a8b1939b059439a2039f0138e390c4955" kindref="member">Triangulation::Facet</ref><sp/>Facet;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>Full_cell_iterator<sp/>cit<sp/>=<sp/>t.full_cells_begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>cit<sp/>!=<sp/>t.full_cells_end();<sp/>++cit<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(<sp/>!<sp/>t.is_infinite(cit)<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">continue</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Facet<sp/>ft(cit,<sp/>cit-&gt;index(t.infinite_vertex()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++i;</highlight><highlight class="comment">//<sp/>|ft|<sp/>is<sp/>a<sp/>facet<sp/>of<sp/>the<sp/>convex<sp/>hull</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;There<sp/>are<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>i<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>facets<sp/>on<sp/>the<sp/>convex<sp/>hull.&quot;</highlight><highlight class="normal">&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>A second possibility is to ask the triangulation to gather all the full cells incident to the infinite vertex: they form precisely the set of infinite full cells:</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="triangulation2_8h-example" kindref="compound">triangulation2.h</ref> <programlisting filename="triangulation2.h"><codeline><highlight class="normal">{<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i=0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation_1a9dc0c1f6f1974fbc59ad55e172bdbe0a" kindref="member">Triangulation::Full_cell_handle</ref><sp/>Full_cell_handle;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Triangulation_1a8b1939b059439a2039f0138e390c4955" kindref="member">Triangulation::Facet</ref><sp/>Facet;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::vector&lt;Full_cell_handle&gt;<sp/>Full_cells;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Full_cells<sp/>infinite_full_cells;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::back_insert_iterator&lt;Full_cells&gt;<sp/>out(infinite_full_cells);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.incident_full_cells(t.infinite_vertex(),<sp/>out);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(<sp/>Full_cells::iterator<sp/>sit<sp/>=<sp/>infinite_full_cells.begin();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sit<sp/>!=<sp/>infinite_full_cells.end();<sp/>++sit<sp/>)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>Facet<sp/>ft(*sit,<sp/>(*sit)-&gt;index(t.infinite_vertex()));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>++i;<sp/></highlight><highlight class="comment">//<sp/>|ft|<sp/>is<sp/>a<sp/>facet<sp/>of<sp/>the<sp/>convex<sp/>hull</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;There<sp/>are<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>i<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>facets<sp/>on<sp/>the<sp/>convex<sp/>hull.&quot;</highlight><highlight class="normal">&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para>One important difference between the two examples above is that the first uses <emphasis>little</emphasis> memory but traverses <emphasis>all</emphasis> the full cells, while the second visits <emphasis>only</emphasis> the infinite full cells but stores handles to them into the <emphasis>potentially big</emphasis> array <computeroutput>infinite_full_cells</computeroutput>.</para>
+</sect1>
+<sect1 id="index_1TriangulationSecDT">
+<title>Delaunay Triangulations</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation" kindref="compound">CGAL::Delaunay_triangulation</ref>&lt;DelaunayTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> derives from <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation</ref>&lt;DelaunayTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> and represents Delaunay triangulations.</para>
+<para>A <emphasis>circumscribing ball</emphasis> of a simplex is a ball having all vertices of the simplex on its boundary. In a Delaunay triangulation, each face has the so-called <emphasis>Delaunay</emphasis> or <emphasis>empty-ball</emphasis> property: there exists a circumscribing ball whose interior does not contain any vertex of the triangulation.</para>
+<para>In case of degeneracies (co-spherical points) the triangulation is not uniquely defined. Note however that the <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL</ref> implementation computes a unique triangulation even in these cases.</para>
+<para>When a new point <computeroutput>p</computeroutput> is inserted into a Delaunay triangulation, the full cells whose circumscribing ball contains <computeroutput>p</computeroutput> are said to <emphasis>be in conflict</emphasis> with point <computeroutput>p</computeroutput>. Note that the circumscribing ball of an infinite full cell is the empty half-space bounded by the affine hull of the finite facet of this cell. The set of full cells that are in conflict with <computeroutput>p</computeroutput> form the <emphasis>conflict zone</emphasis>. The full cells in the conflict zone are removed, leaving a hole that contains <computeroutput>p</computeroutput>. That hole is <ldquo/>star shaped<rdquo/> around <computeroutput>p</computeroutput> and thus is re-triangulated using <computeroutput>p</computeroutput> as a center vertex.</para>
+<para>Delaunay triangulations support insertion of points, removal of vertices, and location of a query point inside the triangulation. Note that inserting a large set of points at once is much faster than inserting the same points one by one.</para>
+<para><heading level="2">Implementation</heading>
+</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation" kindref="compound">CGAL::Delaunay_triangulation</ref>&lt;DelaunayTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> derives from <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation</ref>&lt;DelaunayTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput>. It thus stores a model of the concept <computeroutput><ref refid="classTriangulationDataStructure" kindref="compound">TriangulationDataStructure</ref></computeroutput>, which is instantiated with a vertex type that stores a geometric point and allows its retrieval.</para>
+<para>The template parameter <computeroutput>DelaunayTriangulationTraits_</computeroutput> must be a model of the concept <computeroutput><ref refid="classDelaunayTriangulationTraits" kindref="compound">DelaunayTriangulationTraits</ref></computeroutput> which provides the geometric <computeroutput>Point</computeroutput> type as well as various geometric predicates used by the <computeroutput><ref refid="classCGAL_1_1Delaunay__triangulation" kindref="compound">Delaunay_triangulation</ref></computeroutput> class. The concept <computeroutput><ref refid="classDelaunayTriangulationTraits" kindref="compound">DelaunayTriangulationTraits</ref></computeroutput> refines the concept <computeroutput><ref refid="classTriangulationTraits" kindref="compound">TriangulationTraits</ref></computeroutput> by requiring a few additional geometric predicates, necessary for the computation of Delaunay triangulations.</para>
+<para><heading level="2">Examples</heading>
+</para>
+<para><heading level="3">Access to the Conflict Zone and to the Full Cells Created during Point Insertion</heading>
+</para>
+<para>When using a full cell type containing additional custom information, it may be useful to get an efficient access to the full cells that are going to be erased upon the insertion of a new point in the Delaunay triangulation, and to the newly created full cells. The second part of code example below shows how one can have efficient access to both the conflict zone and the created full cells, while still retaining an efficient update of the Delaunay triangulation.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="delaunay_triangulation_8cpp-example" kindref="compound">delaunay_triangulation.cpp</ref> <programlisting filename="delaunay_triangulation.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/config.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Epick_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Delaunay_triangulation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>pointsIn[][7]<sp/>=<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>42.89,<sp/>0,<sp/>60.55,<sp/>30.72,<sp/>0,<sp/>0,<sp/>0<sp/>},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>45.65,<sp/>50.83,<sp/>50.37,<sp/>16.13,<sp/>0,<sp/>0,<sp/>0<sp/>},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>79.06,<sp/>57.84,<sp/>61.59,<sp/>2.52,<sp/>0,<sp/>0,<sp/>0<sp/>},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>44.47,<sp/>39.46,<sp/>39.53,<sp/>28.72,<sp/>0,<sp/>0,<sp/>0<sp/>},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>0,<sp/>100,<sp/>0,<sp/>0,<sp/>100,<sp/>0,<sp/>53.47<sp/>},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>66.95,<sp/>100,<sp/>33.6,<sp/>0,<sp/>0,<sp/>0,<sp/>0<sp/>},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>42.89,<sp/>0,<sp/>0,<sp/>30.72,<sp/>100,<sp/>0,<sp/>53.47<sp/>},</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{<sp/>100,<sp/>100,<sp/>100,<sp/>100,<sp/>100,<sp/>100,<sp/>100<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Delaunay__triangulation" kindref="compound">CGAL::Delaunay_triangulation&lt;CGAL::Epick_d&lt; CGAL::Dimension_tag&lt;7&gt;</ref><sp/>&gt;<sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T<sp/>dt(7);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;T::Point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>points.reserve(8);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>j<sp/>=<sp/>0;<sp/>j<sp/>&lt;<sp/>8;<sp/>++j)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>T::Point<sp/>p(&amp;pointsIn[j][0],<sp/>&amp;pointsIn[j][7]);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back(p);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T::Vertex_handle<sp/>hint;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(std::vector&lt;T::Point&gt;::iterator<sp/>it<sp/>=<sp/>points.begin();<sp/>it<sp/>!=<sp/>points.end();<sp/>++it)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(T::Vertex_handle()<sp/>!=<sp/>hint)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>hint<sp/>=<sp/>dt.insert(*it,<sp/>hint);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>hint<sp/>=<sp/>dt.insert(*it);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>printf(</highlight><highlight class="stringliteral">&quot;Processing:<sp/>%d/%d\n&quot;</highlight><highlight class="normal">,<sp/>++i,<sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">)points.size());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1TriangulationSecRT">
+<title>Regular Triangulations</title>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Regular__triangulation" kindref="compound">CGAL::Regular_triangulation</ref>&lt;RegularTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> derives from <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation</ref>&lt;RegularTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> and represents regular triangulations.</para>
+<para>Regular triangulations are also known as weighted Delaunay triangulations.</para>
+<para>Let <formula id="81">$ {S}^{(w)}$</formula> be a set of weighted points in <formula id="82">$ \mathbb{R}^D$</formula>. Let <formula id="83">$ {p}^{(w)}=(p,w_p), p\in\mathbb{R}^D, w_p\in\mathbb{R}$</formula> and <formula id="84">$ {z}^{(w)}=(z,w_z), z\in\mathbb{R}^D, w_z\in\mathbb{R}$</formula> be two weighted points. A weighted point <formula id="85">$ {p}^{(w)}=(p,w_p)$</formula> can also be seen as a sphere of center <formula id="3">$ p$</formula> and radius <formula id="86">$ \sqrt{w_p}$</formula>. The <emphasis>power product</emphasis> (or <emphasis>power distance</emphasis> ) between <formula id="87">$ {p}^{(w)}$</formula> and <formula id="88">$ {z}^{(w)}$</formula> is defined as <formula id="89">\[ \Pi({p}^{(w)},{z}^{(w)}) = {\|{p-z}\|^2-w_p-w_z} \]</formula> where <formula id="90">$ \|{p-z}\|$</formula> is the Euclidean distance between <formula id="3">$ p$</formula> and <formula id="91">$ z$</formula>. <formula id="87">$ {p}^{(w)}$</formula> and <formula id="88">$ {z}^{(w)}$</formula> are said to be <emphasis>orthogonal</emphasis> if <formula id="92">$ \Pi({p}^{(w)},{z}^{(w)})
+= 0$</formula>.</para>
+<para><formula id="93">$D + 1$</formula> weighted points have a unique common orthogonal weighted point called the <emphasis>power sphere</emphasis>. A sphere <formula id="88">$ {z}^{(w)}$</formula> is said to be <emphasis>regular</emphasis> if <formula id="94">$ \forall {p}^{(w)}\in{S}^{(w)},
+\Pi({p}^{(w)},{z}^{(w)})\geq 0$</formula>.</para>
+<para>A triangulation of <formula id="81">$ {S}^{(w)}$</formula> is <emphasis>regular</emphasis> if the power spheres of all simplices are regular.</para>
+<para>Note that as a result, some points can be hidden and do not result in vertices in the triangulation. Those points are discarded and cannot be retrieved.</para>
+<para>A weighted point <computeroutput>p</computeroutput> is said to be in conflict with a simplex <computeroutput>s</computeroutput> if it has a negative power distance to the power sphere of <computeroutput>s</computeroutput>.</para>
+<para>Regular triangulations support insertion of weighted points, and location of a query point inside the triangulation. Note that inserting a large set of points at once is much faster than inserting the same points one by one. <simplesect kind="warning"><para>The removal of vertices is not supported yet.</para>
+</simplesect>
+<heading level="2">Implementation</heading>
+</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Regular__triangulation" kindref="compound">CGAL::Regular_triangulation</ref>&lt;RegularTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput> derives from <computeroutput><ref refid="classCGAL_1_1Triangulation" kindref="compound">CGAL::Triangulation</ref>&lt;RegularTriangulationTraits_, TriangulationDataStructure_&gt;</computeroutput>. It thus stores a model of the concept <computeroutput>TriangulationDataStructure_</computeroutput> which is instantiated with a vertex type that stores a weighted point and allows its retrieval.</para>
+<para>The template parameter <computeroutput>RegularTriangulationTraits_</computeroutput> must be a model of the concept <computeroutput><ref refid="classRegularTriangulationTraits" kindref="compound">RegularTriangulationTraits</ref></computeroutput>. It must provide the <computeroutput>Weighted_point_d</computeroutput> type as well as various geometric predicates used by the <computeroutput><ref refid="classCGAL_1_1Regular__triangulation" kindref="compound">Regular_triangulation</ref></computeroutput> class. The concept <computeroutput><ref refid="classRegularTriangulationTraits" kindref="compound">RegularTriangulationTraits</ref></computeroutput> refines the concept <computeroutput><ref refid="classTriangulationTraits" kindref="compound">TriangulationTraits</ref></computeroutput>.</para>
+<para><heading level="2">Example</heading>
+</para>
+<para>This simple example shows how to create a regular triangulation.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="regular_triangulation_8cpp-example" kindref="compound">regular_triangulation.cpp</ref> <programlisting filename="regular_triangulation.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Epick_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/point_generators_d.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Regular_triangulation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;cassert&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iterator&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;vector&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>D<sp/>=<sp/>5;<sp/><sp/><sp/><sp/></highlight><highlight class="comment">//<sp/>Dimension</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>N<sp/>=<sp/>100;<sp/><sp/></highlight><highlight class="comment">//<sp/>Number<sp/>of<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Epick__d" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_d.tag">CGAL::Epick_d&lt; CGAL::Dimension_tag&lt;D&gt;</ref><sp/>&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Regular__triangulation" kindref="compound">CGAL::Regular_triangulation&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>T;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_d<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Bare_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Weighted_point_d<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Weighted_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Instantiate<sp/>a<sp/>random<sp/>point<sp/>generator</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>CGAL::Random<sp/>rng(0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>CGAL::Random_points_in_cube_d&lt;Bare_point&gt;<sp/>Random_points_iterator;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Random_points_iterator<sp/>rand_it(D,<sp/>1.0,<sp/>rng);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Generate<sp/>N<sp/>random<sp/>points</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;Weighted_point&gt;<sp/>points;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal"><sp/>(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>i<sp/>=<sp/>0;<sp/>i<sp/>&lt;<sp/>N;<sp/>++i)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>points.push_back(Weighted_point(*rand_it++,<sp/>rng.get_double(0.,<sp/>10.)));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>T<sp/>t(D);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(t.empty());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Insert<sp/>the<sp/>points<sp/>in<sp/>the<sp/>triangulation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>t.insert(points.begin(),<sp/>points.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>assert(<sp/>t.is_valid()<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Regular<sp/>triangulation<sp/>successfully<sp/>computed:<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>t.number_of_vertices()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>vertices,<sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>t.number_of_finite_full_cells()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>finite<sp/>cells.&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1TriangulationSecPerf">
+<title>Complexity and Performances</title>
+<para>When inserting a batch of points into a Delaunay triangulation, the current implementation starts by spatially sorting the points. Then, for each point to insert, it locates it by walking in the triangulation, using the previously inserted vertex as a &quot;hint&quot;. Finally, the point is inserted. In the worst case scenario, without spatial sort, the expected complexity is <formula id="95">$O((n^{\lceil\frac{d}{2}\rceil+1})$</formula>$. When the algorithm is run on uniformly distributed points, the localization complexity is <formula id="96">$O((n^{\frac{1}{d}})$</formula>$ and the size of the triangulation is <formula id="97">$O((n)$</formula>$, which gives a complexity of <formula id="98">$O((n^{1+\frac{1}{d}})$</formula>$ for the insertion. With spatial sort and random points, one can expect a complexity of <formula id="99">$O((n\log n)$</formula>$. Please refer to <ref refid="citelist_1CITEREF_boissonnat2009Delaunay" kindref="member">[1]</ref> for more details.</para>
+<para>We provide below (<ref refid="index_1fig__Triangulationfigbenchmarks100" kindref="member">fig__Triangulationfigbenchmarks100</ref>, <ref refid="index_1fig__Triangulationfigbenchmarks1000" kindref="member">fig__Triangulationfigbenchmarks1000</ref> and <ref refid="index_1fig__triangulationfigbenchmarkchart" kindref="member">fig__triangulationfigbenchmarkchart</ref>) the performance of the Delaunay triangulation on randomly distributed points. The machine used is a PC running Windows 7 64-bits with an Intel Xeon CPU clocked at 2.80 GHz with 32GB of RAM. The program has been compiled with Microsoft Visual C++ 2013 in Release mode.</para>
+<para><anchor id="index_1fig__Triangulationfigbenchmarks100"/><center> <table rows="8" cols="13"><row>
+<entry thead="no" align="left" colspan="13"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="yes" align="right"><para>Dimension</para>
+</entry><entry thead="yes"><para>2</para>
+</entry><entry thead="yes"><para>3</para>
+</entry><entry thead="yes"><para>4</para>
+</entry><entry thead="yes"><para>5</para>
+</entry><entry thead="yes"><para>6</para>
+</entry><entry thead="yes"><para>7</para>
+</entry><entry thead="yes"><para>8</para>
+</entry><entry thead="yes"><para>9</para>
+</entry><entry thead="yes"><para>10</para>
+</entry><entry thead="yes"><para>11</para>
+</entry><entry thead="yes"><para>12 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="13"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Time (s)</para>
+</entry><entry thead="no"><para>0.003</para>
+</entry><entry thead="no"><para>0.007</para>
+</entry><entry thead="no"><para>0.03</para>
+</entry><entry thead="no"><para>0.14</para>
+</entry><entry thead="no"><para>0.56</para>
+</entry><entry thead="no"><para>2.7</para>
+</entry><entry thead="no"><para>11.3</para>
+</entry><entry thead="no"><para>45</para>
+</entry><entry thead="no"><para>185</para>
+</entry><entry thead="no"><para>686</para>
+</entry><entry thead="no"><para>2390 </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Memory (MB)</para>
+</entry><entry thead="no"><para>&lt; 1</para>
+</entry><entry thead="no"><para>&lt; 1</para>
+</entry><entry thead="no"><para>&lt; 1</para>
+</entry><entry thead="no"><para>1</para>
+</entry><entry thead="no"><para>3</para>
+</entry><entry thead="no"><para>13</para>
+</entry><entry thead="no"><para>53</para>
+</entry><entry thead="no"><para>182</para>
+</entry><entry thead="no"><para>662</para>
+</entry><entry thead="no"><para>2187</para>
+</entry><entry thead="no"><para>7156 </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Number of maximal simplices</para>
+</entry><entry thead="no"><para>184</para>
+</entry><entry thead="no"><para>487</para>
+</entry><entry thead="no"><para>1,548</para>
+</entry><entry thead="no"><para>5,548</para>
+</entry><entry thead="no"><para>19,598</para>
+</entry><entry thead="no"><para>67,102</para>
+</entry><entry thead="no"><para>230,375</para>
+</entry><entry thead="no"><para>715,984</para>
+</entry><entry thead="no"><para>2,570,623</para>
+</entry><entry thead="no"><para>7,293,293</para>
+</entry><entry thead="no"><para>21,235,615 </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Number of convex hull facets</para>
+</entry><entry thead="no"><para>14</para>
+</entry><entry thead="no"><para>66</para>
+</entry><entry thead="no"><para>308</para>
+</entry><entry thead="no"><para>1,164</para>
+</entry><entry thead="no"><para>4,410</para>
+</entry><entry thead="no"><para>16,974</para>
+</entry><entry thead="no"><para>57,589</para>
+</entry><entry thead="no"><para>238,406</para>
+</entry><entry thead="no"><para>670,545</para>
+</entry><entry thead="no"><para>2,574,326</para>
+</entry><entry thead="no"><para>8,603,589</para>
+</entry><entry thead="no"><para></para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="13"><para><hruler/>
+ </para>
+</entry></row>
+</table>
+</center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Triangulationfigbenchmarks100" kindref="member">fig__Triangulationfigbenchmarks100</ref> Performance of the insertion of 100 points in a Delaunay triangulation. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__Triangulationfigbenchmarks1000"/><center> <table rows="8" cols="9"><row>
+<entry thead="no" align="left" colspan="9"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="yes" align="right"><para>Dimension</para>
+</entry><entry thead="yes"><para>2</para>
+</entry><entry thead="yes"><para>3</para>
+</entry><entry thead="yes"><para>4</para>
+</entry><entry thead="yes"><para>5</para>
+</entry><entry thead="yes"><para>6</para>
+</entry><entry thead="yes"><para>7</para>
+</entry><entry thead="yes"><para>8 </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="9"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Time (s)</para>
+</entry><entry thead="no"><para>0.01</para>
+</entry><entry thead="no"><para>0.05</para>
+</entry><entry thead="no"><para>0.5</para>
+</entry><entry thead="no"><para>3.4</para>
+</entry><entry thead="no"><para>24</para>
+</entry><entry thead="no"><para>183</para>
+</entry><entry thead="no"><para>1365 </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Memory (MB)</para>
+</entry><entry thead="no"><para>&lt; 1</para>
+</entry><entry thead="no"><para>&lt; 1</para>
+</entry><entry thead="no"><para>2.7</para>
+</entry><entry thead="no"><para>14</para>
+</entry><entry thead="no"><para>81</para>
+</entry><entry thead="no"><para>483</para>
+</entry><entry thead="no"><para>2827 </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Number of maximal simplices</para>
+</entry><entry thead="no"><para>1,979</para>
+</entry><entry thead="no"><para>6,315</para>
+</entry><entry thead="no"><para>25,845</para>
+</entry><entry thead="no"><para>122,116</para>
+</entry><entry thead="no"><para>596,927</para>
+</entry><entry thead="no"><para>3,133,318</para>
+</entry><entry thead="no"><para>16,403,337 </para>
+</entry></row>
+<row>
+<entry thead="no" align="right"><para>Number of convex hull facets</para>
+</entry><entry thead="no"><para>19</para>
+</entry><entry thead="no"><para>138</para>
+</entry><entry thead="no"><para>963</para>
+</entry><entry thead="no"><para>6,184</para>
+</entry><entry thead="no"><para>41,135</para>
+</entry><entry thead="no"><para>241,540</para>
+</entry><entry thead="no"><para>1,406,797</para>
+</entry><entry thead="no"><para></para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="9"><para><hruler/>
+ </para>
+</entry></row>
+</table>
+</center> <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly> <ref refid="index_1fig__Triangulationfigbenchmarks1000" kindref="member">fig__Triangulationfigbenchmarks1000</ref> Performance of the insertion of 1000 points in a Delaunay triangulation. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__triangulationfigbenchmarkchart"/> <image type="html" name="benchmark_DTd.png"></image>
+ <image type="latex" name="benchmark_DTd.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__triangulationfigbenchmarkchart" kindref="member">fig__triangulationfigbenchmarkchart</ref> Running time wrt. number of maximal simplices, for dimensions for 2 to 12. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1TriangulationSecDesign">
+<title>Design and Implementation History</title>
+<para>Starting with the version 2.3 of CGAL, a package written by Susan Hert and Michael Seel was the first able to deal with triangulation and convex hulls in arbitrary dimension. It is deprecated since the version 4.6 of CGAL and this package should be used instead.</para>
+<para>This package is heavily inspired by the works of Monique Teillaud and Sylvain Pion (<computeroutput><ref refid="classCGAL_1_1Triangulation__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_3.tag">Triangulation_3</ref></computeroutput>) and Mariette Yvinec (<computeroutput><ref refid="classCGAL_1_1Triangulation__2" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Triangulation_2.tag">Triangulation_2</ref></computeroutput>). The first version was written by Samuel Hornus. The final version is a joint work by Samuel Hornus, Olivier Devillers and Clément Jamin. In 2017, Clément Jamin added the regular triangulations.</para>
+<para>Clément Jamin&apos;s work was supported by the <ulink url="https://cordis.europa.eu/project/id/339025">Advanced Grant of the European Research Council GUDHI</ulink> (Geometric Understanding in Higher Dimensions). </para>
+</sect1>
+    </detaileddescription>
+    <location file="Triangulation.txt"/>
+  </compounddef>
+</doxygen>

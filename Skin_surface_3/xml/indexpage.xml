@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_3D_Skin_Surface_Meshing"/><anchor id="index_1chapterSkinSurface"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="author"><para>Nico Kruithof</para>
+</simplesect>
+<image type="html" name="molecule.png"></image>
+ <image type="latex" name="molecule.png"></image>
+</para>
+<sect1 id="index_1sectionSkinSurfaceIntro">
+<title>Introduction</title>
+<para>Skin surfaces, introduced by Edelsbrunner in <ref refid="citelist_1CITEREF_cgal:e-dssd-99" kindref="member">[1]</ref>, have a rich and simple combinatorial and geometric structure that makes them suitable for modeling large molecules in biological computing. Meshing such surfaces is often required for further processing of their geometry, like in numerical simulation and visualization.</para>
+<para>A skin surface is defined by a set of weighted points (input balls) and a scalar called the shrink factor. If the shrink factor is equal to one, the surface is just the boundary of the union of the input balls. For a shrink factor smaller than one, the skin surface becomes tangent continuous, due to the appearance of patches of spheres and hyperboloids connecting the balls.</para>
+<para>This package constructs a mesh isotopic to the skin surface defined by a set of balls and a shrink factor using the algorithm described in <ref refid="citelist_1CITEREF_cgal:kv-mssct-05" kindref="member">[2]</ref>.</para>
+<para>An optimized algorithm is implemented for meshing the union of a set of balls.</para>
+</sect1>
+<sect1 id="index_1secskindefinition">
+<title>Definition of a Skin Surface</title>
+<para><anchor id="index_1fig__figtwoPoints"/> <image type="html" name="convexTwoPoints.png"></image>
+ <image type="latex" name="convexTwoPoints.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__figtwoPoints" kindref="member">fig__figtwoPoints</ref> Left: Convex combinations of two weighted points (the two dashed circles). Right: The skin curve of the weighted points. The smaller circles form a subset of the weighted points whose boundary is the skin curve. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>This section first briefly reviews skin surfaces. For a more thorough introduction to skin surfaces, we refer to <ref refid="citelist_1CITEREF_cgal:e-dssd-99" kindref="member">[1]</ref> where they were originally introduced.</para>
+<para>A skin surface is defined in terms of a finite set of weighted points <formula id="3">$ \ssWpoint{P}$</formula> and a shrink factor <formula id="2">$ s$</formula>, with <formula id="4">$ 0\leq s\leq 1$</formula>. A weighted point <formula id="5">$ \ssWpoint{p}=({p},\ssWeight{p})\in \mathbb{R}^3\times\mathbb{R}$</formula> corresponds to a ball with center <formula id="6">$ {p}$</formula> and radius <formula id="7">$ \sqrt{\ssWeight{p}}$</formula>. A weighted point with zero weight is called an unweighted point.</para>
+<para>A pseudo distance between a weighted point <formula id="8">$ \ssWpoint{p} =
+(p,\ssWeight{P})$</formula> and an unweighted point <formula id="9">$ x$</formula> is defined as  <formula id="10">\[
+\pi(\ssWpoint{p},x) = \dabs{p-x}^2 - \ssWeight{p},
+\]</formula> where <formula id="11">$ \dabs{p-x}$</formula> is the Euclidean distance between <formula id="12">$ p$</formula> and <formula id="9">$ x$</formula>. The ball corresponding to a weighted point <formula id="13">$ \ssWpoint{p}$</formula> is the zero set of <formula id="14">$ \pi(\ssWpoint{p},\cdot)$</formula>. Note that if <formula id="15">$ \ssWeight{p}&lt;0$</formula> the radius of the ball is imaginary and the zero-set is empty.</para>
+<para>We can take convex combinations of weighted points by taking convex combinations of their distance functions. <ref refid="index_1fig__figtwoPoints" kindref="member">fig__figtwoPoints</ref> (left) shows weighted points that are obtained as convex combinations of the dashed circles. For further reading on the space of circles and spheres we refer to <ref refid="citelist_1CITEREF_p-gcc-70" kindref="member">[3]</ref>.</para>
+<para>Starting from a weighted point <formula id="16">$ \ssWpoint{p}=({p},\ssWeight{P})$</formula>, the shrunk weighted point <formula id="17">$ \ssWpoint{p}^s$</formula> is obtained by taking a convex combination with the unweighted point centered at <formula id="12">$ p$</formula>, formally <formula id="18">$ \ssWpoint{p}^s = s \ssWpoint{p} + (1-s) \ssWpoint{p}&apos;$</formula>, with <formula id="19">$ \ssWpoint{p}&apos;=(p,0)$</formula>. A simple calculation shows that, <formula id="20">$ \ssWpoint{p}^s = ({p},s\cdot \ssWeight{p})$</formula>. The set <formula id="21">$ \ssWpoint{P}^s$</formula> is the set obtained by shrinking every weighted point of <formula id="3">$ \ssWpoint{P}$</formula> by a factor <formula id="2">$ s$</formula>: <formula id="22">$ \ssWpoint{P}^s = \{\ssWpoint{p}^s
+\mid \ssWpoint{p}\in \ssWpoint{P}\}$</formula>. The shrunk weighted points of <ref refid="index_1fig__figtwoPoints" kindref="member">fig__figtwoPoints</ref> (left) are shown in <ref refid="index_1fig__figtwoPoints" kindref="member">fig__figtwoPoints</ref> (right).</para>
+<para>We now define the skin surface <formula id="23">$ \mbox{skn}^{s}(\ssWpoint{P})$</formula> associated with a set of weighted points <formula id="3">$ \ssWpoint{P}$</formula>. Consider the set of weighted points obtained by taking the convex hull of the input weighted points. A calculation shows that every weighted point lies within the union of the input balls. Next, we shrink each weighted point in the convex hull with the shrink factor <formula id="2">$ s$</formula>. Hence, we multiply the radius of the corresponding (real) input circles with a factor <formula id="24">$ \sqrt{s}$</formula>. The skin surface is the boundary of the union of this set of weighted points:</para>
+<para><anchor id="index_1eqdefskin"/> <formula id="25">\begin{eqnarray}
+\mbox{skn}^{s}(\ssWpoint{P})
+&amp;=&amp; \partial\;{\bigcup\{\ssWpoint{p}^s\mid
+\ssWpoint{p}\in \mbox{conv} (\ssWpoint{P})\}}.
+\end{eqnarray}</formula></para>
+<para>Here <formula id="26">$ \mbox{conv}(\ssWpoint{P}) \subset \mathbb{R}^3\times\mathbb{R}$</formula> is the convex hull of a set of weighted points <formula id="3">$ \ssWpoint{P}$</formula>, whereas <formula id="27">$ \partial$</formula> denotes the boundary - in <formula id="28">$ \mathbb{R}^3$</formula> - of the union of the corresponding set of balls.</para>
+<para>Recall that each weighted point in the convex hull of the input weighted points is contained in the union of the input weighted points. Hence, for a shrink factor equal to one, the skin surface is the boundary of the union of the input weighted points.</para>
+<para>By definition of a skin surface, the weights of the input balls (their radius-squared) are shrunk with a factor of <formula id="2">$ s$</formula> and the skin surface wraps around the shrunk input balls. In order to make the skin surface wrap around the (unshrunk) input balls, we can first increase the weights of the input balls by multiplying them with a factor <formula id="29">$ 1/s$</formula> and then compute the skin surface.</para>
+</sect1>
+<sect1 id="index_1Skin_surface_3The">
+<title>The Interface</title>
+<para>The interface to the skin surface package consists of one main function, taking a set of weighted points and a shrink factor and outputting the meshed surface. Further, it defines classes and functions and classed used to perform the main steps of the algorithm. There are two global classes <computeroutput><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref></computeroutput> and <computeroutput><ref refid="classCGAL_1_1Union__of__balls__3" kindref="compound">Union_of_balls_3</ref></computeroutput> both of which are models of the concept <computeroutput><ref refid="classSkinSurface__3" kindref="compound">SkinSurface_3</ref></computeroutput> and there are two functions to extract a mesh of the skin surface (union of balls) from the objects of the aforementioned classes. A final function takes a mesh and the <computeroutput><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref></computeroutput> (<computeroutput><ref refid="classCGAL_1_1Union__of__balls__3" kindref="compound">Union_of_balls_3</ref></computeroutput>) object it is constructed from and refines the mesh. This section describes these classes and functions in more detail.</para>
+<para>The main function of the skin surface package takes an iterator range of weighted points, a shrink factor and the number of subdivision steps and outputs a mesh in a <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref></computeroutput>:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>WP_iterator,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Polyhedron_3&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgSkinSurface3Ref_1ga14115b130eb6f75991d80c7ae2d1b233" kindref="member">make_skin_surface_mesh_3</ref>(<ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref><sp/>&amp;p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>WP_iterator<sp/>begin,<sp/>WP_iterator<sp/>end,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT<sp/>shrink_factor=.5,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>nSubdiv=0,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>grow_balls<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+</programlisting></para>
+<para>Where, <computeroutput>FT</computeroutput> is the number type used by the <computeroutput>Weighted_points</computeroutput>.</para>
+<para>To obtain more control over the algorithm, the different steps can also be performed separately. First, a <computeroutput><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref></computeroutput> object is created from an iterator range of weighted points and a shrink factor. Optional arguments are a boolean telling whether the input weighted points should be grown in such a way that the skin surface wraps around the input balls instead of the shrunk input balls.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>SkinSurfaceTraits_3&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref>(WP_iterator<sp/>begin,<sp/>WP_iterator<sp/>end,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT<sp/>shrink_factor,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>grow_balls<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+</programlisting></para>
+<para>The template parameter should implement the <computeroutput><ref refid="classSkinSurfaceTraits__3" kindref="compound">SkinSurfaceTraits_3</ref></computeroutput> concept. The type <computeroutput>WP_iterator</computeroutput>, is an iterator over weighted points as defined by <computeroutput><ref refid="classSkinSurfaceTraits__3" kindref="compound">SkinSurfaceTraits_3</ref></computeroutput> and <computeroutput>FT</computeroutput> is the number type used by the weighted points.</para>
+<para>For a shrink factor equal to one the skin surface is the boundary of the union of the input balls. In this case the algorithm used for meshing the skin surface greatly simplifies. These optimizations are implemented in the class <computeroutput><ref refid="classCGAL_1_1Union__of__balls__3" kindref="compound">Union_of_balls_3</ref></computeroutput>. The constructor for the union of balls class is similar, except for the missing shrink factor:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>SkinSurfaceTraits_3&gt;</highlight></codeline>
+<codeline><highlight class="normal"><ref refid="classCGAL_1_1Union__of__balls__3" kindref="compound">Union_of_balls_3</ref>(WP_iterator<sp/>begin,<sp/>WP_iterator<sp/>end,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>grow_balls<sp/>=<sp/></highlight><highlight class="keyword">true</highlight><highlight class="normal">);</highlight></codeline>
+</programlisting></para>
+<para>With a model of the concept <computeroutput><ref refid="classSkinSurface__3" kindref="compound">SkinSurface_3</ref></computeroutput> it is possible to generate a coarse mesh isotopic to the skin surface. Using the function <computeroutput><ref refid="group__PkgSkinSurface3Ref_1gaf8672dd3f39e8d918bb25153054e8517" kindref="member">mesh_skin_surface_3()</ref></computeroutput> with signature:</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>SkinSurface_3,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Polyhedron&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgSkinSurface3Ref_1gaf8672dd3f39e8d918bb25153054e8517" kindref="member">mesh_skin_surface_3</ref>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classSkinSurface__3" kindref="compound">SkinSurface_3</ref><sp/>&amp;skin_surface,<sp/>Polyhedron<sp/>&amp;p);</highlight></codeline>
+</programlisting></para>
+<para>The last function takes the (coarse) mesh and subdivides it in-situ by applying a given number of 1-4 split operations (each triangle is split into four sub-triangles) and moving the new vertices towards the skin surface. If the number of iterations is not specified, one subdivision step is done. The object of the <computeroutput><ref refid="classSkinSurface__3" kindref="compound">SkinSurface_3</ref></computeroutput> concept used to construct the coarse mesh is needed to move new points on the skin surface.</para>
+<para><programlisting filename=".cpp"><codeline><highlight class="keyword">template</highlight><highlight class="normal"><sp/>&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>SkinSurface_3,<sp/></highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>Polyhedron<sp/>&gt;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/><ref refid="group__PkgSkinSurface3Ref_1ga9ca985264fb20beb8d7da6ab2cfb1bdd" kindref="member">subdivide_skin_surface_mesh_3</ref><sp/>(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/><ref refid="classSkinSurface__3" kindref="compound">SkinSurface_3</ref><sp/>&amp;skinsurface,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron<sp/>&amp;p,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>iterations<sp/>=<sp/>1);</highlight></codeline>
+</programlisting></para>
+</sect1>
+<sect1 id="index_1Skin_surface_3Timings">
+<title>Timings</title>
+<para>The timings of the construction of the coarse mesh and the first subdivision are given in seconds and were done on a Pentium 4, 3.5 GHz, with 1 Gb of memory. <center> <table rows="6" cols="4"><row>
+<entry thead="no" align="left" colspan="4"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Data set </para>
+</entry><entry thead="no" align="center"><para>Number of weighted points </para>
+</entry><entry thead="no" align="center"><para>Coarse mesh </para>
+</entry><entry thead="no" align="center"><para>first subdivision step </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="4"><para><hruler/>
+ </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Caffeine </para>
+</entry><entry thead="no" align="center"><para>23 </para>
+</entry><entry thead="no" align="center"><para>0.2 sec. </para>
+</entry><entry thead="no" align="center"><para>0.05 sec. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left"><para>Gramicidin A </para>
+</entry><entry thead="no" align="center"><para>318 </para>
+</entry><entry thead="no" align="center"><para>5 sec. </para>
+</entry><entry thead="no" align="center"><para>2 sec. </para>
+</entry></row>
+<row>
+<entry thead="no" align="left" colspan="4"><para><hruler/>
+ </para>
+</entry></row>
+</table>
+</center></para>
+<para><center></center></para>
+</sect1>
+<sect1 id="index_1Skin_surface_3Example">
+<title>Example Programs</title>
+<sect2 id="index_1Skin_surface_3MeshingaSkinSurface">
+<title>Meshing a Skin Surface</title>
+<para>The following example shows the construction of a coarse mesh of the skin surface using the function <computeroutput><ref refid="group__PkgSkinSurface3Ref_1ga14115b130eb6f75991d80c7ae2d1b233" kindref="member">make_skin_surface_mesh_3()</ref></computeroutput>. The output is a <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref></computeroutput>. <linebreak/>
+<bold>File</bold> <ref refid="Skin_surface_3_2skin_surface_simple_8cpp-example" kindref="compound">Skin_surface_3/skin_surface_simple.cpp</ref> <programlisting filename="Skin_surface_3/skin_surface_simple.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/make_skin_surface_mesh_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Bare_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>K::Weighted_point_3<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Weighted_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Weighted_point&gt;<sp/>l;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shrinkfactor<sp/>=<sp/>0.5;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(<sp/>1,-1,-1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(<sp/>1,<sp/>1,<sp/>1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(-1,<sp/>1,-1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(-1,-1,<sp/>1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>p;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSkinSurface3Ref_1ga14115b130eb6f75991d80c7ae2d1b233" kindref="member">CGAL::make_skin_surface_mesh_3</ref>(p,<sp/>l.begin(),<sp/>l.end(),<sp/>shrinkfactor);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect2>
+<sect2 id="index_1Skin_surface_3MeshingandSubdividingaSkin">
+<title>Meshing and Subdividing a Skin Surface</title>
+<para>The following example shows the construction of mesh of the skin surface by explicitly performing different steps of the algorithm. It first constructs a <computeroutput><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref></computeroutput> object from an iterator range of weighted points and a shrink factor. From this object, the coarse mesh isotopic to the skin surface is extracted using the function <computeroutput><ref refid="group__PkgSkinSurface3Ref_1gaf8672dd3f39e8d918bb25153054e8517" kindref="member">mesh_skin_surface_3()</ref></computeroutput></para>
+<para>Next, the coarse mesh is refined to obtain a better approximation. The use of <computeroutput><ref refid="structCGAL_1_1Skin__surface__polyhedral__items__3" kindref="compound">Skin_surface_polyhedral_items_3</ref>&lt;<ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref>&gt;</computeroutput> in the <computeroutput><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">Polyhedron_3</ref></computeroutput> is not necessary, but gives the subdivision a significant speedup. <linebreak/>
+<bold>File</bold> <ref refid="Skin_surface_3_2skin_surface_subdiv_8cpp-example" kindref="compound">Skin_surface_3/skin_surface_subdiv.cpp</ref> <programlisting filename="Skin_surface_3/skin_surface_subdiv.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Exact_predicates_inexact_constructions_kernel.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Skin_surface_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/mesh_skin_surface_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/subdivide_skin_surface_mesh_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&quot;skin_surface_writer.h&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;list&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Exact__predicates__inexact__constructions__kernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Exact_predicates_inexact_constructions_kernel</ref><sp/>K;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Skin__surface__traits__3" kindref="compound">CGAL::Skin_surface_traits_3&lt;K&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Traits;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">CGAL::Skin_surface_3&lt;Traits&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skin_surface_3::FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>FT;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skin_surface_3::Bare_point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Bare_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Skin_surface_3::Weighted_point<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Weighted_point;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3</ref>&lt;K,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="structCGAL_1_1Skin__surface__polyhedral__items__3" kindref="compound">CGAL::Skin_surface_polyhedral_items_3&lt;Skin_surface_3&gt;</ref><sp/>&gt;<sp/><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::list&lt;Weighted_point&gt;<sp/>l;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>FT<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>shrinkfactor<sp/>=<sp/>0.5;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(<sp/>1,-1,-1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(<sp/>1,<sp/>1,<sp/>1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(-1,<sp/>1,-1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>l.push_front(Weighted_point(Bare_point(-1,-1,<sp/>1),<sp/>1.25));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>p;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Skin__surface__3" kindref="compound">Skin_surface_3</ref><sp/>skin_surface(l.begin(),<sp/>l.end(),<sp/>shrinkfactor);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSkinSurface3Ref_1gaf8672dd3f39e8d918bb25153054e8517" kindref="member">CGAL::mesh_skin_surface_3</ref>(skin_surface,<sp/>p);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__PkgSkinSurface3Ref_1ga9ca985264fb20beb8d7da6ab2cfb1bdd" kindref="member">CGAL::subdivide_skin_surface_mesh_3</ref>(skin_surface,<sp/>p);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>out(</highlight><highlight class="stringliteral">&quot;mesh.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>out<sp/>&lt;&lt;<sp/>p;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>0;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting> </para>
+</sect2>
+</sect1>
+    </detaileddescription>
+    <location file="Skin_surface_3.txt"/>
+  </compounddef>
+</doxygen>

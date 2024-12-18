@@ -1,0 +1,26 @@
+var group__PkgBGLIterators =
+[
+    [ "CGAL::Halfedge_around_source_iterator< Graph >", "classCGAL_1_1Halfedge__around__source__iterator.html", null ],
+    [ "CGAL::Halfedge_around_target_iterator< Graph >", "classCGAL_1_1Halfedge__around__target__iterator.html", null ],
+    [ "CGAL::Halfedge_around_face_iterator< Graph >", "classCGAL_1_1Halfedge__around__face__iterator.html", null ],
+    [ "CGAL::Halfedge_around_source_circulator< Graph >", "classCGAL_1_1Halfedge__around__source__circulator.html", null ],
+    [ "CGAL::Face_around_target_circulator< Graph >", "classCGAL_1_1Face__around__target__circulator.html", null ],
+    [ "CGAL::Halfedge_around_target_circulator< Graph >", "classCGAL_1_1Halfedge__around__target__circulator.html", null ],
+    [ "CGAL::Halfedge_around_face_circulator< Graph >", "classCGAL_1_1Halfedge__around__face__circulator.html", null ],
+    [ "CGAL::Face_around_face_iterator< Graph >", "classCGAL_1_1Face__around__face__iterator.html", null ],
+    [ "CGAL::Face_around_face_circulator< Graph >", "classCGAL_1_1Face__around__face__circulator.html", null ],
+    [ "CGAL::Face_around_target_iterator< Graph >", "classCGAL_1_1Face__around__target__iterator.html", null ],
+    [ "CGAL::Vertex_around_face_circulator< Graph >", "classCGAL_1_1Vertex__around__face__circulator.html", null ],
+    [ "CGAL::Vertex_around_face_iterator< Graph >", "classCGAL_1_1Vertex__around__face__iterator.html", null ],
+    [ "CGAL::Vertex_around_target_circulator< Graph >", "classCGAL_1_1Vertex__around__target__circulator.html", null ],
+    [ "CGAL::Vertex_around_target_iterator< Graph >", "classCGAL_1_1Vertex__around__target__iterator.html", null ],
+    [ "CGAL::faces_around_face", "group__PkgBGLIterators.html#ga090f3972124e2903cb6eb75f8030b057", null ],
+    [ "CGAL::faces_around_target", "group__PkgBGLIterators.html#ga551e06d4affaea4bbca26e0bc6caaa80", null ],
+    [ "CGAL::halfedges_around_face", "group__PkgBGLIterators.html#gaf157993cd9a52470eb96b12bcc0b67ab", null ],
+    [ "CGAL::halfedges_around_source", "group__PkgBGLIterators.html#ga3675a081c929f2eeee6d61b1b566a75d", null ],
+    [ "CGAL::halfedges_around_source", "group__PkgBGLIterators.html#ga73b7bf276082f2ffc8e77ad9dab5bfc5", null ],
+    [ "CGAL::halfedges_around_target", "group__PkgBGLIterators.html#ga295060a50555471eab7f24addbb9bb49", null ],
+    [ "CGAL::halfedges_around_target", "group__PkgBGLIterators.html#ga0d31ecafc7eb5c2454d6ed7034e60c97", null ],
+    [ "CGAL::vertices_around_face", "group__PkgBGLIterators.html#gabbe82508d78c7c81bf76c2f0dcfd5c9a", null ],
+    [ "CGAL::vertices_around_target", "group__PkgBGLIterators.html#ga477bd0c7c02e1d9096d18a61e38a3b13", null ]
+];

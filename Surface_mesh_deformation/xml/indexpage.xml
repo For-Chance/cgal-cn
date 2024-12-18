@@ -1,0 +1,783 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.6" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>User Manual</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1Chapter_SurfaceMeshDeformation"/> <htmlonly block="yes"> &lt;div id=&quot;autotoc&quot; class=&quot;toc&quot;&gt;&lt;/div&gt; </htmlonly> <simplesect kind="authors"><para>Sébastien Loriot, Olga Sorkine-Hornung, Yin Xu and Ilker O. Yaz</para>
+</simplesect>
+<image type="latex" name="main_image_suggestion_4_resized.png"></image>
+ <image type="html" name="main_image_suggestion_4_resized.png"></image>
+</para>
+<sect1 id="index_1SMD_Intro">
+<title>Introduction</title>
+<para>This package offers surface mesh deformation algorithms which compute new vertex positions of a surface mesh under positional constraints of some of its vertices, without requiring any additional structure other than the surface mesh itself</para>
+<para>This package implements the algorithm described in <ref refid="citelist_1CITEREF_Sorkine2007AsRigidAs" kindref="member">[6]</ref> together with an alternative energy function <ref refid="citelist_1CITEREF_Chao2010SimpleGeomModel" kindref="member">[3]</ref>. The algorithm minimizes a nonlinear deformation energy under positional constraints to preserve rigidity as much as possible. The minimization of the energy relies on solving sparse linear systems and finding closest rotation matrices.</para>
+</sect1>
+<sect1 id="index_1SMD_Def">
+<title>Definitions</title>
+<para>A <emphasis>surface mesh deformation system</emphasis> consists of:<itemizedlist>
+<listitem><para>a triangulated surface mesh (<emphasis>surface mesh</emphasis> in the following),</para>
+</listitem><listitem><para>a set of vertices defining the region to deform (referred to as the <emphasis>region-of-interest</emphasis> and abbreviated <emphasis>ROI</emphasis>),</para>
+</listitem><listitem><para>a subset of vertices from the ROI that the user wants to move (referred to as the <emphasis>control vertices</emphasis>),</para>
+</listitem><listitem><para>a target position for each control vertex (defining the <emphasis>deformation constraints</emphasis>).</para>
+</listitem></itemizedlist>
+</para>
+<para>A vertex from the ROI that is not a control vertex is called an <emphasis>unconstrained vertex</emphasis>. These definitions are depicted in <ref refid="index_1fig__Simple_roi" kindref="member">fig__Simple_roi</ref>.</para>
+<para><anchor id="index_1fig__Simple_roi"/> <image type="html" name="roi_example.png"></image>
+ <image type="latex" name="roi_example.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Simple_roi" kindref="member">fig__Simple_roi</ref> The ROI features the green vertices (the unconstrained vertices) and the red vertices (the control vertices). (Left) The initial surface mesh; (Right) A target position is defined for each control vertex, the coordinates of the unconstrained vertices being updated by the deformation algorithm. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>In this package, three algorithms are implemented:<itemizedlist>
+<listitem><para>The <emphasis>As-Rigid-As-Possible</emphasis> (<emphasis>ARAP</emphasis>) method <ref refid="citelist_1CITEREF_Sorkine2007AsRigidAs" kindref="member">[6]</ref>;</para>
+</listitem><listitem><para>The <emphasis>Spokes and Rims</emphasis> method <ref refid="citelist_1CITEREF_Chao2010SimpleGeomModel" kindref="member">[3]</ref>;</para>
+</listitem><listitem><para>The <emphasis>Smoothed Rotation Enhanced As-Rigid-As-Possible</emphasis> method <ref refid="citelist_1CITEREF_levismooth" kindref="member">[4]</ref></para>
+</listitem></itemizedlist>
+</para>
+<para>Given an edge weighting scheme, both methods iteratively minimize an energy function and produce a different surface mesh at each step until convergence is reached.</para>
+<para><emphasis>Spokes and Rims</emphasis> is the default method proposed by the package. It provides an unconditional convergence while the <emphasis>ARAP</emphasis> method requires the edge weights to be positive. However, the results obtained using the <emphasis>Spokes and Rims</emphasis> method are more dependent on the discretization of the deformed surface (See <ref refid="index_1fig__Arap_spokes_comparison" kindref="member">fig__Arap_spokes_comparison</ref>).</para>
+<para>The <emphasis>Smoothed Rotation Enhanced As-Rigid-As-Possible</emphasis> method adds a bending term to the ARAP energy that penalizes rotation difference between neighboring elements. In the current implementation a 1-ring type element is used while in general it is possible to use a triangle type element.</para>
+<para>More details on these algorithms are provided in section <ref refid="index_1SMD_Overview" kindref="member">Deformation Techniques, Energies and Weighting Schemes</ref>.</para>
+<para><anchor id="index_1fig__Arap_spokes_comparison"/> <image type="html" name="arap_spokes_comparison.png"></image>
+ <image type="latex" name="arap_spokes_comparison.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Arap_spokes_comparison" kindref="member">fig__Arap_spokes_comparison</ref> A comparison between the As-Rigid-As-Possible and the Spokes and Rims deformation methods. On the surface mesh of a square with spikes depicted on the left, the ROI consists of the green vertices. The control vertices are the red ones. We translate the control vertices along the normal to the plane and observe the result produced by the As-Rigid-As-Possible (center) and the Spokes and Rims (right) methods from the same view point. The latter method provides unconditional convergence does not produce a symmetric result. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para><anchor id="index_1fig__sr_arap_comparison"/> <image type="html" name="sr_arap_comparison.png"></image>
+ <image type="latex" name="sr_arap_comparison.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__sr_arap_comparison" kindref="member">fig__sr_arap_comparison</ref> A comparison on a 5261 vertices cactus model (left) between the As-Rigid-As-Possible (middle) and the Smoothed Rotation Enhanced As-Rigid-As-Possible (right). <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect1>
+<sect1 id="index_1SMD_API">
+<title>User Interface Description</title>
+<para>The deformation methods implemented rely on solving a sparse linear system. The sparse matrix definition depends on the weighting scheme and on the unconstrained and control vertices. The right term depends only on the target positions of the control vertices.</para>
+<para>The deformation process is handled by the class <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">Surface_mesh_deformation</ref></computeroutput> and the surface mesh is represented as a halfedge data structure that must be a model of the <computeroutput><ref refid="classHalfedgeGraph" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">HalfedgeGraph</ref></computeroutput> concept.</para>
+<para>The class <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">Surface_mesh_deformation</ref></computeroutput> provides two groups of functions for the preprocessing (sparse matrix definition) and the deformation (right hand term definition).</para>
+<sect2 id="index_1Preprocess_section">
+<title>Preprocessing</title>
+<para>The preprocessing consists in computing a factorization of the aforementioned sparse matrix to speed up the linear system resolution. It requires the ROI to be defined. The following conventions are used for the definition of the ROI:<itemizedlist>
+<listitem><para>A vertex inserted in the set of control vertices is inserted in the ROI;</para>
+</listitem><listitem><para>A control vertex erased from the ROI is no longer considered as a control vertex;</para>
+</listitem><listitem><para>A control vertex that is erased is not erased from the ROI.</para>
+</listitem></itemizedlist>
+</para>
+<para>Each time the ROI is modified, the preprocessing function <computeroutput>preprocess()</computeroutput> must be called. Note that if it is not done, the first deformation step calls this function automatically and has a longer runtime compared to subsequent deformation steps.</para>
+<para>The function <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation_1a2a5d0a54eaa217bc5bb19d96c30abb30" kindref="member">Surface_mesh_deformation::preprocess()</ref></computeroutput> returns <computeroutput>true</computeroutput> if the factorization is successful, and <computeroutput>false</computeroutput> otherwise.</para>
+<para>Rank deficiency is the main reason for failure. Typical failure cases are:<itemizedlist>
+<listitem><para>All the vertices are in the ROI and no control vertices are set</para>
+</listitem><listitem><para>The weighting scheme used to fill the sparse matrix (model of <computeroutput><ref refid="classSurfaceMeshDeformationWeights" kindref="compound">SurfaceMeshDeformationWeights</ref></computeroutput>) features too many zeros and breaks the connectivity information</para>
+</listitem></itemizedlist>
+</para>
+<para><htmlonly block="yes"> &lt;div class=&quot;CGALAdvanced&quot;&gt; &lt;div&gt;Advanced&lt;/div&gt; </htmlonly></para>
+<para>The choice of the weighting scheme provides a mean to adjust the way the control vertices influences the unconstrained vertices. The defaults provides satisfactory results in general but other weighting schemes may be selected or designed to experiment or improve the results in specific cases. <htmlonly block="yes"> &lt;/div&gt; </htmlonly></para>
+<para><simplesect kind="note"><para>The ROI does not have to be a connected component of the graph of the surface mesh. However, for better performances it is better to use an individual instance of the deformation object for each connected component.</para>
+</simplesect>
+</para>
+</sect2>
+<sect2 id="index_1Deform_section">
+<title>Deformation</title>
+<para>The deformation of the surface mesh is triggered by the displacement of the control vertices. This is achieved through setting the target positions of the control vertices (directly or by using an affine transformation to be applied to a control vertex or a range of control vertices).</para>
+<para>Note that a rotation or a translation of a control vertex is always applied on its last target position set: they are cumulative.</para>
+<para>The deformation of the surface mesh happens when calling the function <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation_1a07d253510d806605b15740c7d7844bea" kindref="member">Surface_mesh_deformation::deform()</ref></computeroutput>. The number of optimization iterations varies depending on whether the user chooses a fixed number of iterations or a stopping criterion based on the energy variation.</para>
+<para>After the call to the deformation function, the input surface mesh is updated and the control vertices are at their target positions and the unconstrained vertices are moved accordingly. The function <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation_1a07d253510d806605b15740c7d7844bea" kindref="member">Surface_mesh_deformation::deform()</ref></computeroutput> can be called several times consecutively, in particular if the convergence has not been reached yet (otherwise it has no effect).</para>
+<para><simplesect kind="warning"><para>Vertices can be inserted into or erased from the ROI and the set of control vertices at any time. In particular, any vertex that is no longer inside the ROI will be assigned to its original position when <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation_1a2a5d0a54eaa217bc5bb19d96c30abb30" kindref="member">Surface_mesh_deformation::preprocess()</ref></computeroutput> is first called. The original positions can be updated by calling <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation_1a3c16fed59b7cf7c65acd4eaa371046f6" kindref="member">Surface_mesh_deformation::overwrite_initial_geometry()</ref></computeroutput> ( which will also require a new preprocessing step). This behavior is illustrated in <ref refid="index_1SModelingVideo_1" kindref="member">Video 1</ref>.</para>
+</simplesect>
+</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_deformation_arap_or_spokes_and_rims">
+<title>As-Rigid-As-Possible and Spokes-and-Rims Deformation Techniques</title>
+<para>Three deformation techniques are provided by this package. This section summarizes from the user point of view what is explained in details in the section <ref refid="index_1SMD_Overview" kindref="member">Deformation Techniques, Energies and Weighting Schemes</ref>.</para>
+<para>The As-Rigid-As-Possible deformation techniques require the use of a positive weighting scheme to guarantee the correct minimization of the energy. When using the default cotangent weighting scheme, this means that the input surface mesh must be <emphasis>clean</emphasis>. That is, that for all edges in the surface mesh the sum of the angles opposite to the edge in the incident triangles is less that <formula id="0">$ \pi $</formula>. If this is not the case and the targeted application allows the modification of the surface mesh connectivity, a solution (amongst other) is to bissect (possibly recursively) the problematic edges. See <ref refid="index_1fig__Cotangent_bisect_fig" kindref="member">fig__Cotangent_bisect_fig</ref>.</para>
+<para><anchor id="index_1fig__Cotangent_bisect_fig"/> <image type="html" name="cotangent_bisect.png"></image>
+ <image type="latex" name="cotangent_bisect.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Cotangent_bisect_fig" kindref="member">fig__Cotangent_bisect_fig</ref> Cotangent weight of edges. (Left) The sum of the opposite angles to the edge <formula id="1">$ e $</formula>, <formula id="2">$ \alpha + \beta $</formula> is greater than <formula id="0">$ \pi $</formula>. The cotangent weight of <formula id="1">$ e $</formula> is negative. (Right) The edge <formula id="1">$ e $</formula> was split so that the sum of the angles opposite to each sub-edge <formula id="3">$ e_1 $</formula> and <formula id="4">$ e_2 $</formula> is less than <formula id="0">$ \pi $</formula>. The corresponding cotangent weights are positive. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>If the mesh connectivity must be preserved, the Spokes and Rims deformation technique is guaranteed to always correctly minimize the energy even if the weights are negative. However, this technique is more dependent on the discretization of the deformed surface (See <ref refid="index_1fig__Arap_spokes_comparison" kindref="member">fig__Arap_spokes_comparison</ref>).</para>
+</sect2>
+<sect2 id="index_1Surface_mesh_deformation_examples">
+<title>Examples</title>
+<sect3 id="index_1SModelingExample_1">
+<title>Using the Whole Surface Mesh as Region-of-Interest</title>
+<para>In this example, the whole surface mesh is used as ROI and a few vertices are added as control vertices. <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation_1a609eb0e351b2c2d971df1875d7bc67ae" kindref="member">Surface_mesh_deformation::set_target_position()</ref></computeroutput> is used for setting the target positions of the control vertices.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_deformation_2all_roi_assign_example_8cpp-example" kindref="compound">Surface_mesh_deformation/all_roi_assign_example.cpp</ref> <programlisting filename="Surface_mesh_deformation/all_roi_assign_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_items_with_id_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_deformation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;iostream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel, CGAL::Polyhedron_items_with_id_3&gt;</ref><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">CGAL::Surface_mesh_deformation&lt;Polyhedron&gt;</ref><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">Surface_mesh_deformation</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/plane.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!input<sp/>||<sp/>!(input<sp/>&gt;&gt;<sp/>mesh)<sp/>||<sp/>mesh.empty()<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Cannot<sp/>open<sp/><sp/>data/plane.off&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Init<sp/>the<sp/>indices<sp/>of<sp/>the<sp/>halfedges<sp/>and<sp/>the<sp/>vertices.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__BGLGraphExternalIndices_1ga0660924a1aa87e8be5cccbc261e931c7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">set_halfedgeds_items_id</ref>(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>a<sp/>deformation<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_deformation<sp/>deform_mesh(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Definition<sp/>of<sp/>the<sp/>region<sp/>of<sp/>interest<sp/>(use<sp/>the<sp/>whole<sp/>mesh)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vb,ve;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::tie(vb,<sp/>ve)<sp/>=<sp/>vertices(mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.insert_roi_vertices(vb,<sp/>ve);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Select<sp/>two<sp/>control<sp/>vertices<sp/>...</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>control_1<sp/>=<sp/>*std::next(vb,<sp/>213);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>control_2<sp/>=<sp/>*std::next(vb,<sp/>157);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>...<sp/>and<sp/>insert<sp/>them</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.insert_control_vertex(control_1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.insert_control_vertex(control_2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>definition<sp/>of<sp/>the<sp/>ROI<sp/>and<sp/>the<sp/>control<sp/>vertices<sp/>is<sp/>done,<sp/>call<sp/>preprocess</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_matrix_factorization_OK<sp/>=<sp/>deform_mesh.preprocess();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!is_matrix_factorization_OK){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error<sp/>in<sp/>preprocessing,<sp/>check<sp/>documentation<sp/>of<sp/>preprocess()&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Use<sp/>set_target_position()<sp/>to<sp/>set<sp/>the<sp/>constrained<sp/>position</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>of<sp/>control_1.<sp/>control_2<sp/>remains<sp/>at<sp/>the<sp/>last<sp/>assigned<sp/>positions</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation_1ae675335193892552fa7924289bd1496f" kindref="member">Surface_mesh_deformation::Point</ref><sp/>constrained_pos_1(-0.35,<sp/>0.40,<sp/>0.60);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.set_target_position(control_1,<sp/>constrained_pos_1);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Deform<sp/>the<sp/>mesh,<sp/>the<sp/>positions<sp/>of<sp/>vertices<sp/>of<sp/>&apos;mesh&apos;<sp/>are<sp/>updated</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.deform();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>function<sp/>deform()<sp/>can<sp/>be<sp/>called<sp/>several<sp/>times<sp/>if<sp/>the<sp/>convergence<sp/>has<sp/>not<sp/>been<sp/>reached<sp/>yet</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.deform();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Set<sp/>the<sp/>constrained<sp/>position<sp/>of<sp/>control_2</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation_1ae675335193892552fa7924289bd1496f" kindref="member">Surface_mesh_deformation::Point</ref><sp/>constrained_pos_2(0.55,<sp/>-0.30,<sp/>0.70);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.set_target_position(control_2,<sp/>constrained_pos_2);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Call<sp/>the<sp/>function<sp/>deform()<sp/>with<sp/>one-time<sp/>parameters:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>iterate<sp/>10<sp/>times<sp/>and<sp/>do<sp/>not<sp/>use<sp/>energy<sp/>based<sp/>termination<sp/>criterion</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.deform(10,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>the<sp/>deformed<sp/>mesh<sp/>into<sp/>a<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;deform_1.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output<sp/>&lt;&lt;<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Add<sp/>another<sp/>control<sp/>vertex<sp/>which<sp/>requires<sp/>another<sp/>call<sp/>to<sp/>preprocess</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_descriptor<sp/>control_3<sp/>=<sp/>*std::next(vb,<sp/>92);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.insert_control_vertex(control_3);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>prepocessing<sp/>step<sp/>is<sp/>again<sp/>needed</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!deform_mesh.preprocess()){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error<sp/>in<sp/>preprocessing,<sp/>check<sp/>documentation<sp/>of<sp/>preprocess()&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Deform<sp/>the<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation_1ae675335193892552fa7924289bd1496f" kindref="member">Surface_mesh_deformation::Point</ref><sp/>constrained_pos_3(0.55,<sp/>0.30,<sp/>-0.70);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.set_target_position(control_3,<sp/>constrained_pos_3);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.deform(15,<sp/>0.0);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.open(</highlight><highlight class="stringliteral">&quot;deform_2.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output<sp/>&lt;&lt;<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+<para><anchor id="index_1fig__SModelingExample_1_results"/> <image type="html" name="example_1_results.png"></image>
+ <image type="latex" name="example_1_results.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__SModelingExample_1_results" kindref="member">fig__SModelingExample_1_results</ref> Deformation results when running example <ref refid="index_1SModelingExample_1" kindref="member">Using the Whole Surface Mesh as Region-of-Interest</ref> : <computeroutput>deform_1.off</computeroutput> and <computeroutput>deform_2.off</computeroutput>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1SModelingExample_2">
+<title>Using an Affine Transformation on a Range of Vertices</title>
+<para>In this example, we use the functions <computeroutput>translate()</computeroutput> and <computeroutput>rotate()</computeroutput> on a range of control vertices. Note that the translations and the rotations are defined using a 3D vector type and a quaternion type from the <ref refid="thirdparty_1thirdpartyEigen" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">Eigen library</ref>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_deformation_2k_ring_roi_translate_rotate_example_8cpp-example" kindref="compound">Surface_mesh_deformation/k_ring_roi_translate_rotate_example.cpp</ref> <programlisting filename="Surface_mesh_deformation/k_ring_roi_translate_rotate_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_items_with_id_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_deformation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;queue&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel,CGAL::Polyhedron_items_with_id_3&gt;</ref><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_iterator<sp/><sp/><sp/><sp/><sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::edge_descriptor<sp/><sp/><sp/><sp/><sp/>edge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Eigen::Vector3d<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vector3d;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">CGAL::Surface_mesh_deformation&lt;Polyhedron&gt;</ref><sp/><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">Surface_mesh_deformation</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Collect<sp/>the<sp/>vertices<sp/>which<sp/>are<sp/>at<sp/>distance<sp/>less<sp/>or<sp/>equal<sp/>to<sp/>k</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>from<sp/>the<sp/>vertex<sp/>v<sp/>in<sp/>the<sp/>graph<sp/>of<sp/>vertices<sp/>connected<sp/>by<sp/>the<sp/>edges<sp/>of<sp/>P</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">std::vector&lt;vertex_descriptor&gt;<sp/>extract_k_ring(</highlight><highlight class="keyword">const</highlight><highlight class="normal"><sp/>Polyhedron<sp/>&amp;P,<sp/>vertex_descriptor<sp/>v,<sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>k)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;vertex_descriptor,<sp/>int&gt;<sp/><sp/>D;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;vertex_descriptor&gt;<sp/><sp/><sp/><sp/>Q;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Q.push_back(v);<sp/>D[v]<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>current_index<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>dist_v;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(<sp/>current_index<sp/>&lt;<sp/>Q.size()<sp/>&amp;&amp;<sp/>(dist_v<sp/>=<sp/>D[<sp/>Q[current_index]<sp/>])<sp/>&lt;<sp/>k<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>v<sp/>=<sp/>Q[current_index++];</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(edge_descriptor<sp/>e<sp/>:<sp/>out_edges(v,<sp/>P))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>halfedge_descriptor<sp/>he<sp/>=<sp/>halfedge(e,<sp/>P);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>vertex_descriptor<sp/>new_v<sp/>=<sp/>target(he,<sp/>P);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(D.insert(std::make_pair(new_v,<sp/>dist_v<sp/>+<sp/>1)).second)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Q.push_back(new_v);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>Q;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/plane.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!input<sp/>||<sp/>!(input<sp/>&gt;&gt;<sp/>mesh)<sp/>||<sp/>mesh.empty()<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Cannot<sp/>open<sp/>data/plane.off&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Init<sp/>the<sp/>indices<sp/>of<sp/>the<sp/>halfedges<sp/>and<sp/>the<sp/>vertices.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__BGLGraphExternalIndices_1ga0660924a1aa87e8be5cccbc261e931c7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">set_halfedgeds_items_id</ref>(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>the<sp/>deformation<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_deformation<sp/>deform_mesh(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Select<sp/>and<sp/>insert<sp/>the<sp/>vertices<sp/>of<sp/>the<sp/>region<sp/>of<sp/>interest</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vb,<sp/>ve;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::tie(vb,ve)<sp/>=<sp/>vertices(mesh);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;vertex_descriptor&gt;<sp/>roi<sp/>=<sp/>extract_k_ring(mesh,<sp/>*std::next(vb,<sp/>47),<sp/>9);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.insert_roi_vertices(roi.begin(),<sp/>roi.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Select<sp/>and<sp/>insert<sp/>the<sp/>control<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;vertex_descriptor&gt;<sp/>cvertices_1<sp/>=<sp/>extract_k_ring(mesh,<sp/>*std::next(vb,<sp/>39),<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;vertex_descriptor&gt;<sp/>cvertices_2<sp/>=<sp/>extract_k_ring(mesh,<sp/>*std::next(vb,<sp/>97),<sp/>1);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.insert_control_vertices(cvertices_1.begin(),<sp/>cvertices_1.end());</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.insert_control_vertices(cvertices_2.begin(),<sp/>cvertices_2.end());</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Apply<sp/>a<sp/>rotation<sp/>to<sp/>the<sp/>control<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Eigen::Quaternion&lt;double&gt;<sp/>quad(0.92,<sp/>0,<sp/>0,<sp/>-0.38);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.rotate(cvertices_1.begin(),<sp/>cvertices_1.end(),<sp/>Vector3d(0,0,0),<sp/>quad);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.rotate(cvertices_2.begin(),<sp/>cvertices_2.end(),<sp/>Vector3d(0,0,0),<sp/>quad);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.deform();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>the<sp/>deformed<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;deform_1.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output<sp/>&lt;&lt;<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Restore<sp/>the<sp/>positions<sp/>of<sp/>the<sp/>vertices</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.reset();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Apply<sp/>a<sp/>translation<sp/>on<sp/>the<sp/>original<sp/>positions<sp/>of<sp/>the<sp/>vertices<sp/>(reset()<sp/>was<sp/>called<sp/>before)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.translate(cvertices_1.begin(),<sp/>cvertices_1.end(),<sp/>Vector3d(0,0.3,0));</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.translate(cvertices_2.begin(),<sp/>cvertices_2.end(),<sp/>Vector3d(0,0.3,0));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Call<sp/>the<sp/>function<sp/>deform()<sp/>with<sp/>one-time<sp/>parameters:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>iterate<sp/>10<sp/>times<sp/>and<sp/>do<sp/>not<sp/>use<sp/>energy<sp/>based<sp/>termination<sp/>criterion</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.set_iterations(10);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.set_tolerance(0.0);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.deform();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>the<sp/>deformed<sp/>mesh</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.open(</highlight><highlight class="stringliteral">&quot;deform_2.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output<sp/>&lt;&lt;<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+</programlisting></para>
+<para><anchor id="index_1fig__SModelingExample_2_results"/> <image type="html" name="example_2_results.png"></image>
+ <image type="latex" name="example_2_results.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__SModelingExample_2_results" kindref="member">fig__SModelingExample_2_results</ref> Deformation results when running example <ref refid="index_1SModelingExample_2" kindref="member">Using an Affine Transformation on a Range of Vertices</ref> : <computeroutput>deform_1.off</computeroutput> and <computeroutput>deform_2.off</computeroutput>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+</sect3>
+<sect3 id="index_1SModelingExample_3">
+<title>Using Polyhedron without Ids</title>
+<para>In the previous examples, we used an <emphasis>enriched</emphasis> polyhedron storing an ID in its halfedges and vertices together with the default property maps in the deformation object to access them. In the following example, we show how we can use alternative property maps.</para>
+<para>For practical performance however we recommend relying upon the former examples instead, as using a <computeroutput>std::map</computeroutput> to access indices increases the complexity from constant to logarithmic. <linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_deformation_2deform_polyhedron_with_custom_pmap_example_8cpp-example" kindref="compound">Surface_mesh_deformation/deform_polyhedron_with_custom_pmap_example.cpp</ref> <programlisting filename="Surface_mesh_deformation/deform_polyhedron_with_custom_pmap_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_deformation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_iterator<sp/><sp/><sp/><sp/>halfedge_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>Define<sp/>the<sp/>maps</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;vertex_descriptor,<sp/>std::size_t&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_id_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;halfedge_descriptor,<sp/>std::size_t&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Hedge_id_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Vertex_id_map&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_id_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Hedge_id_map&gt;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Hedge_id_pmap;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">CGAL::Surface_mesh_deformation&lt;Polyhedron, Vertex_id_pmap, Hedge_id_pmap&gt;</ref><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">Surface_mesh_deformation</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/plane.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!input<sp/>||<sp/>!(input<sp/>&gt;&gt;<sp/>mesh)<sp/>||<sp/>mesh.empty()<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Cannot<sp/>open<sp/><sp/>data/plane.off&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Init<sp/>the<sp/>indices<sp/>of<sp/>the<sp/>vertices<sp/>from<sp/>0<sp/>to<sp/>num_vertices(mesh)-1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_id_map<sp/>vertex_index_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>v<sp/>:<sp/>vertices(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>vertex_index_map[v]=counter++;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Init<sp/>the<sp/>indices<sp/>of<sp/>the<sp/>halfedges<sp/>from<sp/>0<sp/>to<sp/>2*num_edges(mesh)-1</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Hedge_id_map<sp/>hedge_index_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(halfedge_descriptor<sp/>h<sp/>:<sp/>halfedges(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>hedge_index_map[h]=counter++;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_deformation<sp/>deform_mesh(<sp/>mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Vertex_id_pmap(vertex_index_map),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Hedge_id_pmap(hedge_index_map)<sp/>);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Now<sp/>deform<sp/>mesh<sp/>as<sp/>desired</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>.....</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1SModelingExample_4">
+<title>Using a Custom Edge Weighting Scheme</title>
+<para>Using a custom weighting scheme for edges is also possible if one provides a model of <computeroutput><ref refid="classSurfaceMeshDeformationWeights" kindref="compound">SurfaceMeshDeformationWeights</ref></computeroutput>. In this example, the weight of each edge is pre-computed and an internal map is used for storing and accessing them.</para>
+<para>Another example is given in the manual page of the concept <computeroutput><ref refid="classSurfaceMeshDeformationWeights" kindref="compound">SurfaceMeshDeformationWeights</ref></computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_deformation_2custom_weight_for_edges_example_8cpp-example" kindref="compound">Surface_mesh_deformation/custom_weight_for_edges_example.cpp</ref> <programlisting filename="Surface_mesh_deformation/custom_weight_for_edges_example.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_deformation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;map&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/property_map.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_iterator<sp/><sp/><sp/><sp/><sp/><sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_descriptor<sp/>halfedge_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::halfedge_iterator<sp/><sp/><sp/><sp/>halfedge_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;vertex_descriptor,<sp/>std::size_t&gt;<sp/><sp/><sp/>Internal_vertex_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>std::map&lt;halfedge_descriptor,<sp/>std::size_t&gt;<sp/><sp/><sp/><sp/><sp/>Internal_hedge_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Internal_vertex_map&gt;<sp/><sp/><sp/>Vertex_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::associative_property_map&lt;Internal_hedge_map&gt;<sp/><sp/><sp/><sp/><sp/>Hedge_index_map;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="comment">//<sp/>A<sp/>model<sp/>of<sp/>SurfaceMeshDeformationWeights<sp/>using<sp/>a<sp/>map<sp/>of<sp/>pre-computed<sp/>weights</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">struct<sp/></highlight><highlight class="normal">Weights_from_map</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>Polyhedron<sp/>Halfedge_graph;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Weights_from_map(std::map&lt;halfedge_descriptor,<sp/>double&gt;*<sp/>weight_map)<sp/>:<sp/>weight_map(weight_map)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{<sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">template</highlight><highlight class="normal">&lt;</highlight><highlight class="keyword">class</highlight><highlight class="normal"><sp/>VertexPo</highlight><highlight class="keywordtype">int</highlight><highlight class="normal">Map&gt;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>operator()(halfedge_descriptor<sp/>e,<sp/>Polyhedron&amp;<sp/></highlight><highlight class="comment">/*P*/</highlight><highlight class="normal">,<sp/>VertexPointMap<sp/></highlight><highlight class="comment">/*vpm*/</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>(*weight_map)[e];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;halfedge_descriptor,<sp/>double&gt;*<sp/>weight_map;</highlight></codeline>
+<codeline><highlight class="normal">};</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">CGAL::Surface_mesh_deformation&lt;Polyhedron, Vertex_index_map, Hedge_index_map, CGAL::ORIGINAL_ARAP, Weights_from_map&gt;</ref><sp/>Surface_mesh_deformation;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main()</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/plane.off&quot;</highlight><highlight class="normal">));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!input<sp/>||<sp/>!(input<sp/>&gt;&gt;<sp/>mesh)<sp/>||<sp/>mesh.empty()<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Cannot<sp/>open<sp/><sp/>data/plane.off&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::map&lt;halfedge_descriptor,<sp/>double&gt;<sp/>weight_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Store<sp/>all<sp/>the<sp/>weights</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(halfedge_descriptor<sp/>h<sp/>:<sp/>halfedges(mesh))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>weight_map[h]<sp/>=<sp/>1.0;<sp/></highlight><highlight class="comment">//<sp/>store<sp/>some<sp/>precomputed<sp/>weights</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>and<sp/>initialize<sp/>the<sp/>vertex<sp/>index<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Internal_vertex_map<sp/>internal_vertex_index_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Vertex_index_map<sp/>vertex_index_map(internal_vertex_index_map);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vb,<sp/>ve;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::size_t<sp/>counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>v<sp/>:<sp/>vertices(mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>put(vertex_index_map,<sp/>v,<sp/>counter++);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>and<sp/>initialize<sp/>the<sp/>halfedge<sp/>index<sp/>map</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Internal_hedge_map<sp/>internal_hedge_index_map;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Hedge_index_map<sp/>hedge_index_map(internal_hedge_index_map);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>counter<sp/>=<sp/>0;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(halfedge_descriptor<sp/>h<sp/>:<sp/>halfedges(mesh))<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>put(hedge_index_map,<sp/>h,<sp/>counter++);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_deformation<sp/>deform_mesh(mesh,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_index_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>hedge_index_map,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>get(CGAL::vertex_point,<sp/>mesh),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>Weights_from_map(&amp;weight_map));</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Deform<sp/>mesh<sp/>as<sp/>desired</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>.....</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+<sect3 id="index_1SModelingExample_5">
+<title>Using the Smoothed Rotation Enhanced As-Rigid-As-Possible</title>
+<para>In this example, a survey <ref refid="citelist_1CITEREF_Botsch2008OnLinearVariational" kindref="member">[1]</ref> model is loaded, alpha that determines the influence of the bending term is set, and the deformation method is set to <computeroutput>SRE_ARAP</computeroutput>.</para>
+<para><linebreak/>
+<bold>File</bold> <ref refid="Surface_mesh_deformation_2deform_mesh_for_botsch08_format_sre_arap_8cpp-example" kindref="compound">Surface_mesh_deformation/deform_mesh_for_botsch08_format_sre_arap.cpp</ref> <programlisting filename="Surface_mesh_deformation/deform_mesh_for_botsch08_format_sre_arap.cpp"><codeline><highlight class="preprocessor">#include<sp/>&lt;CGAL/Simple_cartesian.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Polyhedron_items_with_id_3.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;CGAL/Surface_mesh_deformation.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;fstream&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="structCGAL_1_1Simple__cartesian" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">CGAL::Simple_cartesian&lt;double&gt;</ref><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><ref refid="namespaceKernel" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Kernel</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Polyhedron__3" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Polyhedron.tag">CGAL::Polyhedron_3&lt;Kernel, CGAL::Polyhedron_items_with_id_3&gt;</ref><sp/>Polyhedron;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_descriptor<sp/><sp/><sp/><sp/>vertex_descriptor;</highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/>boost::graph_traits&lt;Polyhedron&gt;::vertex_iterator<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>vertex_iterator;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keyword">typedef</highlight><highlight class="normal"><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">CGAL::Surface_mesh_deformation&lt;Polyhedron,CGAL::Default, CGAL::Default, CGAL::SRE_ARAP&gt;</ref><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">Surface_mesh_deformation</ref>;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>main(</highlight><highlight class="keywordtype">int</highlight><highlight class="normal"><sp/>argc,</highlight><highlight class="keywordtype">char</highlight><highlight class="normal">**<sp/>argv)</highlight></codeline>
+<codeline><highlight class="normal">{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>off_name=<ref refid="namespaceCGAL_1acdae9a147ad2a3998cc21f88bc292dac" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL::data_file_path</ref>(</highlight><highlight class="stringliteral">&quot;meshes/cactus.off&quot;</highlight><highlight class="normal">),</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>sel_name=</highlight><highlight class="stringliteral">&quot;data/cactus.sel&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>def_name=</highlight><highlight class="stringliteral">&quot;data/cactus.def&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/><sp/>(<sp/>argc!=4){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;</highlight><highlight class="stringliteral">&quot;Usage<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>argv[0]<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>input.off<sp/>input.sel<sp/>input.def\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;</highlight><highlight class="stringliteral">&quot;Using<sp/>default<sp/>values:<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>off_name<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>sel_name<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>def_name<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">else</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>off_name=argv[1];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>sel_name=argv[2];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>def_name=argv[3];</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Polyhedron<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ifstream<sp/>input(off_name);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(<sp/>!input<sp/>||<sp/>!(input<sp/>&gt;&gt;<sp/>mesh)<sp/>||<sp/>mesh.empty()<sp/>)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr&lt;&lt;<sp/>off_name<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>is<sp/>not<sp/>a<sp/>valid<sp/>off<sp/>file&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Init<sp/>the<sp/>indices<sp/>of<sp/>the<sp/>halfedges<sp/>and<sp/>the<sp/>vertices.</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><ref refid="group__BGLGraphExternalIndices_1ga0660924a1aa87e8be5cccbc261e931c7" kindref="member" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/BGL.tag">set_halfedgeds_items_id</ref>(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Create<sp/>a<sp/>deformation<sp/>object</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Surface_mesh_deformation<sp/>deform_mesh(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Changing<sp/>alpha<sp/>value</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.set_sre_arap_alpha(0.02);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Definition<sp/>of<sp/>the<sp/>region<sp/>of<sp/>interest<sp/>(use<sp/>the<sp/>whole<sp/>mesh)</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>vertex_iterator<sp/>vb,ve;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>boost::tie(vb,<sp/>ve)<sp/>=<sp/>vertices(mesh);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//the<sp/>selection<sp/>is<sp/>set<sp/>by<sp/>a<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input.open(sel_name);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::string<sp/>line;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::vector&lt;vertex_descriptor&gt;<sp/>control_vertices;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">while</highlight><highlight class="normal">(getline(input,<sp/>line))</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(line[0]==</highlight><highlight class="charliteral">&apos;#&apos;</highlight><highlight class="normal">)<sp/></highlight><highlight class="keywordflow">continue</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(line[0]==</highlight><highlight class="charliteral">&apos;1&apos;</highlight><highlight class="normal">)<sp/>deform_mesh.insert_roi_vertex(*vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(line[0]==</highlight><highlight class="charliteral">&apos;2&apos;</highlight><highlight class="normal">)<sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>deform_mesh.insert_control_vertex(*vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>control_vertices.push_back(*vb);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>++vb;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal"><sp/>(vb==ve)<sp/></highlight><highlight class="keywordflow">break</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input.close();</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Using<sp/>&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>control_vertices.size()<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;<sp/>control<sp/>vertices\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>The<sp/>definition<sp/>of<sp/>the<sp/>ROI<sp/>and<sp/>the<sp/>control<sp/>vertices<sp/>is<sp/>done,<sp/>call<sp/>preprocess</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">bool</highlight><highlight class="normal"><sp/>is_matrix_factorization_OK<sp/>=<sp/>deform_mesh.preprocess();</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">if</highlight><highlight class="normal">(!is_matrix_factorization_OK){</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>std::cerr<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Error<sp/>in<sp/>preprocessing,<sp/>check<sp/>documentation<sp/>of<sp/>preprocess()&quot;</highlight><highlight class="normal"><sp/>&lt;&lt;<sp/>std::endl;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keywordflow">return</highlight><highlight class="normal"><sp/>1;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//define<sp/>the<sp/>transformation</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input.open(def_name);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">double</highlight><highlight class="normal"><sp/>m00,<sp/>m01,<sp/>m02,<sp/>m03,<sp/>m10,<sp/>m11,<sp/>m12,<sp/>m13,<sp/>m20,<sp/>m21,<sp/>m22,<sp/>m23,<sp/>hw,<sp/>sink;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>getline(input,<sp/>line);<sp/></highlight><highlight class="comment">//<sp/>skip<sp/>first<sp/>comment<sp/>line</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>m00<sp/>&gt;&gt;<sp/>m01<sp/>&gt;&gt;<sp/>m02<sp/>&gt;&gt;<sp/>m03;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>m10<sp/>&gt;&gt;<sp/>m11<sp/>&gt;&gt;<sp/>m12<sp/>&gt;&gt;<sp/>m13;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>m20<sp/>&gt;&gt;<sp/>m21<sp/>&gt;&gt;<sp/>m22<sp/>&gt;&gt;<sp/>m23;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>input<sp/>&gt;&gt;<sp/>sink<sp/>&gt;&gt;<sp/>sink<sp/>&gt;&gt;<sp/>sink<sp/>&gt;&gt;<sp/>hw;</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Setting<sp/>target<sp/>positions\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>Kernel::Aff_transformation_3<sp/>aff(m00,<sp/>m01,<sp/>m02,<sp/>m03,<sp/>m10,<sp/>m11,<sp/>m12,<sp/>m13,<sp/>m20,<sp/>m21,<sp/>m22,<sp/>m23);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordflow">for</highlight><highlight class="normal">(vertex_descriptor<sp/>vd<sp/>:<sp/>control_vertices)</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>{</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/><ref refid="classCGAL_1_1Surface__mesh__deformation_1ae675335193892552fa7924289bd1496f" kindref="member">Surface_mesh_deformation::Point</ref><sp/>pos<sp/>=<sp/>vd-&gt;point().transform(aff);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/><sp/><sp/>deform_mesh.set_target_position(vd,<sp/>pos);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>}</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Call<sp/>the<sp/>function<sp/>deform()<sp/>with<sp/>one-time<sp/>parameters:</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::cout<sp/>&lt;&lt;<sp/></highlight><highlight class="stringliteral">&quot;Deforming<sp/>the<sp/>mesh\n&quot;</highlight><highlight class="normal">;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>deform_mesh.deform(1000,<sp/>1e-4);</highlight></codeline>
+<codeline><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Save<sp/>the<sp/>deformed<sp/>mesh<sp/>into<sp/>a<sp/>file</highlight><highlight class="normal"></highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>std::ofstream<sp/>output(</highlight><highlight class="stringliteral">&quot;deform_res.off&quot;</highlight><highlight class="normal">);</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output<sp/>&lt;&lt;<sp/>mesh;</highlight></codeline>
+<codeline><highlight class="normal"><sp/><sp/>output.close();</highlight></codeline>
+<codeline><highlight class="normal">}</highlight></codeline>
+</programlisting></para>
+</sect3>
+</sect2>
+</sect1>
+<sect1 id="index_1SMD_Demo">
+<title>How to Use the Demo</title>
+<para>A plugin for <ref refid="namespaceCGAL" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Manual.tag">CGAL</ref> Lab is available to test the algorithm. The following video tutorials explain how to use it. When the deformation dock window is open, the picking of control vertices and of the ROI is done by pressing <emphasis>Shift</emphasis> and clicking with the left button of the mouse. The displacement of the vertices is triggered when the <emphasis>Ctrl</emphasis> button is pressed.</para>
+<para><anchor id="index_1SModelingVideo_1"/><htmlonly block="yes">
+&lt;center&gt;
+&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/akpYaDLuaUI?rel=0&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;true&quot;&gt;&lt;/iframe&gt;
+&lt;div class=&quot;cgal_video_caption&quot;&gt; &lt;a class=&quot;el&quot; href=&quot;index.html#SModelingVideo_1&quot;&gt;Video 1&lt;/a&gt; Grouping of control vertices.&lt;/div&gt;
+&lt;/center&gt;
+</htmlonly></para>
+<para><anchor id="index_1SModelingVideo_2"/><htmlonly block="yes">
+&lt;center&gt;
+&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/1cpnkx_YG5E?rel=0&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;true&quot;&gt;&lt;/iframe&gt;
+&lt;div class=&quot;cgal_video_caption&quot;&gt; &lt;a class=&quot;el&quot; href=&quot;index.html#SModelingVideo_2&quot;&gt;Video 2&lt;/a&gt;
+Convergence: this video shows that upon fast changes of the positions of the control vertices,
+more iteration steps are needed to reach the convergence.&lt;/div&gt;
+&lt;/center&gt;
+</htmlonly></para>
+<para><anchor id="index_1SModelingVideo_3"/><htmlonly block="yes">
+&lt;center&gt;
+&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/-1rO-RdbudM?rel=0&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;true&quot;&gt;&lt;/iframe&gt;
+&lt;div class=&quot;cgal_video_caption&quot;&gt; &lt;a class=&quot;el&quot; href=&quot;index.html#SModelingVideo_3&quot;&gt;Video 3&lt;/a&gt; A complete example: changing the pose of a dinausor.&lt;/div&gt;
+&lt;/center&gt;
+</htmlonly></para>
+</sect1>
+<sect1 id="index_1SMD_Overview">
+<title>Deformation Techniques, Energies and Weighting Schemes</title>
+<para>This section gives the theoretical background to make the user manual self-contained and at the same time explains where the weights comes in. This allows advanced users of this package to tune the weighting scheme by developing a model of the concept <computeroutput><ref refid="classSurfaceMeshDeformationWeights" kindref="compound">SurfaceMeshDeformationWeights</ref></computeroutput> used in the class <computeroutput><ref refid="classCGAL_1_1Surface__mesh__deformation" kindref="compound">Surface_mesh_deformation</ref></computeroutput>.</para>
+<sect2 id="index_1SMD_Overview_Preliminaries">
+<title>Preliminaries</title>
+<sect3 id="index_1SMD_Overview_Laplacian">
+<title>Laplacian Representation</title>
+<para>The <emphasis>Laplacian representation</emphasis> (referred to as <emphasis>Laplace coordinates</emphasis> in <ref refid="citelist_1CITEREF_botsch2010polygon" kindref="member">[2]</ref>) of a vertex in a surface mesh is one way to <emphasis>encode</emphasis> the local neighborhood of a vertex in the surface mesh. In this representation, a vertex <formula id="5">$ \mathbf{v}_i $</formula> is associated a 3D vector defined as:</para>
+<para><formula id="6">\begin{equation}
+L(\mathbf{v}_i) = \sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} w_{ij}(\mathbf{v}_i - \mathbf{v}_j),
+  \label{eq:lap_open}
+\end{equation}</formula></para>
+<para>where:<itemizedlist>
+<listitem><para><formula id="7">$N(\mathbf{v}_i)$</formula> denotes the set of vertices adjacent to <formula id="8">$\mathbf{v}_i$</formula>;</para>
+</listitem><listitem><para><formula id="9">$w_{ij}$</formula> denotes a weight for the directed edge <formula id="10">$\mathbf{v}_i\ \mathbf{v}_j$</formula>.</para>
+</listitem></itemizedlist>
+</para>
+<para>The simplest choice for the weights is the uniform scheme where <formula id="11">$ w_{ij}=1/|N(\mathbf{v}_i)| $</formula> for each adjacent vertex <formula id="12">$\mathbf{v}_j$</formula>. In this case, the Laplacian representation of a vertex is the vector between this vertex and the centroid of its adjacent vertices (<ref refid="index_1fig__Simple_laplacian" kindref="member">fig__Simple_laplacian</ref>).</para>
+<para>In the surface mesh deformation context, a popular choice is the cotangent weight scheme that derives from the discretization of the Laplace operator <ref refid="citelist_1CITEREF_Pinkall1993Cotangent" kindref="member">[5]</ref> : Given an edge of the surface mesh, its corresponding cotangent weight is the mean of the cotangents of the angles opposite to the edge. It was shown to produce results that are not biased by the surface mesh of the approximated surface <ref refid="citelist_1CITEREF_Sorkine2007AsRigidAs" kindref="member">[6]</ref>.</para>
+<para><anchor id="index_1fig__Simple_laplacian"/> <image type="html" name="simple_mesh_with_laplacian.png"></image>
+ <image type="latex" name="simple_mesh_with_laplacian.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Simple_laplacian" kindref="member">fig__Simple_laplacian</ref> Laplacian representation of <formula id="13">$ v_i $</formula> with uniform weights: the red square vertex is the centroid of the vertices adjacent to <formula id="13">$ v_i $</formula>. The Laplacian representation <formula id="14">$ L(v_i) $</formula> is represented as a blue vector. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>Considering a surface mesh with <formula id="15">$n$</formula> vertices, it is possible to define its <emphasis>Laplacian representation</emphasis> <formula id="16">$\Delta$</formula> as a <formula id="17">$n \times 3$</formula> matrix:</para>
+<para><formula id="18">\begin{equation}
+\mathbf{L}\mathbf{V} = \Delta,
+  \label{eq:lap_system}
+\end{equation}</formula></para>
+<para>where:<itemizedlist>
+<listitem><para><formula id="19">$\mathbf{L}$</formula> is a <formula id="20">$n \times n$</formula> sparse matrix, referred to as the <emphasis>Laplacian matrix</emphasis>. Its elements <formula id="21">$ m_{ij} $</formula>, <formula id="22">$i,j \in \{1 \dots n\} $</formula> are defined as follows:<itemizedlist>
+<listitem><para><formula id="23">$ m_{ii} $</formula> = <formula id="24">$ \sum_{\mathbf{v}_j \in N(\mathbf{v}_i)}w_{ij} $</formula>,</para>
+</listitem><listitem><para><formula id="25">$ m_{ij} = -w_{ij} $</formula> if <formula id="26">$ \mathbf{v}_j \in N(\mathbf{v_i}) $</formula>,</para>
+</listitem><listitem><para><formula id="27">$ 0 $</formula> otherwise.</para>
+</listitem></itemizedlist>
+</para>
+</listitem><listitem><para><formula id="28">$\mathbf{V}$</formula> is a <formula id="17">$n \times 3$</formula> matrix made of the Cartesian coordinates of the vertices.</para>
+</listitem></itemizedlist>
+</para>
+</sect3>
+<sect3 id="index_1SMD_Overview_Laplacian_Deformation">
+<title>Laplacian Deformation</title>
+<para>This section is an introduction to provide the background for the next two sub-sections describing the algorithms implemented in this package. A system relying only on the approach described below results in non-smooth transitions in the neighborhood of the control vertices. For a survey on different Laplacian-based editing techniques we refer to <ref refid="citelist_1CITEREF_Botsch2008OnLinearVariational" kindref="member">[1]</ref>.</para>
+<para>The main idea behind Laplacian-based deformation techniques is to preserve the Laplacian representation under deformation constraints. The Laplacian representation of a surface mesh is treated as a representative form of the discretized surface, and the deformation process must follow the deformation constraints while preserving the Laplacian representation as much as possible.</para>
+<para>There are different ways to incorporate deformation constraints into the deformation system <ref refid="citelist_1CITEREF_Botsch2008OnLinearVariational" kindref="member">[1]</ref>. This package supports hard constraints, that is, target positions of control vertices are preserved after the deformation.</para>
+<para>Given a surface mesh deformation system with a ROI made of <formula id="29">$ n $</formula> vertices and <formula id="30">$ k $</formula> control vertices, we consider the following linear system:</para>
+<para><formula id="31">\begin{equation}
+\left[
+\begin{array}{ccc}
+\mathbf{L}_f\\
+0 \; \mathbf{I}_c
+\end{array}
+\right]
+\mathbf{V} =
+\left[
+\begin{array}{ccc}
+{\Delta}_f \\
+\mathbf{V}_c
+\end{array}
+\right],
+\label{eq:lap_energy_system}
+\end{equation}</formula></para>
+<para>where:<itemizedlist>
+<listitem><para><formula id="28">$\mathbf{V}$</formula> is a <formula id="17">$n \times 3$</formula> matrix denoting the unknowns of the system that represent the vertex coordinates after deformation. The system is built so that the <formula id="30">$ k $</formula> last rows correspond to the control vertices.</para>
+</listitem><listitem><para><formula id="32">$\mathbf{L}_f$</formula> denotes the Laplacian matrix of the unconstrained vertices. It is a <formula id="33">$ (n-k) \times n $</formula> matrix as defined in Eq. <formula id="34">$\eqref{eq:lap_system}$</formula> but removing the rows corresponding to the control vertices.</para>
+</listitem><listitem><para><formula id="35">$\mathbf{I}_c$</formula> is the <formula id="36">$k \times k$</formula> identity matrix.</para>
+</listitem><listitem><para><formula id="37">${\Delta}_f$</formula> denotes the Laplacian representation of the unconstrained vertices as defined in Eq. <formula id="34">$\eqref{eq:lap_system}$</formula> but removing the rows corresponding to the control vertices.</para>
+</listitem><listitem><para><formula id="38">$\mathbf{V}_c$</formula> is a <formula id="39">$k \times 3$</formula> matrix containing the Cartesian coordinates of the target positions of the control vertices.</para>
+</listitem></itemizedlist>
+</para>
+<para>The left-hand side matrix of the system of Eq. <formula id="40">$\eqref{eq:lap_energy_system}$</formula> is a square non-symmetric sparse matrix. To solve the aforementioned system, an appropriate solver (e.g. LU solver) needs to be used. Note that solving this system preserves the Laplacian representation of the surface mesh restricted to the unconstrained vertices while satisfying the deformation constraints.</para>
+</sect3>
+</sect2>
+<sect2 id="index_1SMD_Overview_ARAP">
+<title>As-Rigid-As Possible Deformation</title>
+<para>Given a surface mesh <formula id="41">$M$</formula> with <formula id="29">$ n $</formula> vertices <formula id="42">$ \{\mathbf{v}_i\} i \in \{1 \dots n  \} $</formula> and some deformation constraints, we consider the following energy function:</para>
+<para><formula id="43">\begin{equation}
+\sum_{\mathbf{v}_i \in M}
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} w_{ij}
+\left\| (\mathbf{v}&apos;_i - \mathbf{v}&apos;_j) - \mathbf{R}_i(\mathbf{v}_i - \mathbf{v}_j) \right\|^2,
+  \label{eq:arap_energy}
+\end{equation}</formula></para>
+<para>where:<itemizedlist>
+<listitem><para><formula id="44">$\mathbf{R}_i$</formula> is a <formula id="45">$ 3 \times 3 $</formula> rotation matrix</para>
+</listitem><listitem><para><formula id="9">$w_{ij}$</formula> denotes a weight</para>
+</listitem><listitem><para><formula id="7">$N(\mathbf{v}_i)$</formula> denotes the set of vertices adjacent to <formula id="8">$\mathbf{v}_i$</formula> in <formula id="41">$M$</formula></para>
+</listitem><listitem><para><formula id="46">$N(\mathbf{v}&apos;_i)$</formula> denotes a new position of the vertex <formula id="7">$N(\mathbf{v}_i)$</formula> after a given deformation</para>
+</listitem></itemizedlist>
+</para>
+<para>An as-rigid-as possible surface mesh deformation <ref refid="citelist_1CITEREF_Sorkine2007AsRigidAs" kindref="member">[6]</ref> is defined by minimizing this energy function under the deformation constraints, i.e. the assigned position <formula id="47">$ {v}&apos;_i$</formula> for each vertex <formula id="48">$ \mathbf{v}_i$</formula> in the set of control vertices. Defining the <emphasis>one-ring neighborhood</emphasis> of a vertex as its set of adjacent vertices, the intuitive idea behind this energy function is to allow each one-ring neighborhood of vertices to have an individual rotation, and at the same time to prevent shearing by taking advantage of the overlapping of one-ring neighborhoods of adjacent vertices (see <ref refid="index_1fig__Overlapping_cells" kindref="member">fig__Overlapping_cells</ref>).</para>
+<para><anchor id="index_1fig__Overlapping_cells"/> <image type="html" name="overlapping_cells.png"></image>
+ <image type="latex" name="overlapping_cells.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Overlapping_cells" kindref="member">fig__Overlapping_cells</ref> Overlaps of one-ring neighborhoods of vertices. The one-ring neighborhoods of four vertices are drawn with different colors, the corresponding vertex is colored accordingly. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>There are two unknowns per vertex in Eq. <formula id="49">$\eqref{eq:arap_energy}$</formula>: the new positions ( <formula id="50">$\mathbf{v}&apos;_k$</formula>) of the unconstrained vertices and the rotation matrices ( <formula id="44">$\mathbf{R}_i$</formula>). If the energy contribution of each vertex is positive, this boils down to minimizing the energy contribution of each vertex <formula id="8">$\mathbf{v}_i$</formula>.</para>
+<para>Each such term of the energy is minimized by using a two-step optimization approach (also called local-global approach).</para>
+<para>In the first step, the positions of the vertices are considered as fixed so that the rotation matrices are the only unknowns.</para>
+<para>For the vertex <formula id="8">$\mathbf{v}_i$</formula>, we consider the covariance matrix <formula id="51">$\mathbf{S}_i$</formula>:  <formula id="52">\begin{equation}
+\mathbf{S}_i = \sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} w_{ij} (\mathbf{v}_i - \mathbf{v}_j)(\mathbf{v}&apos;_i - \mathbf{v}&apos;_j)^T,
+\label{eq:cov_matrix}
+\end{equation}</formula></para>
+<para>It was shown <ref refid="citelist_1CITEREF_Sorkine2009LeastSquaresRigid" kindref="member">[7]</ref> that minimizing the energy contribution of <formula id="8">$\mathbf{v}_i$</formula> in Eq. <formula id="49">$\eqref{eq:arap_energy}$</formula> is equivalent to maximizing the trace of the matrix <formula id="53">$\mathbf{R}_i \mathbf{S}_i$</formula>. <formula id="54">$\mathbf{R}_i $</formula> is the transpose of the unitary matrix in the polar decomposition of <formula id="51">$\mathbf{S}_i$</formula>.</para>
+<para>In the second step, the rotation matrices are substituted into the partial derivative of Eq. <formula id="49">$\eqref{eq:arap_energy}$</formula> with respect to <formula id="55">$\mathbf{v}&apos;_i$</formula>. Assuming the weights are symmetric, setting the derivative to zero results in the following equation:</para>
+<para><formula id="56">\begin{equation}
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} w_{ij}(\mathbf{v}&apos;_i - \mathbf{v}&apos;_j) =
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} w_{ij} \frac{(\mathbf{R}_i + \mathbf{R}_j)}{2} (\mathbf{v}_i - \mathbf{v}_j).
+\label{eq:lap_ber}
+\end{equation}</formula></para>
+<para>The left-hand side of this equation corresponds to the one of Eq. <formula id="57">$\eqref{eq:lap_open}$</formula>, and we can set <formula id="16">$\Delta$</formula> to be the right-hand side. Solving the linear system in Eq. <formula id="40">$\eqref{eq:lap_energy_system}$</formula> gives the new positions of the unconstrained vertices.</para>
+<para>This two-step optimization can be applied several times iteratively to obtain a better result.</para>
+<para><simplesect kind="note"><para>The matrix built with the Laplacian matrix of the unconstrained vertices in the left-hand side of Eq. <formula id="40">$\eqref{eq:lap_energy_system}$</formula> depends only on the initial surface mesh structure and on which vertices are control vertices. Once the control vertices are set, we can use a direct solver to factorize the sparse matrix in Eq. <formula id="40">$\eqref{eq:lap_energy_system}$</formula>, and reuse this factorization during each iteration of the optimization procedure.</para>
+</simplesect>
+The original algorithm <ref refid="citelist_1CITEREF_Sorkine2007AsRigidAs" kindref="member">[6]</ref> we described assumes that:</para>
+<para><itemizedlist>
+<listitem><para>the weight between two vertices is symmetric. In order to support asymmetric weights in our implementation, we slightly change Eq. <formula id="58">$\eqref{eq:lap_ber}$</formula> to:  <formula id="59">\begin{equation}
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} (w_{ij} + w_{ji})(\mathbf{v}&apos;_i - \mathbf{v}&apos;_j) =
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} (w_{ij}\mathbf{R}_i + w_{ji}\mathbf{R}_j)(\mathbf{v}_i - \mathbf{v}_j).
+\label{eq:lap_ber_asym}
+\end{equation}</formula></para>
+</listitem><listitem><para>The energy contribution of each vertex is positive. If the weight between two vertices is always positive, this is always the case. However, when using the cotangent weighting scheme (the default in our implementation), if the sum of the angles opposite to an edge is greater than <formula id="0">$ \pi $</formula>, its cotangent weight is negative. As a workaround for bad quality meshes, we eliminate those negative weights by setting them to zero.</para>
+</listitem></itemizedlist>
+</para>
+<para>A method minimizing another energy function is described next to avoid the latter issue.</para>
+</sect2>
+<sect2 id="index_1SMD_Overview_ARAP_Rims">
+<title>Spokes and Rims Version</title>
+<para>The elastic energy function proposed by <ref refid="citelist_1CITEREF_Chao2010SimpleGeomModel" kindref="member">[3]</ref> additionally takes into account all the opposite edges in the facets incident to a vertex. The energy function to minimize becomes:</para>
+<para><formula id="60">\begin{equation}
+\sum_{\mathbf{v}_i \in M}
+\sum_{(\mathbf{v}_j, \mathbf{v}_k) \in E(\mathbf{v}_i)} w_{jk}
+\left\| (\mathbf{v}&apos;_j - \mathbf{v}&apos;_k) - \mathbf{R}_i(\mathbf{v}_j - \mathbf{v}_k) \right\|^2,
+  \label{eq:arap_energy_rims}
+\end{equation}</formula></para>
+<para>where <formula id="61">$E(\mathbf{v}_i)$</formula> consists of the set of edges incident to <formula id="8">$\mathbf{v}_i$</formula> (the <emphasis>spokes</emphasis>) and the set of edges in the link (the <emphasis>rims</emphasis>) of <formula id="8">$\mathbf{v}_i$</formula> in the surface mesh <formula id="41">$M$</formula> (see <ref refid="index_1fig__Spoke_and_rim_edges" kindref="member">fig__Spoke_and_rim_edges</ref>).</para>
+<para><anchor id="index_1fig__Spoke_and_rim_edges"/> <image type="html" name="spoke_and_rim_edges_2.png"></image>
+ <image type="latex" name="spoke_and_rim_edges_2.png" width="15cm"></image>
+ <htmlonly block="yes"> &lt;div class=&quot;cgal_figure_caption&quot;&gt; </htmlonly>  <ref refid="index_1fig__Spoke_and_rim_edges" kindref="member">fig__Spoke_and_rim_edges</ref> The vertices <formula id="62">$ \mathbf{v}_n$</formula> and <formula id="63">$ \mathbf{v}_m$</formula> are the opposite vertices to the edge <formula id="64">$ \mathbf{v}_i \mathbf{v}_j$</formula>. <htmlonly block="yes"> &lt;/div&gt; </htmlonly> <linebreak/>
+</para>
+<para>The method to get the new positions of the unconstrained vertices is similar to the two-step optimization method explained in <ref refid="index_1SMD_Overview_ARAP" kindref="member">As-Rigid-As Possible Deformation</ref>. For the first step, the Eq. <formula id="65">$\eqref{eq:cov_matrix}$</formula> is modified to take into account the edges in <formula id="61">$E(\mathbf{v}_i)$</formula>:</para>
+<para><formula id="66">\begin{equation}
+\mathbf{S}_i = \sum_{(\mathbf{v}_j, \mathbf{v}_k) \in E(\mathbf{v}_i)} w_{jk} (\mathbf{v}_j - \mathbf{v}_k)(\mathbf{v}&apos;_j - \mathbf{v}&apos;_k)^T,
+\label{eq:cov_matrix_sr}
+\end{equation}</formula></para>
+<para>For the second step, setting partial derivative of Eq. <formula id="67">$\eqref{eq:arap_energy_rims}$</formula> to zero with respect to <formula id="8">$\mathbf{v}_i$</formula> gives the following equation:</para>
+<para><formula id="68">\begin{equation}
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} (w_{ij} + w_{ji})(\mathbf{v}&apos;_i - \mathbf{v}&apos;_j) =
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} \frac{w_{ij}(\mathbf{R}_i + \mathbf{R}_j + \mathbf{R}_m) + w_{ji}(\mathbf{R}_i + \mathbf{R}_j + \mathbf{R}_n)}{3} (\mathbf{v}_i - \mathbf{v}_j).
+\label{eq:lap_ber_rims}
+\end{equation}</formula></para>
+<para>where <formula id="69">$\mathbf{R}_m$</formula> and <formula id="70">$\mathbf{R}_n$</formula> are the rotation matrices of the vertices <formula id="71">$\mathbf{v}_m$</formula>, <formula id="72">$\mathbf{v}_n$</formula> which are the opposite vertices of the edge <formula id="73">$\mathbf{v}_i \mathbf{v}_j$</formula> (see <ref refid="index_1fig__Spoke_and_rim_edges" kindref="member">fig__Spoke_and_rim_edges</ref>). Note that if the edge <formula id="74">$ \mathbf{v}_i \mathbf{v}_j $</formula> is on the boundary of the surface mesh, then <formula id="75">$ w_{ij} $</formula> must be 0 and <formula id="76">$ \mathbf{v}_m
+$</formula> does not exist.</para>
+<para>An important property of this approach compared to <ref refid="index_1SMD_Overview_ARAP" kindref="member">As-Rigid-As Possible Deformation</ref> is that the contribution to the global energy of each vertex is guaranteed to be non-negative when using the cotangent weights <ref refid="citelist_1CITEREF_Chao2010SimpleGeomModel" kindref="member">[3]</ref>. Thus even with negative weights, the minimization of the energy with the iterative method presented is always guaranteed. However, this method is more dependent on the discretization of the deformed surface (See <ref refid="index_1fig__Arap_spokes_comparison" kindref="member">fig__Arap_spokes_comparison</ref>).</para>
+<para>The implementation in this package uses the cotangent weights by default (negative values included) as proposed in <ref refid="citelist_1CITEREF_Chao2010SimpleGeomModel" kindref="member">[3]</ref>.</para>
+</sect2>
+<sect2 id="index_1SMD_Overview_SRE_ARAP">
+<title>Smoothed Rotation Enhanced As-Rigid-As Possible (SR_ARAP) Deformation</title>
+<para>Using 1-ring elements, SR-ARAP adds a bending element to Eq. <formula id="49">$\eqref{eq:arap_energy}$</formula>:</para>
+<para><formula id="77">\begin{equation}
+\sum_{\mathbf{v}_i \in M}
+\sum_{\mathbf{v}_j \in N(\mathbf{v}_i)} w_{ij}
+\left\| (\mathbf{v}&apos;_i - \mathbf{v}&apos;_j) - \mathbf{R}_i(\mathbf{v}_i - \mathbf{v}_j) \right\|^2 + \alpha A \left\| \mathbf{R}_i - \mathbf{R}_j \right\|^2_F
+  \label{eq:sre_arap_energy}
+\end{equation}</formula></para>
+<para>where<itemizedlist>
+<listitem><para><formula id="78">$\alpha=0.02$</formula> is a weighting coefficient.</para>
+</listitem><listitem><para><formula id="79">$A$</formula> is the surface area for scaling invariance.</para>
+</listitem></itemizedlist>
+</para>
+<para>Only the local step is influenced by the added term, and the optimal rotation now takes into account the rotation of neighbors.</para>
+</sect2>
+</sect1>
+<sect1 id="index_1SMD_History">
+<title>Design and Implementation History</title>
+<para>An initial version of this package has been implemented during the 2011 Google Summer of Code by Yin Xu under the guidance of Olga Sorkine and Andreas Fabri. Ilker O. Yaz took over the finalization of the package with the help of Sébastien Loriot for the documentation and the API. In 2016, Zohar Levi and Sébastien Loriot extended the package to support Smoothed <ref refid="classCGAL_1_1Rotation" kindref="compound" external="/home/runner/work/cgal-cn/cgal-cn/build_doc/doc_tags/Kernel_23.tag">Rotation</ref> Enhanced ARAP. The authors are grateful to Gaël Guennebaud for his great help on using the Eigen library and for providing the code to compute the closest rotation. </para>
+</sect1>
+    </detaileddescription>
+    <location file="Surface_mesh_deformation.txt"/>
+  </compounddef>
+</doxygen>
